@@ -333,9 +333,6 @@ body{font-family:'Noto Sans HK',-apple-system,sans-serif;background:var(--bg);
 .br-toolbar{display:flex;justify-content:space-between;align-items:center;
   margin-bottom:6px;font-size:.66rem;color:var(--muted)}
 .br-toolbar a{color:var(--teal);cursor:pointer;font-weight:700;text-decoration:none}
-.reschedule-badge{display:inline-block;font-size:.54rem;font-weight:700;color:#0c4e54;
-  background:#cffafe;border:1px solid #67e8f9;padding:1px 6px;border-radius:99px;
-  margin-left:4px;vertical-align:middle}
 </style>
 </head>
 <body>
@@ -658,8 +655,7 @@ const H=[
   {c:"wb2",t:"浪茄灣 鞍部",n:"可短暫戲水休息"},
   {c:"wb2",t:"西灣山 (314m)",n:"麥2段最高峰，俯瞰大浪四灣"},
   {c:"wx",t:"西灣亭 終點",n:"29R假日小巴返西貢，或預約的士"}],
- tips:[{k:"i",t:"⚡ 勞動節長程連走！把原Day7（萬宜短程）+ Day15（西灣山）合併。麥理浩徑2段經典，世界地質公園火山岩柱。帶3L水，5月日照已長，做好防曬。"},
-        {k:"o",t:"📅 注意：5月3日(Day4)為麥3段4峰長程，連續兩個長日，留意體力分配。"}]},
+ tips:[{k:"i",t:"⚡ 勞動節長程連走！麥理浩徑2段經典，世界地質公園火山岩柱。帶3L水，5月日照已長，做好防曬。"}]},
 
 {day:4,date:"5月3日(週日)",isoDate:"2026-05-03",peaks:"岩頭山、雞公山、雷打石山、木棉山",
  peakCount:4,area:"西貢西（麥理浩徑3段）",km:16,time:"7h",d:4,
@@ -701,7 +697,7 @@ const H=[
   {c:"wb2",t:"韓陵片石亭",n:"石級路段，穩步上行"},
   {c:"wb2",t:"青山 (583m)",n:"屯門最高峰，俯瞰后海灣及深圳"},
   {c:"wx",t:"原路折返 或 經青山徑下山至良田坳"}],
- tips:[{k:"i",t:"⚡ 從原5月1日改期至5月24日（騰出勞動節做西灣山連走）。半日易走，山頂無水源、無遮蔭，出發前補足水。"}]},
+ tips:[{k:"i",t:"⚡ 半日易走，山頂無水源、無遮蔭，出發前補足水。"}]},
 
 {day:8,date:"5月31日(週日)",isoDate:"2026-05-31",peaks:"花山、標尖角頂",
  peakCount:2,area:"西貢東（萬宜東壩）",km:7,time:"3-4h",d:3,
@@ -709,7 +705,7 @@ const H=[
  route:[
   {c:"wg",t:"萬宜東壩 起步"},{c:"wb2",t:"花山 (260m)",n:"東壩北側"},
   {c:"wb2",t:"標尖角頂 (281m)",n:"東端最佳景觀台"},{c:"wx",t:"折返東壩"}],
- tips:[{k:"i",t:"可與Day7合併（合計13km，約7小時），量力而為。"}]},
+ tips:[]},
 
 {day:9,date:"6月7日(週日)",isoDate:"2026-06-07",peaks:"茅平山",
  peakCount:1,area:"塔門島（西貢北）",km:5,time:"2-3h",d:1,
@@ -1037,8 +1033,6 @@ function renderCards(f="pending"){
     const isD=h.done==="done",isP=h.done==="partial";
     const isNext=curNextHike&&h.day===curNextHike.day;
     const isLocal=!!userUpd[h.day];
-    const orig=ORIG[h.day];
-    const isResch=orig&&h.isoDate!==orig.isoDate;
     if(h.sea!==ls&&(f==="all"||f==="pending"||f==="done"||f==="warn"||f==="boat")){
       const s=document.createElement("div");s.className="slbl";s.textContent=SL[h.sea];c.appendChild(s);ls=h.sea;
     }
@@ -1046,7 +1040,6 @@ function renderCards(f="pending"){
     const nextBadge=isNext?`<div class="next-badge">📍 下次行山</div>`:"";
     const chip=isD?`<div class="chip done-c">✅ 完成</div>`:isP?`<div class="chip part-c">⚡ 部分</div>`:h.warn&&!isNext?`<div class="chip warn-c">⚠️ 高危</div>`:"";
     const localBadge=isLocal&&(isD||isP)?`<span class="local-badge">📱 本地</span>`:"";
-    const reschBadge=isResch?`<span class="reschedule-badge">📅 改期 (原 ${orig.date})</span>`:"";
     const dnl=isD?`<div class="done-lbl dl-ok">✅ 完成 ${h.doneDate||""}${localBadge}</div>`:
                isP?`<div class="done-lbl dl-p">⚡ ${h.partialNote||"部分完成"}${localBadge}</div>`:"";
     const boat=h.boat?`<span class="tag t-boat">🚢 需渡船</span>`:"";
@@ -1062,7 +1055,7 @@ function renderCards(f="pending"){
     const wrap=document.createElement("div");wrap.className="cl";
     wrap.innerHTML=`<div class="card ${cls}${nextCls}">
       ${nextBadge}${chip}
-      <div class="cdate">📅 ${h.date} ${reschBadge}</div>
+      <div class="cdate">📅 ${h.date}</div>
       <div class="cpeaks">${h.peaks}</div>
       <div class="tags">
         <span class="tag t-a">${h.area}</span>
