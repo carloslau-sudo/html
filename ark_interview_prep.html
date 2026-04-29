@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+
+<html lang="zh-HK">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>方舟之家面試 · 完整備戰手冊</title>
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --bg-elev: #ffffff;
+    --bg-soft: #f3efe8;
+    --ink: #2a2620;
+    --ink-soft: #5c5347;
+    --ink-mute: #8a7f70;
+    --accent: #8a4f2d;
+    --accent-soft: #f5e6d8;
+    --warn: #b85427;
+    --warn-soft: #fae5d8;
+    --good: #2e6b4a;
+    --good-soft: #dceadd;
+    --hl: #fff5d6;
+    --border: #e6dfd0;
+    --rule: #ddd3bf;
+    --shadow: 0 1px 2px rgba(60,40,20,.04), 0 4px 16px rgba(60,40,20,.05);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Source Han Serif TC", "Noto Serif TC", "PingFang TC", "Heiti TC", "Microsoft JhengHei", -apple-system, BlinkMacSystemFont, serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.8;
+    font-size: 17px;
+    -webkit-font-smoothing: antialiased;
+    -webkit-text-size-adjust: 100%;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    max-width: 1180px;
+    margin: 0 auto;
+    gap: 0;
+  }
+  nav.toc {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 28px 18px 28px 24px;
+    border-right: 1px solid var(--border);
+    background: var(--bg-elev);
+    font-size: 14px;
+  }
+  nav.toc h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-mute);
+    margin: 0 0 16px;
+    font-weight: 600;
+  }
+  nav.toc ol {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: nav;
+  }
+  nav.toc > ol > li {
+    counter-increment: nav;
+    margin-bottom: 14px;
+  }
+  nav.toc > ol > li > a::before {
+    content: counter(nav, decimal) "  ";
+    color: var(--accent);
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  nav.toc a {
+    color: var(--ink-soft);
+    text-decoration: none;
+    display: block;
+    padding: 4px 0;
+    line-height: 1.5;
+    transition: color .15s;
+  }
+  nav.toc a:hover { color: var(--accent); }
+  nav.toc ol ol {
+    margin: 6px 0 0 16px;
+    border-left: 1px solid var(--rule);
+    padding-left: 12px;
+  }
+  nav.toc ol ol a {
+    font-size: 13px;
+    color: var(--ink-mute);
+    padding: 2px 0;
+  }
+  main {
+    padding: 48px 56px 120px;
+    max-width: 820px;
+  }
+  header.title {
+    border-bottom: 2px solid var(--rule);
+    padding-bottom: 24px;
+    margin-bottom: 40px;
+  }
+  header.title .kicker {
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  header.title h1 {
+    font-size: 38px;
+    font-weight: 700;
+    margin: 0 0 12px;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+  header.title .meta {
+    color: var(--ink-mute);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  h2.section {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 64px 0 8px;
+    padding-top: 24px;
+    border-top: 1px solid var(--rule);
+    letter-spacing: -0.005em;
+    scroll-margin-top: 16px;
+  }
+  h2.section .num {
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    margin-right: 12px;
+    font-size: 22px;
+  }
+  h2.section + .lede {
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin: 0 0 28px;
+    font-style: italic;
+  }
+  h3 {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 36px 0 12px;
+    color: var(--ink);
+    scroll-margin-top: 16px;
+  }
+  h4 {
+    font-size: 16px;
+    font-weight: 700;
+    margin: 24px 0 8px;
+    color: var(--accent);
+    letter-spacing: 0.02em;
+  }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 16px; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+  strong, b { font-weight: 700; color: var(--ink); }
+  em { font-style: italic; color: var(--ink-soft); }
+  code {
+    background: var(--bg-soft);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 0.88em;
+  }
+  blockquote {
+    margin: 16px 0;
+    padding: 14px 20px;
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    color: var(--ink);
+    font-size: 15px;
+    border-radius: 0 6px 6px 0;
+  }
+  blockquote p:last-child { margin: 0; }
+  .callout {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px 22px;
+    margin: 20px 0;
+    box-shadow: var(--shadow);
+  }
+  .callout.warn {
+    background: var(--warn-soft);
+    border-color: var(--warn);
+  }
+  .callout.warn::before {
+    content: "⚠ 注意";
+    display: block;
+    font-weight: 700;
+    color: var(--warn);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .callout.good {
+    background: var(--good-soft);
+    border-color: var(--good);
+  }
+  .callout.good::before {
+    content: "✓ 重點";
+    display: block;
+    font-weight: 700;
+    color: var(--good);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .callout.tip::before {
+    content: "💡 Tip";
+    display: block;
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    margin-bottom: 8px;
+  }
+  .qa {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 24px 0;
+    box-shadow: var(--shadow);
+  }
+  .qa .q-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+  .qa h3 {
+    margin: 0 0 16px;
+    font-size: 19px;
+  }
+  .sample-letter {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px 32px;
+    margin: 20px 0;
+    font-family: "Source Han Serif TC", "Noto Serif TC", serif;
+    box-shadow: var(--shadow);
+    line-height: 1.85;
+    white-space: pre-line;
+  }
+  .sample-letter .letter-title {
+    font-weight: 700;
+    font-size: 18px;
+    text-align: center;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  .scenario {
+    color: var(--ink-mute);
+    font-size: 13px;
+    font-style: italic;
+    border-left: 2px solid var(--rule);
+    padding: 4px 0 4px 12px;
+    margin-bottom: 14px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+    background: var(--bg-elev);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg-soft);
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 13px;
+    letter-spacing: 0.03em;
+  }
+  tr:last-child td { border-bottom: none; }
+  .checklist {
+    list-style: none;
+    padding-left: 0;
+  }
+  .checklist li {
+    padding-left: 28px;
+    position: relative;
+    margin-bottom: 8px;
+  }
+  .checklist li::before {
+    content: "□";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: var(--accent);
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .key-line {
+    background: var(--hl);
+    padding: 14px 18px;
+    border-radius: 6px;
+    margin: 12px 0;
+    font-weight: 600;
+    border-left: 3px solid var(--accent);
+  }
+  hr.rule {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 32px 0;
+  }
+  hr.rule.thick {
+    border-top: 2px solid var(--rule);
+    margin: 48px 0;
+  }
+  .cheatsheet-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 0;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .cheatsheet-grid > div {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cheatsheet-grid > div:nth-child(odd) {
+    background: var(--bg-soft);
+    font-weight: 600;
+    color: var(--ink-soft);
+  }
+  .cheatsheet-grid > div:nth-last-child(-n+2) {
+    border-bottom: none;
+  }
+  .footer-anchor {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 2px solid var(--rule);
+    text-align: center;
+    color: var(--ink-mute);
+    font-size: 14px;
+    font-style: italic;
+  }
+  .verses {
+    background: var(--accent-soft);
+    border-radius: 8px;
+    padding: 24px 28px;
+    margin: 20px 0;
+  }
+  .verses .verse {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--rule);
+  }
+  .verses .verse:last-child {
+    border: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .verse-ref { font-weight: 700; color: var(--accent); display: block; margin-bottom: 4px; }
+
+  .toggle-toc {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    font-size: 22px;
+    cursor: pointer;
+    box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    z-index: 100;
+  }
+
+  @media (max-width: 880px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 84%;
+      max-width: 320px;
+      height: 100vh;
+      transform: translateX(-100%);
+      transition: transform .25s ease;
+      z-index: 200;
+      box-shadow: 4px 0 24px rgba(0,0,0,.15);
+    }
+    nav.toc.open { transform: translateX(0); }
+    main {
+      padding: 28px 22px 100px;
+      max-width: 100%;
+    }
+    header.title h1 { font-size: 28px; }
+    .toggle-toc { display: flex; align-items: center; justify-content: center; }
+    .qa, .callout { padding: 16px 18px; }
+    .sample-letter { padding: 20px 18px; font-size: 15px; }
+    .cheatsheet-grid { grid-template-columns: 1fr; }
+    .cheatsheet-grid > div:nth-child(odd) { padding-bottom: 4px; }
+    .cheatsheet-grid > div:nth-child(even) { padding-top: 4px; }
+  }
+
+  @media print {
+    nav.toc, .toggle-toc { display: none; }
+    .layout { grid-template-columns: 1fr; }
+    main { padding: 0; max-width: 100%; }
+    .qa, .callout, .sample-letter { box-shadow: none; break-inside: avoid; }
+    h2.section { break-before: page; }
+  }
+
+
+  /* ============ Collapsible blocks (details) ============ */
+  details.qa, details.letter-block, details.five-block {
+    margin: 24px 0;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    scroll-margin-top: 80px;
+  }
+  details.qa {
+    padding: 0;
+    overflow: hidden;
+  }
+  details.qa > summary,
+  details.letter-block > summary,
+  details.five-block > summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 24px 28px;
+    display: block;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  details.qa > summary::-webkit-details-marker,
+  details.letter-block > summary::-webkit-details-marker,
+  details.five-block > summary::-webkit-details-marker { display: none; }
+  details.qa > summary::marker,
+  details.letter-block > summary::marker,
+  details.five-block > summary::marker { display: none; }
+  .qa-q {
+    display: block;
+    margin-top: 12px;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.45;
+  }
+  .letter-title-text, .five-title-text {
+    display: block;
+    font-size: 19px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.45;
+  }
+  details.qa > .qa-body,
+  details.letter-block > .letter-body,
+  details.five-block > .five-body {
+    padding: 0 28px 24px;
+  }
+  /* Restore the original .qa block padding logic - body needs top space if h3 was inside */
+  details.qa[open] > .qa-body { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 4px; }
+  details.letter-block[open] > .letter-body,
+  details.five-block[open] > .five-body { border-top: 1px solid var(--border); padding-top: 20px; margin-top: 4px; }
+
+  /* Desktop: hide the disclosure caret entirely (we force open via JS) */
+  @media (min-width: 881px) {
+    details.qa > summary,
+    details.letter-block > summary,
+    details.five-block > summary {
+      cursor: default;
+    }
+    /* No disclosure indicator on desktop */
+  }
+
+  /* Mobile: show caret indicator */
+  @media (max-width: 880px) {
+    details.qa > summary::after,
+    details.letter-block > summary::after,
+    details.five-block > summary::after {
+      content: '＋';
+      float: right;
+      font-size: 22px;
+      color: var(--accent);
+      font-weight: 400;
+      line-height: 1;
+      margin-top: 4px;
+      transition: transform .15s;
+    }
+    details[open] > summary::after { content: '−'; }
+    details.qa > summary,
+    details.letter-block > summary,
+    details.five-block > summary {
+      padding: 18px 20px;
+    }
+    details.qa > .qa-body,
+    details.letter-block > .letter-body,
+    details.five-block > .five-body {
+      padding: 0 20px 20px;
+    }
+    .qa-q, .letter-title-text, .five-title-text {
+      font-size: 17px;
+      padding-right: 32px; /* leave room for + sign */
+    }
+  }
+
+  /* ============ Mobile pill navigation ============ */
+  .mobile-pills {
+    display: none;
+  }
+  @media (max-width: 880px) {
+    .mobile-pills {
+      display: flex;
+      position: sticky;
+      top: 0;
+      z-index: 90;
+      gap: 8px;
+      padding: 10px 14px;
+      background: rgba(251, 250, 247, 0.96);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .mobile-pills::-webkit-scrollbar { display: none; }
+    .mobile-pills a {
+      flex-shrink: 0;
+      padding: 7px 14px;
+      background: var(--bg-soft);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--ink-soft);
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .15s;
+    }
+    .mobile-pills a:active,
+    .mobile-pills a:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .mobile-pills a.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    /* Hide the old TOC drawer toggle since pills replace it */
+    .toggle-toc { display: none !important; }
+  }
+
+  /* ============ Mobile: small scroll-margin tweaks ============ */
+  @media (max-width: 880px) {
+    h2.section, details.qa, details.letter-block, details.five-block {
+      scroll-margin-top: 60px;
+    }
+    main { padding-top: 16px; }
+    /* Tighter spacing inside details on mobile */
+    details.qa h4, details.letter-block h4, details.five-block h4 {
+      margin-top: 18px;
+    }
+    details.qa blockquote, details.letter-block blockquote, details.five-block blockquote {
+      padding: 12px 16px;
+      font-size: 14.5px;
+    }
+  }
+</style>
+</head>
+<body>
+<button aria-label="Toggle table of contents" class="toggle-toc" onclick="document.querySelector('nav.toc').classList.toggle('open')">☰</button>
+<nav aria-label="Section quick nav" class="mobile-pills">
+<a href="#part-overview">序</a>
+<a href="#part-witness">見證</a>
+<a href="#part-questions">7 問</a>
+<a href="#part-written">筆試</a>
+<a href="#part-five">5 實際</a>
+<a href="#part-letters">範文</a>
+<a href="#part-blocks">Blocks</a>
+<a href="#part-reverse">反問</a>
+<a href="#part-checklist">Check</a>
+<a href="#part-verses">經文</a>
+<a href="#part-cma">宣道會</a><a href="#part-final">結尾</a>
+</nav>
+<div class="layout">
+<nav class="toc">
+<h2>目錄</h2>
+<ol>
+<li><a href="#part-overview">序：心態定錨</a></li>
+<li><a href="#part-witness">開場見證（3–5 分鐘）</a>
+<ol>
+<li><a href="#witness-structure">三段式結構</a></li>
+<li><a href="#witness-tips">交付提示</a></li>
+</ol>
+</li>
+<li><a href="#part-questions">7 條最有可能嘅問題</a>
+<ol>
+<li><a href="#q1">Q1 點解過渡到事奉</a></li>
+<li><a href="#q2">Q2 點解係方舟</a></li>
+<li><a href="#q3">Q3 行政經驗應用</a></li>
+<li><a href="#q4">Q4 對傷健共融嘅睇法</a></li>
+<li><a href="#q5">Q5 教會嘅「硬」嘢</a></li>
+<li><a href="#q6">Q6 薪酬期望（6 萬→萬零）</a></li>
+<li><a href="#q7">Q7 家人睇法</a></li>
+</ol>
+</li>
+<li><a href="#part-written">筆試 + 面談調整</a>
+<ol>
+<li><a href="#ad-decode">廣告解讀</a></li>
+<li><a href="#written-types">筆試 5 大類</a></li>
+<li><a href="#tonight-4">今晚做 4 件事</a></li>
+<li><a href="#interview-shift">面談部分調整</a></li>
+</ol>
+</li>
+<li><a href="#part-five">5 個實際問題</a>
+<ol>
+<li><a href="#five-1">輸入法部署</a></li>
+<li><a href="#five-2">依賴 AI 嘅 risk</a></li>
+<li><a href="#five-3">家人信天主教</a></li>
+<li><a href="#five-4">30 年巧合</a></li>
+<li><a href="#five-5">50 歲 + 無經驗</a></li>
+</ol>
+</li>
+<li><a href="#part-letters">5 篇書信範文</a>
+<ol>
+<li><a href="#letter-1">主日通告</a></li>
+<li><a href="#letter-2">感謝義工</a></li>
+<li><a href="#letter-3">招募義工</a></li>
+<li><a href="#letter-4">慰問信</a></li>
+<li><a href="#letter-5">退修會報名</a></li>
+</ol>
+</li>
+<li><a href="#part-blocks">Building Blocks</a>
+<ol>
+<li><a href="#blocks-open">開場 / 過渡 / 結尾</a></li>
+<li><a href="#blocks-vocab">教會常用詞彙</a></li>
+<li><a href="#blocks-format">標點格式 6 點</a></li>
+<li><a href="#blocks-no">「不要」清單</a></li>
+</ol>
+</li>
+<li><a href="#part-reverse">反問牧師嘅問題</a></li>
+<li><a href="#part-checklist">今晚 + 明早 Checklist</a></li>
+<li><a href="#part-verses">壓陣經文</a></li><li><a href="#part-cma">宣道會背景知識</a>
+<ol>
+<li><a href="#cma-fourfold">四重福音</a></li>
+<li><a href="#cma-symbol">會徽 4 symbols</a></li>
+<li><a href="#cma-founder">宣信博士</a></li>
+<li><a href="#cma-history">時間軸</a></li>
+<li><a href="#cma-distinctive">distinctive 強調</a></li>
+<li><a href="#cma-cheat">問題 cheat sheet</a></li>
+</ol>
+</li>
+<li><a href="#part-final">最後一句</a></li>
+</ol>
+</nav>
+<main>
+<header class="title">
+<div class="kicker">方舟之家 · 行政幹事面試</div>
+<h1>完整備戰手冊</h1>
+<div class="meta">
+    對象：莊振威牧師（可能徐玉瓊牧師亦會出席）<br/>
+    形式：先筆試 30–45 分鐘，後面談 45–60 分鐘<br/>
+    心態定錨：唔係「scoring an offer」，係「dialogue with shepherds about calling」
+  </div>
+</header>
+<section id="part-overview">
+<h2 class="section"><span class="num">序</span>心態定錨</h2>
+<p>呢份手冊係將之前所有準備內容整合成一份可以隨身帶住嘅 reference。建議用法：</p>
+<ul>
+<li><strong>面試前一晚</strong>——由頭到尾掃一次，特別熟讀<a href="#part-witness">見證段</a>同<a href="#q1">Q1–Q3</a></li>
+<li><strong>明早出門前</strong>——只 review <a href="#part-checklist">Checklist</a> 同<a href="#part-verses">壓陣經文</a></li>
+<li><strong>到達會場後 5 分鐘</strong>——靜睇<a href="#part-final">最後一句</a>，深呼吸三次，禱告</li>
+<li><strong>筆試 / 面談中途緊張</strong>——心入面默念<a href="#part-verses">羅馬書 12:1</a> 或者<a href="#part-verses">林後 5:18</a></li>
+</ul>
+<div class="callout good">
+呢個面試嘅本質<strong>唔係 sell yourself</strong>，係<strong>畀牧者識你 + 你識方舟</strong>。如果係主嘅帶領，呢個崗位會成；如果唔係，主有更好嘅安排。盡力預備，然後放心交託。
+</div>
+</section>
+<section id="part-witness">
+<h2 class="section"><span class="num">一</span>開場見證（3–5 分鐘）</h2>
+<p class="lede">99% 機會牧師會用「不如你先簡單介紹自己」開場。呢個唔係請你讀 CV，係考你<strong>能唔能夠用見證形式講出自己</strong>。</p>
+<h3 id="witness-structure">三段式結構（建議時間分配）</h3>
+<h4>Part 1 — 信主前 / 成長（30–40 秒）</h4>
+<p>簡短交代背景：邊度大、屋企信仰背景、係點樣接觸到信仰。<strong>唔好詳細</strong>。</p>
+<h4>Part 2 — 30 年信仰歷程（1.5–2 分鐘）</h4>
+<p>重點唔係「年期」，係<strong>轉化嘅具體 moment</strong>。建議至少預備 1 個具體時刻：</p>
+<ul>
+<li>受洗嗰陣神對你講過咩？</li>
+<li>喺 22 年宣道會裏面有冇一段時期嘅「恆心」係由咩經文 / 體驗支撐？</li>
+<li>過去嘅服侍崗位（總務、PPT、新來賓關顧），邊一次令你覺得「服事人」原來咁有意思？</li>
+</ul>
+<div class="callout">
+<strong>揀一個具體故事，唔好用形容詞代替。</strong>「平安」唔係見證，「嗰晚收咗工返到屋企第一次睡得安穩」先係見證。
+</div>
+<h4>Part 3 — 近年呼召 + 點解係方舟（1.5 分鐘）</h4>
+<p>呢段最重要，要連到崗位。建議結構：</p>
+<blockquote>
+近幾年我做咗認可調解員同教練。一開始以為係轉 career，後來慢慢發覺神係喺度連起我過去 25 年嘅行政經驗——原來唔係兩件事，係同一件事嘅唔同層次。我寫俾莊牧師嗰封信時，其實仲未深入了解方舟嘅事工。<strong>但當我之後查清楚——方舟成立 30 年，60 位傷殘加 40 位健全會友，跟車服事、流動教會——我先發覺，我信中所講嘅「使人和睦、和好職分」，根本就係方舟「傷健合一」嘅另一個講法。</strong>我同太太禱告咗一段時間，越發肯定呢個唔係我自己揀，係主帶領。
+</blockquote>
+<h3 id="witness-tips">交付提示</h3>
+<ul>
+<li><strong>大聲練 3 次</strong>，計時。多過 5 分鐘要剪走細節。</li>
+<li>唔好用 PPT 式 bullet 講話。用故事。</li>
+<li>講到「主帶領」嗰陣可以稍停一秒——畀牧師時間 register。</li>
+<li>如果你會緊張，預備一張卡寫 6 個關鍵字（唔好讀，淨做 anchor）。</li>
+</ul>
+<div class="callout good">
+最關鍵嘅一個 move——當牧師問你「點解選方舟」嗰陣，主動講出嗰句橋樑：「我寫信時仲未深入了解方舟，但查咗之後發覺『使人和睦』同『傷健合一』係同一回事。」<strong>呢句係你獨有嘅，其他申請人講唔出。</strong>
+</div>
+</section>
+<section id="part-questions">
+<h2 class="section"><span class="num">二</span>7 條最有可能嘅問題</h2>
+<p class="lede">由於只有 45–60 分鐘面談，牧師唔會問哂 7 條。佢哋會揀 3–4 條最關鍵：(1) 自我介紹 + 見證、(2) 點解過渡到事奉、(3) 主日當值你 OK 嗎、(4) 對方舟事工嘅了解、(5) <strong>薪酬期望（最重要——6 萬幾跌到萬零，落差 80%，必問）</strong>。</p>
+<details class="qa" id="q1" open=""><summary><span class="q-tag">Q1</span><span class="qa-q">「點解依個時候想由職場過渡到全時間事奉？」</span></summary><div class="qa-body">
+<div class="callout warn">唔好畀人感覺你係 burnt out / 想離開職場 / 退休前搵嘢做。</div>
+<p><strong>框架：</strong></p>
+<ol>
+<li><strong>唔係衝動，係多年禱告嘅結果</strong>——明確講你已同太太商量並禱告咗一段時間。</li>
+<li><strong>唔係兩個世界，係一條路</strong>——25 年行政 + 調解員 + 教練嘅訓練，係神逐步預備。</li>
+<li><strong>時機嘅體會</strong>——孩子已大 / 家庭階段適合 / 體力同心力仲在。</li>
+<li><strong>降低收入嘅心志已具體計過</strong>——唔係空話，係已同家人 align。</li>
+</ol>
+<p><strong>避免：</strong>「我做嘢累咗」、「我想試吓唔同嘢」、「中年想 reset」。</p>
+</div></details>
+<details class="qa" id="q2" open=""><summary><span class="q-tag">Q2</span><span class="qa-q">「你對方舟之家了解幾多？點解唔係其他教會、要選方舟？」</span></summary><div class="qa-body">
+<p>呢條問題係<strong>考你有冇做功課</strong>。你已經有 ammunition，要主動 deploy：</p>
+<p>要 weave 入嘅 fact：</p>
+<ul>
+<li>1996 年成立，源自畢士大使命小組同回聲谷</li>
+<li>突破青年村兩年實驗計劃做起點</li>
+<li>約 100 人，60 傷殘 + 40 健全</li>
+<li>崇拜時輪椅朋友坐中央前座</li>
+<li>三大事工模式：跟車服事、流動教會、醫院探訪 + 白事</li>
+<li>兩個地址：都會廣場 B1（辦公）+ 突破青年村（聚會）</li>
+<li>「基督中心、傷健合一、彼此服事、同奔天路」嘅四句</li>
+</ul>
+<p><strong>點解係方舟：</strong></p>
+<blockquote>我唔係淨係搵一個教會行政崗位。如果係，我留喺自己職場做兼職事奉都得。但方舟嘅「傷健合一」神學，<strong>同我寫信時所講嘅「和好職分」係同一件事</strong>——令我覺得呢個唔係換工，係主把過去嘅訓練同現在嘅機會接起。</blockquote>
+</div></details>
+<details class="qa" id="q3" open=""><summary><span class="q-tag">Q3</span><span class="qa-q">「你嘅行政經驗點樣應用喺教會？教會同企業好唔同㗎喎。」</span></summary><div class="qa-body">
+<div class="callout warn">講太多 corporate jargon，畀人感覺你會 over-engineer。</div>
+<p><strong>框架：</strong></p>
+<ol>
+<li><strong>承認分別</strong>：教會唔係靠 KPI 驅動，係靠召命同關係。</li>
+<li><strong>但跨界 transferable 嘅係</strong>：處理多 stakeholder（母堂、區聯會、義工、院舍、復康巴士、醫院、白事承辦商）；文書、財務記錄、會議籌備、活動 logistics；喺壓力下保持秩序同細節。</li>
+<li><strong>更重要嘅 soft side</strong>：調解員訓練 → 義工之間、會友之間有摩擦時可以服侍；教練訓練 → 配搭新人或年輕同工成長。</li>
+<li><strong>但永遠記得</strong>：行政係<strong>為咗服事</strong>，唔係為咗效率本身。</li>
+</ol>
+<div class="key-line">
+  Punchy line 可以講：「我嘅角色係 free up 牧者去做佢哋嘅 core——牧養。我去處理流程、文件、協調，等佢哋唔需要 micro-manage。」
+  </div>
+</div></details>
+<details class="qa" id="q4" open=""><summary><span class="q-tag">Q4</span><span class="qa-q">「你有冇接觸過傷殘朋友？對傷健共融事工有咩睇法？」</span></summary><div class="qa-body">
+<div class="callout warn">最危險嘅答法：講啲假大空、patronizing 嘅嘢，例如「我好願意幫助佢哋」。教會同工會一秒識穿。</div>
+<p><strong>正確 framing：</strong></p>
+<ul>
+<li>用「<strong>服事</strong>」唔好用「<strong>幫助</strong>」</li>
+<li>用「<strong>會友</strong>」唔好用「<strong>佢哋</strong>」</li>
+<li>神學前提：每個人按神形象造，傷健界線喺神眼中唔存在</li>
+</ul>
+<p><strong>坦白係最強：</strong></p>
+<blockquote>老實講，我直接服事傷殘會友嘅經驗有限，所以我係以 learner 身份嚟。但我對「傷健合一」有一個認識——唔係健全人服事傷殘人，係<strong>一齊做基督身體嘅一部分</strong>。輪椅坐中央前座、健全坐兩旁，呢個 setup 本身已經係神學宣告。我願意被會友教導。</blockquote>
+<p>如果你曾經接觸過傷殘朋友（屋企、職場、義工），呢度可以講一個具體故事——但唔好誇大。</p>
+</div></details>
+<details class="qa" id="q5" open=""><summary><span class="q-tag">Q5</span><span class="qa-q">「教會行政有時要做啲『硬』嘢——醫院探訪、白事、處理傳道人之間嘅意見唔同。你有冇心理準備？」</span></summary><div class="qa-body">
+<p>呢條會 test 你係咪真係明白方舟嘅 reality。</p>
+<h4>白事 / 醫院</h4>
+<blockquote>我知道方舟有部分會友係孤兒，教會會安排身後事。我聽到呢個事實時，反而覺得呢個就係教會作為家嘅實踐。我願意參與。</blockquote>
+<h4>意見不一</h4>
+<blockquote>我做咗 25 年企業，亦做認可調解員，我學過一件事——衝突本身唔係問題，<strong>處理唔好先係問題</strong>。但教會處理衝突嘅基礎係禱告同順服牧者，唔係靠調解技巧。我會 submit。</blockquote>
+<h4>承認限制</h4>
+<blockquote>我相信呢個崗位會有我未經歷過嘅 emotional weight，我預咗會有挑戰。我會倚靠主，亦希望牧者願意牧養我。</blockquote>
+</div></details>
+<details class="qa" id="q6" open=""><summary><span class="q-tag">Q6</span><span class="qa-q">「薪酬同上班安排嘅期望？」</span></summary><div class="qa-body">
+<div class="callout warn">
+  呢條 99% 會問。<strong>而且係牧師最擔心你會「6 個月後走」嘅根源</strong>——唔係因為佢想壓價，係因為佢真係擔心你係咪 sustainable。
+  </div>
+<h4>核心數字要主動講出嚟</h4>
+<p>你而家月薪約 6 萬幾，呢個崗位編制大約萬零蚊——<strong>差距大概八成</strong>。如果你唔主動 raise，牧師會自己心入面 calculate 然後懷疑你 sustainable 唔 sustainable。<strong>主動講出個數字，反而 disarm 咗呢個懷疑</strong>——顯示你已經面對過、計過數，唔係仲喺 fantasy 階段。</p>
+<h4>建議答法（4 個 layer）</h4>
+<blockquote>
+  牧師，我想坦白同您講薪酬嘅事。<strong>我而家月薪大約 6 萬幾，呢個崗位編制理論上係萬零蚊。差距大概八成，我唔想假裝呢個係小事</strong>。我願意接受呢個 transition，唔係衝動，背後有具體 reason：
+  <br/><br/>
+<strong>第一，財務上我已經做過 stress test。</strong>過去 25 年我同太太一直保守理財，未來幾年家庭嘅基本開支唔需要靠呢份人工 cover 哂。即使萬零蚊嘅編制，我哋唔需要動用退休儲蓄都頂得住，最少 5 年無問題。
+  <br/><br/>
+<strong>第二，呢個唔係我突然嘅念頭。</strong>我同太太已經禱告咗一段時間，傾過具體嘅 cashflow。佢知道意味住乜，亦支持。
+  <br/><br/>
+<strong>第三，我 50 歲，唔係嚟試水溫。</strong>呢個轉變我做得到嘅次數有限。我唔係預咗 6 個月後遇到挑戰就走，我嚟係紮根服事到退休、甚至更後。
+  <br/><br/>
+<strong>第四，可能最重要嘅一點——我嚟唔係用 corporate income 換 church payslip。</strong>如果咁 frame，呢個 deal 邊個都會嫌。我嚟係用「過去 25 年商業 career 嘅訓練」換「直接事奉嘅後半生」。<strong>呢個 trade-off 我認為係 fair 嘅。</strong>
+<br/><br/>
+  但我亦清楚，喺實際層面我會有適應期。我預咗。
+  </blockquote>
+<h4>填入你個人嘅具體 buffer（揀 2–3 個 deploy）</h4>
+<p>「我同太太一直保守理財」呢句太抽象，要 fill in 你個人實況。揀適用嘅：</p>
+<ul>
+<li>樓已供完 / 供款剩低少</li>
+<li>太太有穩定收入 / part-time 收入</li>
+<li>女兒已自立 / 喺大學最後一年 / 已出嚟做嘢</li>
+<li>有 emergency fund 至少夠 X 年家庭開支</li>
+<li>有 MPF 之外嘅儲蓄 / 投資</li>
+<li>父母經濟獨立，唔需要供養</li>
+<li>過去一年已經試過 downscale 生活方式</li>
+</ul>
+<div class="callout tip">
+<strong>講具體先有 weight。</strong>「我同太太傾過」太抽象；「我哋已經算過 5 年 cashflow，唔需要動用退休儲蓄」就有重量。<strong>但唔好 over-share</strong>——講夠 2–3 個 buffer point 就停。多咗 sound 似 over-explain，似緊張。
+  </div>
+<h4>絕對唔好講嘅嘢</h4>
+<ul>
+<li><strong>「錢唔重要」</strong>——sound 假，牧師唔信</li>
+<li><strong>「我唔需要薪水」</strong>——對家庭唔誠實，亦會令教會難做（無得 anchor 個 baseline，影響佢未來請其他同工）</li>
+<li><strong>「我做過咁多年人工已經夠」</strong>——sound 退休、唔有心做</li>
+<li><strong>「萬零蚊我都 take」嘅輕描淡寫</strong>——令牧師覺得你低估咗呢個 transition，6 個月後會驚醒</li>
+<li><strong>主動講「我可以接受更低」</strong>——會 anchor 個低位，亦令對方擔心你 desperate</li>
+</ul>
+<h4>如果牧師再 probe：「咁你預咗 6 個月後唔後悔？」</h4>
+<blockquote>
+  老實講，我預咗會有適應期，會有 moments 唔舒服——例如見返舊同事，或者要 down 一啲生活習慣。但呢啲我預咗。<strong>後悔嘅意思係「我選錯」——我唔覺得呢個係錯嘅選擇，所以唔會後悔。挑戰係另一回事，我會處理。</strong>
+</blockquote>
+<h4>如果牧師問：「你太太點睇？真係 OK？」</h4>
+<blockquote>
+  我太太唔係 verbally 嗌「YES 你去吧」嗰種 enthusiasm，但佢實際上係支持嘅。我哋一齊算過數、一齊禱告過。佢只要求一件事——<strong>我嚟係認真嘅，唔係兩三年後又轉返去</strong>。我答應咗佢呢一點。
+  </blockquote>
+<div class="callout good">
+<strong>核心 principle：</strong>主動講數、用具體 buffer 證明、reframe 為 trade-off 而非 sacrifice、長期 commitment、誠實承認會有適應期。<strong>呢 5 個 element 齊備，你已經比 95% 申請人答得 mature。</strong>
+</div>
+<h4>地點 + 主日當值</h4>
+<p>如果問返工地點：兩個地點都 OK，亞公角山小巴你願意適應。</p>
+<h4>主日當值（廣告 highlight 咗，一定問）</h4>
+<blockquote>我完全明白主日當值係呢個崗位嘅核心，亦係我願意承擔嘅。我已預咗會調整自己嘅崇拜安排——可能由原本嘅崇拜會友身份，轉為服事身份。我同太太傾過，呢個 transition 我哋預咗。</blockquote>
+<p>如果你太太喺其他堂會崇拜：「太太會繼續喺 XX 堂崇拜，我哋唔會因而失去家庭崇拜時間。」</p>
+</div></details>
+<details class="qa" id="q7" open=""><summary><span class="q-tag">Q7</span><span class="qa-q">「家人點睇？」</span></summary><div class="qa-body">
+<p>牧師問呢條係出於牧養關心，唔係 HR 形式。<strong>慢嚟、誠懇答</strong>。</p>
+<p>要 cover：</p>
+<ul>
+<li>太太已知道並支持（有禱告過）</li>
+<li>孩子情況</li>
+<li>家庭唔會因事奉而被忽略——呢個你會持續同太太定期 check-in</li>
+<li>強調呢個係<strong>家庭一齊嘅決定</strong>，唔係你一個人嘅熱誠</li>
+</ul>
+<p>如果有經濟 buffer 或者太太有收入幫補，可以低調提一句，畀牧師安心。</p>
+</div></details>
+</section>
+<section id="part-written">
+<h2 class="section"><span class="num">三</span>筆試 + 面談調整</h2>
+<p class="lede">電話講「先筆試後面談、夾埋個半鐘」——意味住筆試大約 30–45 分鐘，面談 45–60 分鐘。<strong>筆試表現會直接影響面談嘅 tone</strong>，所以筆試做得好，面談氣氛已贏一半。</p>
+<h3 id="ad-decode">廣告解讀</h3>
+<p>廣告寫得極簡，但每個字都有 weight：</p>
+<ul>
+<li><strong>「熟電腦文書」</strong>——呢個係 #1 篩選條件，所以筆試肯定佔重要比例。</li>
+<li><strong>「處理行政事宜」</strong>——範圍闊，意思係「乜都要做」。</li>
+<li><strong>「須主日當值」</strong>——非 negotiable。面試時你要主動 affirm。</li>
+</ul>
+<h3 id="written-types">筆試最有可能考嘅嘢</h3>
+<h4>1. Word 文書排版（最高機會）</h4>
+<p>畀你一段未排版嘅文字（可能係週訊、通告、會議紀錄），要你排成成品。考點：</p>
+<ul>
+<li>標題粗體、字體大小層次</li>
+<li>段落間距、行距</li>
+<li>項目編號 / 點列</li>
+<li><strong>全形標點「」，。、</strong>（中文文書基本功，錯一兩個會扣印象分）</li>
+<li><strong>半形數字同英文</strong>（HK$86,350、9:00am）</li>
+<li>字體統一（通常新細明體 / 微軟正黑體）</li>
+</ul>
+<h4>2. 中文打字速度（高機會）</h4>
+<p>20–30 字 / 分鐘係合格。<strong>關鍵係你慣用咩輸入法</strong>——倉頡、速成、拼音、手寫？確保你用緊嘅 IME 喺 Windows 裝得到。</p>
+<h4>3. 簡單 Excel（中機會）</h4>
+<p>可能畀你輸入一張會友通訊錄、奉獻記錄、活動報名表。考點：凍結首列、簡單 SUM、排序 / 篩選、欄寬調整。</p>
+<h4>4. 寫信 / 通告（中機會）</h4>
+<p>畀你 brief，要你草擬一封通告。考點：教會式書信格式（「親愛嘅弟兄姊妹平安」開頭、「主內」結尾）、條理清晰、語氣得體（唔好太商業）。</p>
+<h4>5. 執 PPT（低機會但有可能）</h4>
+<p>你信中提過你做過主日 PPT，可能會考你執一張現有嘅 slide。</p>
+<h3 id="tonight-4">今晚要做嘅 4 件事（每件 15–20 分鐘，1 個鐘搞掂）</h3>
+<ol>
+<li><strong>開 Word 練排版</strong>——揀一段網上文章，自己排一次成週訊樣式。重點練全形標點切換（Shift + Space 或者輸入法切換）。</li>
+<li><strong>開 Excel 試</strong>——做一張假嘅會友通訊錄（姓名、電話、組別、生日），試凍結首列、排序、SUM 一列。</li>
+<li><strong>練打字 5 分鐘</strong>——上 tw.cyberbase.tw 或者 10fastfingers.com 中文模式，量度自己現在嘅速度。低過 20 字/分鐘要慎重。</li>
+<li><strong>試你電腦嘅輸入法</strong>——確認你會用嘅輸入法夠順。<strong>關鍵：教會嘅電腦同你屋企嘅可能唔同</strong>，所以唔好假設快捷鍵一樣。</li>
+</ol>
+<h3 id="interview-shift">面談部分嘅調整</h3>
+<p>由於只有 45–60 分鐘，牧師會揀 3–4 條最關鍵：</p>
+<ol>
+<li>自我介紹 + 見證（一定有）</li>
+<li>點解過渡到事奉（一定有）</li>
+<li><strong>主日當值你 OK 嗎</strong>（一定問——廣告 highlight 咗）</li>
+<li>對方舟事工嘅了解（中機會）</li>
+<li>薪酬期望（一定問）</li>
+</ol>
+<h3>心態調整</h3>
+<p>由於筆試在前，你會帶住「考試剛完」嘅腦袋入面談。建議：</p>
+<ul>
+<li>筆試後<strong>搶 5 分鐘</strong>去洗手間、飲水、深呼吸</li>
+<li><strong>唔好喺心入面 replay 筆試錯漏</strong>——已經完咗，focus on the conversation</li>
+<li>入面談時，第一句畀自己一個 reset：「主，由依家開始係 dialogue 時間。」</li>
+</ul>
+<div class="callout tip">
+教會行政人員最 valued 嘅一個特質：<strong>細心</strong>。筆試交卷前花 2 分鐘檢查：標點全形/半形係咪 consistent、數字格式統一、段落間距均勻、文件名稱寫得清楚。<strong>呢 2 分鐘可能比多打 50 個字更值錢。</strong>
+</div>
+</section>
+<section id="part-five">
+<h2 class="section"><span class="num">四</span>5 個實際問題</h2>
+<p class="lede">5 條都係實際問題，唔係借口。逐條處理。</p>
+<details class="five-block" id="five-1" open=""><summary><span class="five-title-text">1. 輸入法部署</span></summary><div class="five-body">
+<div class="callout warn">
+廣東話拼音 Chrome extension 唔好用——教會電腦未必有 Chrome、未必畀你裝、就算裝得到都未必畀你登入 Chrome 同步。複雜度高，敗筆位高。倉頡你都唔識曬，唔好諗。
+</div>
+<h4>建議方案：用 Windows 內建嘅微軟拼音</h4>
+<ul>
+<li>微軟拼音係 Windows 10/11 內建，5 分鐘可以加</li>
+<li>到場後第一件事問問可唔可以加上去</li>
+<li>樣本訊息或當場問法：「請問可唔可以喺電腦預先加咗微軟拼音輸入法？只需要喺『設定 → 語言』加入即可，唔需要安裝外掛。我希望以最熟悉嘅工具展示文書能力。」</li>
+</ul>
+<h4>最壞 fallback：速成</h4>
+<p>如果完全唔可以裝拼音，今晚花 1 個鐘上 input.foruto.com 拎返 baseline。速成只需要記首碼同尾碼，比倉頡快上手。</p>
+<div class="callout good">
+<strong>補嘅方法：速度低就用準確同排版扳返。</strong>寧願慢但 0 錯字 + 排版靚，比快但有錯字好。
+</div>
+<details class="five-block" id="five-2" open=""><summary><span class="five-title-text">2. 依賴 AI 寫嘢嘅 risk</span></summary><div class="five-body">
+<p>呢個擔心係 valid 嘅。AI 用得多，<strong>腦入面嘅 muscle memory 退化咗</strong>——尤其係即時組織句子嘅速度、標點符號 reflex、教會式書信嘅 boilerplate。</p>
+<p>但<strong>好消息係</strong>：教會行政文書 99% 係 template 化嘅嘢，唔需要你即場創作。週訊、通告、會議紀錄都有固定 pattern。</p>
+<h4>今晚 30 分鐘救得返</h4>
+<p>開個 Word，唔開 AI、唔上網，由零打以下三樣（每樣 10 分鐘）：</p>
+<ol>
+<li>一份主日聚會通告（約 150 字）</li>
+<li>一份感謝義工 email（約 100 字）</li>
+<li>一份簡短會議紀錄（約 200 字）</li>
+</ol>
+<div class="callout tip">
+面試時可以坦白：「過去幾年我哋公司嘅文書部分越嚟越多用 AI 工具，我相信教會都會逐步應用，我願意幫教會建立合適嘅 workflow——但呢個唔代表我會喺筆試用 AI。」<strong>呢個 reframe 將你嘅弱點轉化為熟悉新工具嘅優勢。</strong>
+</div>
+<details class="five-block" id="five-3" open=""><summary><span class="five-title-text">3. 太太同女兒信天主教</span></summary><div class="five-body">
+<p>呢個喺<strong>部分</strong>宣道會牧師眼中會有 reservation。但你<strong>唔需要主動提</strong>。如果牧師問起，誠實簡短講：</p>
+<blockquote>我太太同女兒係天主教徒。我哋家庭一直尊重彼此嘅信仰歷程。太太支持我嘅事奉決定，我哋一直有家庭祈禱嘅習慣。</blockquote>
+<h4>唔好做嘅嘢</h4>
+<ul>
+<li>唔好為佢哋嘅信仰道歉或解釋</li>
+<li>唔好講「我有試過帶佢哋過嚟」之類——sound bad，似 evangelism failure</li>
+<li>唔好誇張講家庭幾合一——牧師會察覺</li>
+</ul>
+<h4>如果牧師 probe 深啲（「咁你會唔會擔心信仰唔同？」）</h4>
+<blockquote>我哋拍拖到結婚到而家二十幾年都係咁。呢個 dynamic 我哋處理咗好耐，唔係新議題。我事奉唔會搖動家庭嘅 stability，相反我相信會深化我自己嘅信仰見證。</blockquote>
+<div class="callout good">
+Key message 要傳遞：<strong>家庭穩定、太太支持、唔會成為事奉嘅 distraction</strong>。呢三點先係牧師真正關心嘅嘢——唔係宗派 alignment。
+</div>
+<details class="five-block" id="five-4" open=""><summary><span class="five-title-text">4. 30 年巧合</span></summary><div class="five-body">
+<p>呢個係<strong>金子</strong>，你一定要用，但要用得恰如其分。</p>
+<p>唔好喺第一條題目就 deploy（會 sound 得太刻意）。最好放喺<strong>講「點解係方舟」嗰陣</strong>，作為一個 quiet observation：</p>
+<blockquote>我發覺一件事，可能係主嘅一個 marker——我信主同受洗剛剛 30 年，方舟之家亦都係 1996 年成立，差唔多 30 年。我唔想 over-interpret 呢個巧合，但對我嚟講，呢個 timing 唔似係偶然。我嘅 30 年信仰行程，可能就係為咗下一段同方舟一齊行嘅路而預備。</blockquote>
+<h4>Tone 注意</h4>
+<ul>
+<li>用「marker」「我唔想 over-interpret」呢類字眼，<strong>保持謙卑</strong></li>
+<li>唔好講「神特別揀我」——咁係 over-claim</li>
+<li>講完一句就停，唔好續論證——讓牧師自己 register</li>
+</ul>
+<div class="callout good">
+呢個 detail 會留喺牧師心入面好耐——比你多講 5 分鐘行政經驗有效。
+</div>
+<details class="five-block" id="five-5" open=""><summary><span class="five-title-text">5. 50 歲 + 無直接教會行政經驗</span></summary><div class="five-body">
+<p>呢個係房入面最大隻嘅大象。<strong>主動 raise，比等佢哋諗強。</strong></p>
+<p>可以喺 self-introduction 嘅尾段或者「點解過渡」嘅答案，主動講：</p>
+<blockquote>我知道喺牧師眼中，我係一個有風險嘅選擇——50 歲，無直接教會行政經驗。我想坦白回應呢點。</blockquote>
+<p>然後講三點：</p>
+<h4>第一，年齡其實係優勢，唔係劣勢</h4>
+<blockquote>教會行政唔似 startup，唔係要「年輕、學嘢快」就夠。呢個崗位需要嘅係穩定、判斷力、同對人嘅敏感度。我 50 歲意味住屋企人嘅階段已經 settled，唔會做兩三年就被 corporate 搶走。我係嚟長期紮根，唔係 stepping stone。</blockquote>
+<h4>第二，「無直接經驗」其實有 caveat</h4>
+<blockquote>我冇做過教會全職行政——但我有 22 年宣道會嘅 insider 經驗。我識宣道會嘅文化、語言、結構、同會友期望。新人需要 6–12 個月適應宗派文化，我可以 day one 上手。再加上 25 年跨國行政、認可調解員、教練——呢個 combination 唔常見。</blockquote>
+<h4>第三，Frame 雙方都係 commit</h4>
+<blockquote>教會係冒緊一個風險請我，我都係冒緊一個風險放低 corporate income。我嘅承諾係：我唔係嚟試 6 個月就走。我嚟係要紮根服事到退休——可能仲遠過退休。</blockquote>
+<h4>最後一句要 humble</h4>
+<blockquote>但我亦清楚自己有嘢要學。我以 learner 身份嚟，願意被牧者教導同指正。</blockquote>
+<div class="callout good">
+呢個 framing 將「弱點」變成「mature commitment」——而後者係教會比 corporate 更 value 嘅嘢。
+</div>
+</div></details></div></details></div></details></div></details></div></details></section>
+<section id="part-letters">
+<h2 class="section"><span class="num">五</span>5 篇書信範文</h2>
+<p class="lede">教會通告/通函/書信全部用<strong>書面語</strong>——用「我們／的／了／在／與」，<strong>避免</strong>「我哋／嘅／咗／喺／同」等廣東話虛詞。記結構 + 過渡語 + 結尾 building blocks，按情境抽出對應嘅句式 reassemble。格式：全文用全形標點「，。：；？！『』（）」，數字同英文用半形（HK$1,200、9:30am）。</p>
+<details class="letter-block" id="letter-1" open=""><summary><span class="letter-title-text">範文一：主日聚會通告（短版週訊式）</span></summary><div class="letter-body">
+<div class="scenario">場景：通知會友下星期日有特別講員 / 活動安排</div>
+<div class="sample-letter">
+<div class="letter-title">主日崇拜通告</div>
+親愛的弟兄姊妹平安：
+
+下主日（五月三日），本堂誠邀宣道會沙田堂張偉文牧師蒞臨方舟之家證道，講題為「軟弱中的剛強——林後十二章默想」。
+
+當日崇拜時間照常為上午十時三十分，地點假突破青年村禮堂。崇拜後設愛筵，歡迎弟兄姊妹留步，共享主恩。有意參與愛筵的肢體，請於本主日前向陳麗芳姊妹報名（電話：6123 4567），以便安排膳食。
+
+願主帶領我們同心赴會，得著祂話語的餵養。
+
+主內
+
+方舟之家敬上
+二零二六年四月二十六日
+</div>
+<details class="letter-block" id="letter-2" open=""><summary><span class="letter-title-text">範文二：感謝義工信（跟車服事）</span></summary><div class="letter-body">
+<div class="scenario">場景：季度尾感謝跟車義工的事奉</div>
+<div class="sample-letter">
+<div class="letter-title">致跟車義工團隊的感謝</div>
+各位親愛的同工：
+
+主內平安。
+
+執筆之際，正值春去夏來的時節。回望過去三個月，我們的跟車義工團隊每逢主日清晨七時便已在崗，協助院舍的弟兄姊妹乘搭復康巴士到突破青年村，崇拜後陪同安全返回宿舍。風雨無間，從未間斷。
+
+這份服事，外人難以察覺；但在神面前、在被服事的弟兄姊妹心裡，每一個細節皆是祝福。徐牧師與莊牧師多次提到，方舟之所以能夠成為今日的方舟，正因為有你們一班默默擺上的肢體。
+
+我們計劃於六月十四日（主日）崇拜後，舉行小型「跟車義工感恩茶聚」，藉此向各位致謝，亦邀請新加入的同工互相認識。請於六月七日前回覆出席人數。
+
+願主親自報答你們手所作之工，賜下加倍的力量與喜樂。
+
+同心服事
+
+方舟之家行政幹事
+（簽名）
+</div>
+<details class="letter-block" id="letter-3" open=""><summary><span class="letter-title-text">範文三：招募義工通告（院舍探訪）</span></summary><div class="letter-body">
+<div class="scenario">場景：擴展事工，需要新義工</div>
+<div class="sample-letter">
+<div class="letter-title">「流動教會」探訪義工招募</div>
+弟兄姊妹平安：
+
+方舟之家自一九九六年起，承蒙主恩，得以在亞公角山一帶服事多間護養院舍的弟兄姊妹。除主日崇拜外，我們深信「教會是流動的」——當會友因身體軟弱不能到聚會時，我們便走入他們當中。
+
+現誠邀有負擔的肢體，加入「院舍探訪義工」行列。
+
+服事內容包括：
+一、每月一至兩次到院舍進行探訪、陪伴、簡短分享；
+二、協助同工帶領詩歌敬拜、讀經分享；
+三、與被探訪的弟兄姊妹建立長期關係。
+
+對象：信主一年以上、願意委身、有耐性的弟兄姊妹（不限健全或傷殘）。
+訓練：新加入義工須出席兩次裝備課程，由徐玉瓊牧師親自帶領。
+
+有意參與的肢體，請於五月三十一日前致電 3565 1636，或電郵至 ark@shatinalliance.org.hk 聯絡莊振威牧師。
+
+願主感動更多肢體加入，同奔天路。
+
+主恩同在
+
+方舟之家
+二零二六年五月四日
+</div>
+<details class="letter-block" id="letter-4" open=""><summary><span class="letter-title-text">範文四：慰問信（會友離世，致家屬）</span></summary><div class="letter-body">
+<div class="scenario">場景：方舟事工嘅 reality——白事安排。慰問信係教會書信入面<strong>最 formal 嘅文體</strong>，語氣須節制、莊重、温暖。</div>
+<div class="callout warn">
+所有教會通告書信都用書面語，但慰問信尤其需要<strong>文言味嘅虛詞</strong>（「謹」「皆」「仍」「乃」）令到語氣 dignified。同時避免任何過度情緒化嘅形容詞——節制反而最有重量。
+</div>
+<div class="sample-letter">
+<div class="letter-title">致李陳美玲女士遺族</div>
+各位主內家人：
+
+驚聞李志強弟兄於四月二十二日清晨安息主懷，我們謹代表方舟之家全體會友同工，向各位親屬致以最深切的慰問。
+
+志強弟兄自二零零八年加入方舟之家，多年來身體雖然軟弱，仍以喜樂見證主恩。他每一次主日崇拜的笑容、每一次小組分享的信心話語，皆成為眾弟兄姊妹的祝福。他雖然離開了我們，但他所留下的生命見證,長存我們心中。
+
+主耶穌應許:「復活在我，生命也在我。信我的人雖然死了，也必復活。」(約十一25)我們確信志強弟兄如今已在主的懷中安息，再無病痛，再無眼淚。
+
+安息禮拜安排如下:
+日期:二零二六年五月二日(主日)下午二時三十分
+地點:世界殯儀館一樓福壽堂
+方舟之家將安排專車前往，有需要的弟兄姊妹請聯絡辦事處。
+
+我們會與各位親屬同行這段日子。如有任何需要，請隨時聯絡我們。
+
+主內同行
+
+方舟之家敬上
+</div>
+<div class="callout tip">
+<strong>廣東話 vs 書面語 — 教會書信詞彙對照</strong>
+<table style="margin-top:10px">
+<thead><tr><th>廣東話（口語、不用於書信）</th><th>書面語（所有教會書信必用）</th></tr></thead>
+<tbody>
+<tr><td>我哋</td><td>我們</td></tr>
+<tr><td>嘅</td><td>的</td></tr>
+<tr><td>咗</td><td>了</td></tr>
+<tr><td>佢</td><td>他 / 她</td></tr>
+<tr><td>而家</td><td>如今 / 現今</td></tr>
+<tr><td>會（將會）</td><td>將</td></tr>
+<tr><td>同（一齊）</td><td>與 / 偕同</td></tr>
+<tr><td>同各位親人</td><td>與各位親屬</td></tr>
+<tr><td>仍喺心中</td><td>長存心中</td></tr>
+<tr><td>都成為</td><td>皆成為</td></tr>
+<tr><td>儘管</td><td>雖然 / 雖</td></tr>
+</tbody>
+</table>
+</div>
+<details class="letter-block" id="letter-5" open=""><summary><span class="letter-title-text">範文五：活動報名通告（退修會）</span></summary><div class="letter-body">
+<div class="scenario">場景：教會年度大型活動，需要 logistics 同 motivation 並重</div>
+<div class="sample-letter">
+<div class="letter-title">方舟之家二零二六年退修會報名</div>
+親愛的弟兄姊妹平安：
+
+每年一度的方舟退修會即將舉行，是我們全會友停下腳步、親近主、彼此聆聽的重要時刻。今年特別以「同奔天路——軟弱裡的恩典」為題，由徐玉瓊牧師擔任講員，帶領我們一同思想保羅在林後十二章的信仰歷程。
+
+退修會詳情：
+日期：二零二六年七月十八至二十日（星期六至一）
+地點：突破青年村
+費用：成人 HK$680、學生 HK$450、傷殘會友 HK$300
+（教會設有經濟援助，有需要者可向徐牧師申請，內容絕對保密）
+
+報名方式：
+請填妥隨此通告附上的報名表，連同支票或現金，於六月二十一日（主日）前交回辦事處陳姊妹。名額有限，先到先得。
+
+由於部分會友需要無障礙住宿安排，請於報名表清楚註明特別需要，方便我們與青年村協調。
+
+願主使用此三日的退修，更新我們的心思意念，預備我們下半年的服事。
+
+主內
+
+方舟之家退修會籌委會
+二零二六年五月十八日
+</div>
+</div></details></div></details></div></details></div></details></div></details></section>
+<section id="part-blocks">
+<h2 class="section"><span class="num">六</span>Building Blocks Cheat Sheet</h2>
+<p class="lede">背實開場白、過渡、結尾、落款呢 4 樣嘢，配合詞彙對照表，明日見題你可以好快 reassemble 出一篇合格作品。</p>
+<h3 id="blocks-open">開場白 / 過渡 / 結尾 / 落款</h3>
+<h4>開場白（揀一個用）</h4>
+<table>
+<thead><tr><th>場合</th><th>用語</th></tr></thead>
+<tbody>
+<tr><td>一般通告</td><td>親愛的弟兄姊妹平安：</td></tr>
+<tr><td>致同工</td><td>各位親愛的同工，主內平安。</td></tr>
+<tr><td>正式通知</td><td>弟兄姊妹平安：</td></tr>
+<tr><td>慰問信</td><td>各位主內家人： / 親愛的 XXX 弟兄／姊妹：</td></tr>
+<tr><td>致長輩 / 牧者</td><td>XXX 牧師／長老主內平安：</td></tr>
+</tbody>
+</table>
+<h4>過渡 / 連接句</h4>
+<ul>
+<li>「現謹通知如下：」</li>
+<li>「特此邀請……」</li>
+<li>「執筆之際，正係……」（書信開頭增加溫度）</li>
+<li>「回望過去……，我哋深深體會……」</li>
+<li>「承蒙主恩，我哋……」</li>
+<li>「藉此機會，我哋謹向……致以……」</li>
+<li>「有見及此，本會決定……」（較正式）</li>
+<li>「為使……，懇請……」</li>
+</ul>
+<h4>結尾（按情境揀）</h4>
+<table>
+<thead><tr><th>情境</th><th>結尾語</th></tr></thead>
+<tbody>
+<tr><td>一般通告</td><td>願主賜福我們，同心服事。</td></tr>
+<tr><td>感謝信</td><td>願主親自報答你手所作之工。</td></tr>
+<tr><td>招募</td><td>願主感動更多肢體加入。</td></tr>
+<tr><td>活動</td><td>願主使用此段時間，更新我們的生命。</td></tr>
+<tr><td>慰問</td><td>我們會與各位同行此段日子。</td></tr>
+<tr><td>鼓勵</td><td>願主賜下加倍的恩典與力量。</td></tr>
+</tbody>
+</table>
+<h4>落款用語（揀一個）</h4>
+<ul>
+<li>主內</li>
+<li>同心服事</li>
+<li>主恩同在</li>
+<li>主內同行（慰問用）</li>
+<li>在主裡（最簡潔）</li>
+</ul>
+<h3 id="blocks-vocab">教會常用詞彙（避免錯字 / 用詞失準）</h3>
+<table>
+<thead><tr><th>正確</th><th>錯誤示範</th></tr></thead>
+<tbody>
+<tr><td>弟兄姊妹</td><td>兄弟姐妹（世俗用法）</td></tr>
+<tr><td>安息主懷</td><td>過身、走咗（避免世俗化）</td></tr>
+<tr><td>蒙召</td><td>被請去</td></tr>
+<tr><td>證道</td><td>講道（口語可，書面用「證道」較正）</td></tr>
+<tr><td>愛筵</td><td>食飯、聚餐</td></tr>
+<tr><td>同工</td><td>員工、職員</td></tr>
+<tr><td>事奉 / 服事</td><td>工作、做嘢</td></tr>
+<tr><td>主日</td><td>星期日（教會場合用「主日」）</td></tr>
+<tr><td>蒙恩</td><td>好彩、幸運</td></tr>
+<tr><td>賜下</td><td>畀我哋</td></tr>
+<tr><td>守望</td><td>關心</td></tr>
+</tbody>
+</table>
+<h3 id="blocks-format">標點 / 格式 6 個容易扣分位</h3>
+<ol>
+<li><strong>數字一律用半形</strong>：HK$680、6 月 14 日、2:30pm（唔好寫「６」「月」之間夾全形數字）</li>
+<li><strong>電郵 / 電話</strong>：用半形數字 + 半形符號（3565 1636）</li>
+<li><strong>書名 / 主題</strong>：用「『 』」唔好用「" "」</li>
+<li><strong>段落之間留一行空白</strong>——尤其長通告</li>
+<li><strong>Bullet 點列要對齊</strong>——用「一、二、三」或者「1. 2. 3.」唔好混用</li>
+<li><strong>日期格式統一</strong>——揀「二零二六年五月三日」<strong>或者</strong>「2026 年 5 月 3 日」，全份文件唔好兩種混</li>
+</ol>
+<h3 id="blocks-no">教會書信「不要」清單</h3>
+<ul>
+<li>❌ 唔用 emoji</li>
+<li>❌ 唔用 corporate jargon（synergy、leverage、roadmap）</li>
+<li>❌ 唔用 hashtag、abbreviation（pls、thx）</li>
+<li>❌ 唔用感嘆號連發！！！</li>
+<li>❌ 唔用「親」、「寶寶」、「家人們」呢類網絡用語</li>
+<li>❌ 唔用「神」嘅地方亂稱「上帝」（宣道會多用「神」、「主」、「主耶穌」）</li>
+</ul>
+<h3>30 分鐘練習計劃</h3>
+<ol>
+<li><strong>Round 1（10 分鐘）</strong>：揀範文二（感謝義工信），喺白紙上抄一次，感受節奏。</li>
+<li><strong>Round 2（10 分鐘）</strong>：合上呢份文件，喺 Word 度自己默寫一篇「通告：徵召跟車義工 3 名」。寫完後 check 返：開場白有冇？過渡語自然嗎？結尾有冇祝福句？標點全形 / 半形啱嗎？</li>
+<li><strong>Round 3（10 分鐘）</strong>：再寫一篇「致剛入院弟兄嘅慰問短訊」（約 80 字）。短訊要更精簡，但結構唔變。</li>
+</ol>
+<div class="callout good">
+教會書信嘅靈魂唔係靚字眼，係<strong>溫度同節制</strong>。慢一拍、字少一啲、敬虔多一啲——永遠係安全揀。
+</div>
+<div class="callout tip">
+<strong>一個高 ROI 嘅 hack：</strong>如果筆試題目係叫你自由發揮寫一篇通告（即係冇明確內容 brief），<strong>揀一個你已熟悉嘅情境</strong>——例如「招募跟車義工」「主日通告」——因為呢啲情境你已經喺範文入面見過 building blocks，可以快速 deploy 完成度高嘅作品。<strong>唔好揀自己唔熟嘅題材去 show off。</strong>
+</div>
+</section>
+<section id="part-reverse">
+<h2 class="section"><span class="num">七</span>反問牧師嘅問題</h2>
+<p class="lede">「你有冇問題想問我哋？」<strong>千祈唔好答冇</strong>。建議揀以下 3 條：</p>
+<div class="qa">
+<h4>1.（崗位 context）</h4>
+<blockquote>依個行政幹事崗位過去由邊位同工承擔？而家團隊架構係點？</blockquote>
+</div>
+<div class="qa">
+<h4>2.（事工方向）</h4>
+<blockquote>方舟下一個 1–3 年最想突破嘅地方係邊度？行政幹事可以點樣配合？</blockquote>
+</div>
+<div class="qa">
+<h4>3.（屬靈牧養）</h4>
+<blockquote>教會點樣牧養全職同工？我可以期望點樣嘅靈命督導？</blockquote>
+</div>
+<p>如果氣氛好、牧師仲有時間，可以加一條：</p>
+<blockquote>跟車服事、醫院探訪呢啲事工，作為行政幹事我會幾深入參與？（顯示願意 hands-on，唔係坐 office）</blockquote>
+<div class="callout warn">
+<strong>唔好問：</strong>假期、加薪、升遷、福利。呢啲喺 church context 會即刻扣分。如果牧師主動講，你聽就得。
+</div>
+</section>
+<section id="part-checklist">
+<h2 class="section"><span class="num">八</span>今晚 + 明早 Checklist</h2>
+<h3>今晚（瞓覺前）</h3>
+<ul class="checklist">
+<li>大聲練見證 3 次，每次計時</li>
+<li>揀定 2–3 個具體故事 / 經文，寫喺一張卡</li>
+<li>重看一次教會核心異象四句，確保可以一氣呵成</li>
+<li>預備好衣服（smart casual，唔需要西裝；男士可以恤衫 + 西褲）</li>
+<li>11 點前瞓——精神狀態比多兩條 prep 重要</li>
+</ul>
+<h3>明早出門前</h3>
+<ul class="checklist">
+<li>帶：聖經、筆記簿、原子筆、CV 副本、申請信副本</li>
+<li>食早餐（緊張容易胃唔舒服，食得清淡）</li>
+<li><strong>早出門 30 分鐘</strong>——亞公角山 67K 小巴 15–30 分鐘一班，唔好 risk</li>
+<li>入面試房前，搵地方靜 3 分鐘禱告</li>
+<li>帶一支水、一包紙巾</li>
+</ul>
+<h3>入到去之後</h3>
+<ul>
+<li>先問候、握手（如對方先伸手）</li>
+<li><strong>微笑、慢嚟</strong>——緊張時人會講快，要刻意慢</li>
+<li>答問題前可以稍停 1–2 秒——顯得 thoughtful，唔係 hesitant</li>
+<li>唔識答嘅問題：誠實講「呢個我未深入諗過，可以畀我少少時間嗎？」<strong>比 BS 強 100 倍</strong></li>
+</ul>
+</section>
+<section id="part-verses">
+<h2 class="section"><span class="num">九</span>壓陣經文</h2>
+<p class="lede">如果緊張時要喺心入面默念，揀一段 anchor 自己。</p>
+<div class="verses">
+<div class="verse">
+<span class="verse-ref">羅馬書 12:1</span>
+    「將身體獻上，當作活祭」——你今日嘅心志
+  </div>
+<div class="verse">
+<span class="verse-ref">林後 5:18</span>
+    「將我們與祂自己和好的職分賜給我們」——你信中講過嘅
+  </div>
+<div class="verse">
+<span class="verse-ref">詩篇 1:3</span>
+    「他要像一棵樹栽在溪水旁」——網頁尾嘅祝福
+  </div>
+</div>
+</section>
+<section id="part-cma">
+<h2 class="section"><span class="num">十</span>宣道會背景知識</h2>
+<p class="lede">方舟之家所屬嘅沙田宣道會係<strong>基督教宣道會香港區聯會</strong>旗下堂會。如果牧師 test 你「對宣道會嘅認識」，<strong>最大機會考四重福音</strong>。其次係會徽、宣信博士、香港宣道會歷史、同 distinctive 強調。</p>
+<div class="callout good">
+<strong>核心 30 秒答法</strong>——如果緊張到記唔起 detail，呢句永遠 safe：<br/><br/>
+「宣道會由宣信博士 1887 年喺紐約創立，核心係四重福音——<strong>耶穌係救主、成聖之主、醫治者、同再來的王</strong>。靈命進深同普世宣教係兩個 distinctive 嘅傳統。」
+</div>
+<h3 id="cma-fourfold">10.1 四重福音 The Fourfold Gospel（最大機會考）</h3>
+<p>由宣信博士 (A.B. Simpson) 提出，係宣道會神學嘅 DNA。<strong>唔係四個福音，係一個福音嘅四重面相</strong>——耶穌基督係 complete 嘅，所以福音都係 complete 嘅。</p>
+<details class="qa" id="fold-1" open="">
+<summary><span class="q-tag">一</span><span class="qa-q">基督是救主（十字架 ✝）</span></summary>
+<div class="qa-body">
+<p>耶穌喺十字架捨身成全救恩。罪人因信耶穌獲得赦罪稱義同永生之恩。</p>
+<blockquote>「人子來，為要尋找拯救失喪的人。」（路加福音 19:10）</blockquote>
+<p><strong>核心字眼：</strong>救恩、贖罪、稱義、重生、永生</p>
+</div>
+</details>
+<details class="qa" id="fold-2" open="">
+<summary><span class="q-tag">二</span><span class="qa-q">基督是成聖之主（洗濯盆）</span></summary>
+<div class="qa-body">
+<p>主耶穌住喺信徒心入面，運行喺信徒嘅行動入面，使信徒漸變成祂嘅樣式。<strong>成聖唔係靠自己努力，係靠完全順服 + 憑信心接受基督</strong>。</p>
+<blockquote>「神使祂（基督）成為我們的智慧、公義、聖潔。」（林前 1:30）</blockquote>
+<p><strong>核心字眼：</strong>成聖、聖潔生活、與基督聯合、住在基督裡</p>
+</div>
+</details>
+<details class="qa" id="fold-3" open="">
+<summary><span class="q-tag">三</span><span class="qa-q">基督是醫治者（油瓶）</span></summary>
+<div class="qa-body">
+<p>宣信博士強調醫治係耶穌福音嘅<strong>必要部分</strong>，唔係 optional——「醫治若是耶穌在世時所做的一個主要工作，便與耶穌所傳講的福音不可分割」。</p>
+<div class="callout warn">
+    宣道會嘅醫治觀<strong>唔係靈恩派嘅「醫治神蹟表演」</strong>，係按聖經、靠單純信心。宣信本人多次親身經歷神嘅醫治，所以呢個 fold 係佢 personal conviction，唔係純 doctrine。
+    </div>
+<p><strong>核心字眼：</strong>醫治、信心、聖靈作為、身體同心靈</p>
+</div>
+</details>
+<details class="qa" id="fold-4" open="">
+<summary><span class="q-tag">四</span><span class="qa-q">基督是再來的王（冠冕）</span></summary>
+<div class="qa-body">
+<p>耶穌基督將要再臨，得勝嘅基督徒會獲得獎賞同享受基督榮耀。呢個盼望係<strong>宣教動力嘅 source</strong>——因為主快回來，所以更要急切傳福音畀未得之地。</p>
+<p><strong>核心字眼：</strong>再來、榮耀、獎賞、得勝、宣教使命</p>
+</div>
+</details>
+<h3 id="cma-symbol">10.2 會徽 + 四個 symbols</h3>
+<p>宣道會會徽由<strong>十字架、洗濯盆、油瓶、冠冕</strong>四個圖案組成，象徵<strong>福音的完備性 (Completeness of the Gospel)</strong>。如果牧師指住會徽問你 4 個圖案意思——記住下表。</p>
+<table>
+<thead><tr><th>圖案</th><th>象徵意思</th><th>對應四重福音</th></tr></thead>
+<tbody>
+<tr><td><strong>十字架</strong></td><td>主耶穌喺十字架捨身、成全救恩</td><td>救主</td></tr>
+<tr><td><strong>洗濯盆</strong></td><td>每日洗去罪污、過聖潔生活</td><td>成聖之主</td></tr>
+<tr><td><strong>油瓶</strong></td><td>聖靈嘅全備作為，包括身體醫治</td><td>醫治者</td></tr>
+<tr><td><strong>冠冕</strong></td><td>耶穌基督再來、得勝者嘅獎賞</td><td>再來的王</td></tr>
+</tbody>
+</table>
+<div class="callout tip">
+<strong>記憶法：十字架→救、洗濯盆→聖、油瓶→醫、冠冕→來</strong>（救聖醫來）。
+</div>
+<h3 id="cma-founder">10.3 創辦人：宣信博士 (A.B. Simpson, 1843–1919)</h3>
+<ul>
+<li><strong>加拿大人</strong>，原屬長老宗，神學畢業後喺加拿大同美國長老會牧會</li>
+<li>受 19 世紀<strong>聖潔運動</strong>同<strong>傳福音熱潮</strong>影響，呼召感越嚟越強</li>
+<li>1881 年因為決定按聖經教導<strong>重浸</strong>而<strong>辭別長老會</strong></li>
+<li>1882 年喺紐約成立<strong>福音會幕堂 (Gospel Tabernacle)</strong></li>
+<li><strong>多次親身經歷神嘅醫治</strong>——所以四重福音入面「醫治」係佢嘅 personal conviction</li>
+<li>畢生寫咗 <strong>101 本書、172 首讚美詩</strong>（四重福音主題貫穿讚美詩歌詞）</li>
+<li>外號<strong>「詩人並傳教士」</strong></li>
+</ul>
+<h3 id="cma-history">10.4 宣道會時間軸</h3>
+<table>
+<thead><tr><th>年份</th><th>事件</th></tr></thead>
+<tbody>
+<tr><td><strong>1887</strong></td><td>宣信博士喺紐約成立<strong>基督徒聯盟</strong>（Christian Alliance）+ <strong>福音宣教聯盟</strong>（Evangelical Missionary Alliance）</td></tr>
+<tr><td>1889</td><td>第一批宣教士由紐約出發到香港同中國（賈錫德夫人 Mrs. Cassidy）</td></tr>
+<tr><td><strong>1897</strong></td><td>兩會合併 → <strong>「基督教宣道會」</strong> (Christian and Missionary Alliance, C&amp;MA) 正式誕生</td></tr>
+<tr><td>1899</td><td>翟輔民牧師 (R.A. Jaffray) 喺廣西梧州創立中國第一間 C&amp;MA 神學院（即<strong>建道神學院</strong>嘅前身）</td></tr>
+<tr><td>1949</td><td>中國內戰結束，西教士撤出，部分留香港延續事工</td></tr>
+<tr><td>1958</td><td><strong>香港宣道會堂聯會</strong>成立</td></tr>
+<tr><td><strong>1968.11.8</strong></td><td><strong>「基督教宣道會香港區聯會有限公司」</strong>正式註冊成立（即方舟之家所屬嘅母會結構）</td></tr>
+<tr><td>1974</td><td>宣道會正式由<strong>差傳運動</strong>過渡為<strong>差傳宗派</strong></td></tr>
+<tr><td>1975</td><td><strong>世界宣道會團契</strong> (Alliance World Fellowship, AWF) 成立</td></tr>
+<tr><td><strong>1996</strong></td><td><strong>方舟之家</strong>喺沙田宣道會成立——同你受洗剛剛 30 年</td></tr>
+</tbody>
+</table>
+<h3 id="cma-distinctive">10.5 宣道會 distinctive 強調</h3>
+<h4>兩大屬靈傳統（一定要記）</h4>
+<ul>
+<li><strong>靈命進深 (Deeper Life)</strong>——強調與基督更深嘅相交，唔係純粹 doctrine 學習。宣信講過：「靈命越進深，越與神拯救萬民嘅心意聯合。」</li>
+<li><strong>普世宣教 (World Missions)</strong>——將福音傳到<strong>未得之地</strong>。宣信原本嘅異象 + 至今係宗派 DNA</li>
+</ul>
+<h4>核心價值</h4>
+<ul>
+<li><strong>耶穌基督是中心 / 基督的至高無上 (Supremacy of Christ)</strong></li>
+<li><strong>四重福音</strong>嘅完備性</li>
+<li>長老制治理（傳承自宣信原本嘅長老宗背景）</li>
+<li><strong>三自原則</strong>：自立、自養、自傳</li>
+</ul>
+<h4>香港宣道會今天</h4>
+<ul>
+<li>香港<strong>第二大基督教宗派</strong></li>
+<li>區聯會旗下眾多堂會、學校、社會服務機構（<strong>CMASS</strong> = 基督教宣道會社會服務處）</li>
+<li><strong>建道神學院</strong>係 C&amp;MA 喺亞洲嘅旗艦神學院</li>
+</ul>
+<h3 id="cma-cheat">10.6 牧師可能問嘅問題 + cheat sheet</h3>
+<div class="qa">
+<h4>Q：你了解四重福音嗎？</h4>
+<p>「四重福音係宣道會神學嘅核心，由宣信博士提出。<strong>耶穌係救主（十字架）、成聖之主（洗濯盆）、醫治者（油瓶）、同再來的王（冠冕）</strong>。唔係四個唔同嘅福音，係<strong>一個福音嘅四重面相</strong>，象徵福音嘅完備性。」</p>
+</div>
+<div class="qa">
+<h4>Q：宣道會同其他宗派有咩唔同？</h4>
+<p>「宣道會兩大 distinctive：<strong>靈命進深</strong>同<strong>普世宣教</strong>。佢起源係差傳運動，唔係由神學爭論而誕生嘅宗派——所以強調 missional life 多過教義辯論。另外四重福音入面嘅<strong>醫治</strong>係 distinctive——但唔係靈恩派風格，係按聖經、靠單純信心。」</p>
+</div>
+<div class="qa">
+<h4>Q：你對方舟之家嘅事工點 connect 到宣道會嘅四重福音？</h4>
+<p>「方舟『傷健合一』直接體現咗『<strong>基督是醫治者</strong>』嘅福音——醫治唔淨係身體 cure，係信徒群體嘅 wholeness。傷殘會友坐中央前座、健全坐兩旁，本身就係宣告神嘅醫治<strong>超越身體 condition</strong>。同時方舟強調彼此服事同關顧，亦係『成聖之主』喺日常生活嘅體現。」</p>
+<div class="callout good" style="margin-top:12px;margin-bottom:0">
+呢條問題如果答得到，會贏好多分。因為佢顯示你<strong>唔淨係識記住 doctrine</strong>，而係識將 doctrine 連到事工。
+</div>
+</div>
+<div class="qa">
+<h4>Q：你點睇宣道會強調「醫治」呢個 fold？方舟好多會友身體都未必痊癒。</h4>
+<p>「呢個係好深嘅問題。宣信講嘅醫治<strong>唔係保證每個人身體都會痊癒</strong>，係宣告神有醫治嘅 power。喺方舟，傷殘會友雖然身體仲軟弱，但喺信仰群體入面經歷嘅<strong>關係嘅醫治、身份嘅醫治、同主同行嘅醫治</strong>——呢啲都係『基督是醫治者』嘅彰顯。我相信完全嘅醫治留待主再來嘅日子（第四 fold）——呢兩個 fold 其實係互相 complete 嘅。」</p>
+<div class="callout tip" style="margin-top:12px;margin-bottom:0">
+呢個答法將四重福音連埋兩個 fold（三 + 四），顯示你明白佢哋係 holistic 嘅。
+</div>
+</div>
+<div class="qa">
+<h4>Q：宣信博士係邊個？</h4>
+<p>「宣信博士 A.B. Simpson，1843 至 1919 年，加拿大人，原屬長老宗。1881 年因為按聖經教導決定重浸，離開長老會；1882 年喺紐約成立福音會幕堂；1887 年成立基督徒聯盟同福音宣教聯盟；1897 年合併為宣道會。佢一生親身經歷神嘅醫治、寫咗 101 本書同 172 首讚美詩，外號『詩人並傳教士』。」</p>
+</div>
+</section><section id="part-final">
+<h2 class="section"><span class="num">十一</span>最後一句</h2>
+<div class="callout good">
+呢個面試嘅本質<strong>唔係 sell yourself</strong>，係<strong>畀牧者識你 + 你識方舟</strong>。如果係主嘅帶領，呢個崗位會成；如果唔係，主有更好嘅安排。盡力預備，然後放心交託。
+</div>
+<h3>4 個唔好忘記嘅 take-away</h3>
+<div class="callout">
+<strong>1. 30 年巧合喺「點解係方舟」嗰陣 deploy</strong><br/>
+唔好太早講，亦唔好過度詮釋。一句就夠：「我唔想 over-interpret，但呢個 timing 唔似偶然。」
+</div>
+<div class="callout">
+<strong>2. 50 歲 + 無經驗嘅 framing</strong><br/>
+主動 raise，將「弱點」reframe 為「mature commitment」+「day-one ready」+「長期紮根」。
+</div>
+<div class="callout">
+<strong>3. 6 萬幾跌到萬零嘅落差，主動講出個數字</strong><br/>
+唔好等牧師心入面 calculate。主動講「差距八成」+ 具體 buffer + 長期 commitment + reframe 為 trade-off。<strong>呢個係 disarm 牧師最大懷疑（「6 個月後會走」）嘅唯一方法。</strong>
+</div>
+<div class="callout">
+<strong>4. 反問問題唔好問福利、假期</strong><br/>
+問 team 結構、事工方向、屬靈牧養。展示你關心嘅係事工而唔係條件。
+</div>
+<div class="footer-anchor">
+主與你同行。明日見證主嘅恩典。
+</div>
+</section>
+</main>
+</div>
+<script>
+  // Auto-close TOC on mobile when clicking a link
+  document.querySelectorAll('nav.toc a').forEach(a => {
+    a.addEventListener('click', () => {
+      if (window.innerWidth <= 880) {
+        document.querySelector('nav.toc').classList.remove('open');
+      }
+    });
+  });
+
+  // ============ Mobile / Desktop details sync ============
+  (function() {
+    const MOBILE_BP = 880;
+    function syncDetailsState() {
+      const isMobile = window.innerWidth <= MOBILE_BP;
+      const allDetails = document.querySelectorAll('details.qa, details.letter-block, details.five-block');
+      allDetails.forEach(d => {
+        // Only auto-toggle if user hasn't manually changed it on this view
+        if (isMobile) {
+          // Default closed on mobile (unless user opened via hash)
+          if (!d.dataset.userToggled) d.removeAttribute('open');
+        } else {
+          d.setAttribute('open', '');
+        }
+      });
+    }
+    // Track user toggles on mobile so resize doesn't fight them
+    document.addEventListener('toggle', (e) => {
+      if (window.innerWidth <= MOBILE_BP &&
+          (e.target.matches('details.qa, details.letter-block, details.five-block'))) {
+        e.target.dataset.userToggled = '1';
+      }
+    }, true);
+
+    // Initial sync
+    syncDetailsState();
+
+    // Re-sync on resize (debounced)
+    let rsTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(rsTimer);
+      rsTimer = setTimeout(() => {
+        // Reset user-toggled flags so we re-apply default
+        document.querySelectorAll('details[data-user-toggled]').forEach(d => delete d.dataset.userToggled);
+        syncDetailsState();
+      }, 200);
+    });
+
+    // Open the details if URL hash points to it
+    function openHashTarget() {
+      const hash = location.hash;
+      if (!hash) return;
+      const target = document.querySelector(hash);
+      if (target && target.matches('details')) {
+        target.setAttribute('open', '');
+        target.dataset.userToggled = '1';
+      } else if (target) {
+        // If hash points to inside a details, open the parent details
+        const parent = target.closest('details');
+        if (parent) {
+          parent.setAttribute('open', '');
+          parent.dataset.userToggled = '1';
+        }
+      }
+    }
+    openHashTarget();
+    window.addEventListener('hashchange', openHashTarget);
+  })();
+
+  // ============ Mobile pill nav: highlight active section on scroll ============
+  (function() {
+    const pills = document.querySelectorAll('.mobile-pills a');
+    if (!pills.length) return;
+    const sections = Array.from(pills).map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+
+    function updateActive() {
+      if (window.innerWidth > 880) return;
+      const scrollY = window.scrollY + 120;
+      let activeIdx = 0;
+      sections.forEach((s, i) => {
+        if (s.offsetTop <= scrollY) activeIdx = i;
+      });
+      pills.forEach((p, i) => p.classList.toggle('active', i === activeIdx));
+      // Auto-scroll the pill bar so active pill is visible
+      const activePill = pills[activeIdx];
+      if (activePill) {
+        const bar = activePill.parentElement;
+        const barRect = bar.getBoundingClientRect();
+        const pillRect = activePill.getBoundingClientRect();
+        if (pillRect.left < barRect.left + 20) {
+          bar.scrollBy({ left: pillRect.left - barRect.left - 20, behavior: 'smooth' });
+        } else if (pillRect.right > barRect.right - 20) {
+          bar.scrollBy({ left: pillRect.right - barRect.right + 20, behavior: 'smooth' });
+        }
+      }
+    }
+
+    let scrTimer;
+    window.addEventListener('scroll', () => {
+      clearTimeout(scrTimer);
+      scrTimer = setTimeout(updateActive, 50);
+    });
+    updateActive();
+  })();
+</script>
+</body>
+</html>
