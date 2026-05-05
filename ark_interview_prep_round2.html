@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方舟之家面試 · Round 2 Supplement</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f6f1e4;
+  --paper-2: #efe8d6;
+  --paper-3: #e8dfc8;
+  --ink: #1c1a16;
+  --ink-soft: #4a463e;
+  --ink-mute: #7a7468;
+  --rule: #c9bfa5;
+  --rule-soft: #ddd3b8;
+  --accent: #6e2b1c;
+  --accent-soft: #a04a36;
+  --accent-mute: #b87a6a;
+  --gold: #927228;
+  --warn: #8a3a1c;
+  --serif-zh: "Noto Serif TC", "Source Han Serif TC", "Songti TC", "PMingLiU", serif;
+  --serif-en: "EB Garamond", "Cormorant Garamond", Georgia, serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif-zh);
+  font-size: 17px;
+  line-height: 1.85;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse at top left, rgba(146, 114, 40, 0.04), transparent 60%),
+    radial-gradient(ellipse at bottom right, rgba(110, 43, 28, 0.03), transparent 60%);
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+.page {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 64px 56px 120px;
+}
+
+/* ── Cover ────────────────────────────────────────────── */
+.cover {
+  text-align: center;
+  padding: 24px 0 56px;
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: 56px;
+}
+
+.cover::before {
+  content: "";
+  display: block;
+  width: 36px;
+  height: 1px;
+  background: var(--accent);
+  margin: 0 auto 32px;
+}
+
+.cover .eyebrow {
+  font-family: var(--serif-en);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--accent);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.cover h1 {
+  font-family: var(--serif-zh);
+  font-weight: 500;
+  font-size: 44px;
+  line-height: 1.25;
+  margin: 0 0 8px;
+  letter-spacing: 0.04em;
+}
+
+.cover .subtitle {
+  font-family: var(--serif-zh);
+  font-weight: 400;
+  font-size: 19px;
+  color: var(--ink-soft);
+  margin-bottom: 36px;
+  letter-spacing: 0.05em;
+}
+
+/* Logistics card on cover */
+.logistics {
+  display: inline-block;
+  margin: 8px auto 0;
+  padding: 22px 36px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  text-align: left;
+  font-size: 15px;
+  line-height: 1.85;
+  min-width: 360px;
+}
+
+.logistics .row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 3px 0;
+}
+
+.logistics .row .label {
+  font-family: var(--serif-en);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--accent);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  min-width: 78px;
+  flex-shrink: 0;
+}
+
+.logistics .row .val {
+  color: var(--ink);
+  font-weight: 500;
+  font-size: 16px;
+}
+
+.logistics .countdown {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--rule);
+  text-align: center;
+  font-family: var(--serif-en);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+}
+
+.logistics .countdown b {
+  font-family: var(--serif-zh);
+  font-style: normal;
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  margin: 0 6px;
+}
+
+/* ── Section headings (h2) ─────────────────────────────── */
+h2 {
+  font-family: var(--serif-zh);
+  font-weight: 500;
+  font-size: 28px;
+  letter-spacing: 0.04em;
+  margin: 80px 0 24px;
+  color: var(--ink);
+  padding-top: 32px;
+  border-top: 1px solid var(--rule);
+  position: relative;
+}
+
+h2::before {
+  content: "";
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--accent);
+  margin-bottom: 18px;
+}
+
+h3 {
+  font-family: var(--serif-zh);
+  font-weight: 600;
+  font-size: 20px;
+  margin: 44px 0 14px;
+  color: var(--ink);
+  letter-spacing: 0.03em;
+  padding-left: 0;
+  position: relative;
+}
+
+h3::before {
+  content: "❖";
+  color: var(--accent);
+  font-weight: 400;
+  margin-right: 10px;
+  font-size: 0.85em;
+}
+
+h4 {
+  font-family: var(--serif-zh);
+  font-weight: 600;
+  font-size: 17px;
+  margin: 28px 0 10px;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+p {
+  margin: 0 0 16px;
+}
+
+em { font-style: italic; color: var(--ink-soft); }
+strong { font-weight: 600; color: var(--ink); }
+
+a { color: var(--accent); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--accent-soft); }
+
+/* ── Quote-card (建議答法) ───────────────────────────────── */
+.quote-card {
+  margin: 22px 0;
+  padding: 18px 24px 20px;
+  background: var(--paper-2);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 2px 2px 0;
+  position: relative;
+}
+
+.quote-card-label {
+  display: inline-block;
+  font-family: var(--serif-en);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
+}
+
+.quote-card-body {
+  font-family: var(--serif-zh);
+  font-size: 15.5px;
+  line-height: 1.95;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ── Blockquote (scripture / poetic) ────────────────────── */
+blockquote {
+  margin: 22px 0;
+  padding: 16px 26px;
+  background: rgba(110, 43, 28, 0.04);
+  border-left: 2px solid var(--accent);
+  font-family: var(--serif-zh);
+  font-size: 16px;
+  line-height: 1.95;
+  color: var(--ink-soft);
+  font-style: normal;
+}
+
+blockquote p {
+  margin: 0 0 10px;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* ── Code (inline) ──────────────────────────────────────── */
+code {
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  padding: 1px 6px;
+  background: var(--paper-3);
+  border-radius: 2px;
+  color: var(--ink);
+}
+
+/* ── Tables ─────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 22px 0;
+  font-size: 14.5px;
+  font-family: var(--serif-zh);
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+}
+
+thead {
+  background: var(--paper-3);
+}
+
+th {
+  font-weight: 600;
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1.5px solid var(--accent);
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--rule-soft);
+  vertical-align: top;
+  line-height: 1.7;
+  color: var(--ink-soft);
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+/* ── Lists ──────────────────────────────────────────────── */
+ul, ol {
+  margin: 12px 0 18px;
+  padding-left: 24px;
+}
+
+li {
+  margin: 4px 0;
+  line-height: 1.85;
+}
+
+ul li::marker {
+  color: var(--accent-mute);
+}
+
+ol li::marker {
+  font-family: var(--serif-en);
+  font-style: italic;
+  color: var(--accent);
+}
+
+/* Checkbox-style task lists */
+ul li:has(input[type="checkbox"]) {
+  list-style: none;
+  margin-left: -24px;
+  padding-left: 0;
+}
+
+input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  margin-right: 10px;
+  accent-color: var(--accent);
+  vertical-align: middle;
+}
+
+/* For markdown's task list rendering */
+li.task-list-item {
+  list-style: none;
+}
+
+/* Render `- [ ]` markdown checkboxes nicely */
+.task-list-item-checkbox {
+  margin-right: 8px;
+}
+
+/* ── HR (between subsections) ──────────────────────────── */
+hr {
+  border: none;
+  text-align: center;
+  margin: 44px 0;
+  height: 14px;
+  position: relative;
+}
+
+hr::before {
+  content: "❦";
+  color: var(--accent);
+  font-size: 14px;
+  letter-spacing: 0.5em;
+}
+
+/* ── Print ─────────────────────────────────────────────── */
+@media print {
+  body { background: white; font-size: 11pt; line-height: 1.65; }
+  .page { padding: 0.55in 0.65in; max-width: none; }
+  h2 { page-break-after: avoid; margin-top: 32px; }
+  h3 { page-break-after: avoid; }
+  .quote-card, blockquote, table { page-break-inside: avoid; }
+  body::before, body::after { display: none; }
+  .cover { padding: 0 0 32px; }
+  .logistics { background: #f8f8f8; }
+  a { color: var(--ink); text-decoration: none; }
+}
+
+@media (max-width: 640px) {
+  .page { padding: 36px 22px 80px; }
+  .cover h1 { font-size: 32px; }
+  h2 { font-size: 22px; }
+  h3 { font-size: 17px; }
+  .logistics { min-width: 0; width: 100%; padding: 18px 22px; }
+  .logistics .row .label { min-width: 60px; font-size: 11px; }
+  table { font-size: 13px; }
+  th, td { padding: 8px 10px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<!-- ════════════════════════════════════════════════════════ -->
+<!--   COVER                                                    -->
+<!-- ════════════════════════════════════════════════════════ -->
+<header class="cover">
+  <div class="eyebrow">Round Two · Sha-Suen Mother Church</div>
+  <h1>方舟之家面試備忘</h1>
+  <div class="subtitle">沙宣母堂同工面談 · 第二輪</div>
+
+  <div class="logistics">
+    <div class="row"><span class="label">日期</span><span class="val">2026 年 5 月 13 日（星期三）</span></div>
+    <div class="row"><span class="label">時間</span><span class="val">下午 2:00</span></div>
+    <div class="row"><span class="label">地點</span><span class="val">都會廣場 B1 室（沙田源順圍 28 號地下）</span></div>
+    <div class="row"><span class="label">對象</span><span class="val">沙宣 senior 同工</span></div>
+    <div class="row"><span class="label">通知</span><span class="val">李傳道 (推測：李嘉雯傳道)</span></div>
+    <div class="countdown">由今日起算 · 仲有 <b>8</b> 日</div>
+  </div>
+</header>
+
+<h2 id="round-2-round-1">序：Round 2 唔係 Round 1 嘅延續</h2>
+<p>呢點如果搞錯，prep 方向會偏。</p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Round 1 (已過)</th>
+<th>Round 2 (即將)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>對象</td>
+<td>莊振威牧師（方舟堂主任）</td>
+<td>沙宣 senior 牧者（可能黃家輝牧師 lead）</td>
+</tr>
+<tr>
+<td>場景</td>
+<td>方舟內部 — operational 同事面試</td>
+<td>母堂 senior 牧者 — ecclesial / 屬靈面試</td>
+</tr>
+<tr>
+<td>主問題</td>
+<td>「呢個人能唔能做事？同我哋夾唔夾？」</td>
+<td>「呢個人係咪屬於我哋整個沙宣家庭？能唔能 long-term 紮根？」</td>
+</tr>
+<tr>
+<td>你嘅 posture</td>
+<td>Show 能力 + 過渡 commitment</td>
+<td>Show <strong>被牧養嘅意願</strong> + 屬靈 fit + 長期委身</td>
+</tr>
+<tr>
+<td>致命傷</td>
+<td>講錯薪酬數字 / 行政能力</td>
+<td>Sound 似 corporate hire / 唔識母堂 / over-rehearsed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>核心 reframe：</strong>Round 2 你嘅 default 字眼要由「我可以做」、「我有經驗」轉去「<strong>我希望被牧養</strong>」、「<strong>我願意學習</strong>」、「<strong>我求主帶領</strong>」。一字之差，畀牧者嘅感覺完全唔同。</p>
+<p>呢個唔係叫你扮謙卑。50 歲嘅你，由 corporate 過渡到事奉，<strong>真係要被牧養</strong> — 唔係表演。沙宣同工會 instantly 分辨真定假。</p>
+<h2 id="round-1-commit-narrative">一Round 1 後記 — 你已 commit 咗嘅 narrative</h2>
+<p>R2 第一個 trap 係 <strong>inconsistency</strong>。沙宣同工會同莊牧師 sync 過你 R1 講過咩。如果你 R2 freestyle 一個新版本，credibility 會即刻冧。</p>
+<h3 id="r1-r2-hold">列出你 R1 講過、R2 一定要 hold 嘅嘢</h3>
+<p>R1 你 deliver 咗以下 narrative — R2 要 anchor 喺呢度，唔好 drift：</p>
+<ul>
+<li><strong>個人 30 年信仰 timeline</strong>（22 年宣道會、總務 / PPT / 新來賓 服事經驗）</li>
+<li><strong>過渡到事奉嘅 reasoning</strong>：唔係衝動，係多年禱告嘅結果；25 年行政 + 調解員 + 教練係神逐步預備</li>
+<li><strong>30 年信主 + 方舟 1996 成立嘅 timing</strong>（如果 R1 已 deploy 咗）</li>
+<li><strong>薪酬期望嘅 framing</strong>：6 萬幾 → 萬零，差距 80%；你哋已 stress-test cashflow；唔係 6 個月後就走</li>
+<li><strong>太太支持</strong>：唔係 verbal enthusiasm，但 quietly 支持；佢只要求一件事 — 你嚟係認真嘅</li>
+<li><strong>對方舟事工嘅了解</strong>：1996 年成立、傷健合一、跟車服事、流動教會、醫院探訪同白事</li>
+</ul>
+<h3 id="consistency">Consistency 嘅安全做法</h3>
+<p>R2 如果問同樣嘅問題，你嘅 framing 應該係：</p>
+<blockquote>
+<p>「<strong>Round 1 後我自己再禱告 + 同太太再傾過，呢個方向更加清晰</strong>……」</p>
+</blockquote>
+<p>呢句一開頭，你既保持 consistency，又 demonstrate evolved understanding。Sha宣同工聽到呢句會 register：呢個人喺兩次面試之間有反思，唔係 stagnant。</p>
+<h3 id="r1">警告：唔好過度修飾你 R1 講過嘅嘢</h3>
+<p>如果你 R1 講錯咗啲嘢（例如某個事工 detail 講錯），R2 唔好假裝冇講過。誠實 correct：</p>
+<blockquote>
+<p>「上次我提到 X，後來我再 check 過資料，其實係 Y。我想先 correct 咗呢點。」</p>
+</blockquote>
+<p>呢個 move sound mature，唔 sound defensive。</p>
+<h2 id="r1-3">二R1 之後新揭示嘅 3 件大事 — 點處理</h2>
+<p>呢 3 件嘢喺 R1 之後你先學到。R2 沙宣同工幾乎一定會 raise（因為佢哋知道你而家先 fully understand 個 scope）。</p>
+<h3 id="21-11-sessions-4-saturday-sunday">2.1 11 sessions × 4 小時 / 週（包括 Saturday + Sunday）</h3>
+<h4 id="reality-check">Reality check 數學</h4>
+<p>11 × 4 = <strong>44 小時 / 週嘅 contracted ministry time</strong>。香港普通 full-time 約 36–40 小時。即係呢個崗位<strong>比 corporate full-time 仲多 10–20%</strong>。加埋 Sat + Sun，你嘅 weekend 完全消失。</p>
+<h4 id="_1">沙宣同工會擔心嘅嘢</h4>
+<p>唔係你做唔做得到 — 係你<strong>sustainable 唔 sustainable</strong>。50 歲、由 corporate 過嚟、第一次 full-time ministry — 佢哋怕你 6–12 個月後 burnt out。</p>
+<h4 id="framingsound-already-digested-sound">Framing：sound 你 already digested，唔好 sound 驚</h4>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我從李傳道度知道呢個崗位係 11 sessions × 4 小時，
+包括 Saturday 同 Sunday。老實講，第一次聽到嗰陣
+我消化咗一段時間。
+</div></div>
+<p>呢句<strong>承認你需要消化</strong> — 比假裝「我冇問題」誠實。然後續：</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">之後我同太太傾，我哋達成嘅共識係：
+呢個唔係「失去 weekend」，係「Sunday 由 worshipper
+身份轉做 servant 身份」。我喺方舟事奉，本身就係
+我嘅崇拜 — 唔係兩件嘢。
+</div></div>
+<p>呢個 reframe 係 R2 必殺技 — 將 sacrifice framing 轉為 worship framing。</p>
+<h4 id="caveat">但你應該主動提一個 caveat</h4>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">不過我希望同教會一齊建立一個 Sabbath rhythm —
+可能係 Monday off。唔係為咗 work-life balance，
+係為咗我自己嘅靈命同家庭可以 sustain 下去，
+咁先唔會變成事奉 6 個月就枯乾。
+</div></div>
+<p>呢句 raise Sabbath rhythm 唔係 demand vacation — 係 mature 嘅 self-awareness。沙宣同工聽到會 relieved，因為呢個正係佢哋擔心嘅嘢。</p>
+<h4 id="angle-cover">太太嘅 angle 要 cover</h4>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我太太喺 XX 堂崇拜，呢個 arrangement 我哋預咗
+家庭主日崇拜會分開。我哋預備咗 Monday 或者
+其他時段做家庭靈修同 quality time。
+</div></div>
+<p><strong>注意：</strong> 唔好 over-explain。一句帶過就停。</p>
+<h3 id="22-toilet-care">2.2 為傷殘弟兄 toilet care</h3>
+<p>呢個係最敏感嘅 R&amp;R 揭示。R2 沙宣同工幾乎肯定會問你：「你 OK 嗎？」呢條問題嘅答案決定 R2 成敗。</p>
+<h4 id="instinct-hesitate-hesitation">第一個 instinct 係 hesitate — 唔好否認你嘅 hesitation</h4>
+<p>如果你扮自然，sha宣同工會察覺。誠實開頭：</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">李傳道同我講呢個 R&R 嘅時候，老實講
+我第一個反應係要消化一下。我冇做過呢類
+hands-on care。
+</div></div>
+<p>呢句解除咗你「扮 ready」嘅 risk，立即 disarm。然後續：</p>
+<h4 id="anchor-frame-quote-silently-anchor">用聖經 anchor 重 frame（但唔好 quote 經文，silently anchor）</h4>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">但我之後諗清楚 — 主耶穌喺最後晚餐親自為門徒
+洗腳。如果連神嘅兒子都肯為門徒做呢類最低嘅事，
+我作為祂嘅僕人，無理由 hesitate。
+
+身體護理係 dignifying，唔係 demeaning。如果我
+帶住「呢個係 burden」嘅心態事奉，咁我嘅事奉
+本身已 disqualify。如果我帶住「呢個係 privilege」
+嘅心態事奉，咁我先有資格做。
+</div></div>
+<p>呢段嘅 power 係：<strong>你 transformed 你嘅 hesitation 為神學 reflection</strong> — 證明你唔係 instinct 反應，係 reflective 嘅人。沙宣同工 (牧者本身就係 reflective people) 會 immediately respect 呢點。</p>
+<h4 id="anchor">加一個 anchor — 你父母嘅年紀</h4>
+<p>如果適用：</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我父母都已經步入需要照顧嘅年紀。照顧弱者嘅
+reality，喺我屋企已經唔陌生。我預咗呢個崗位
+會將呢類體驗 deepen。
+</div></div>
+<p><strong>注意：</strong> 只係如果真係咁先講。如果你父母仲健朗，唔好作呢 angle。</p>
+<h4 id="framing">必須避免嘅 framing</h4>
+<ul>
+<li>「我做過義工照顧過老人 / 智障朋友」 — 除非你真係做過、有具體 instance，否則 sound 似 inflate experience</li>
+<li>「我女兒是醫護 / 我屋企有殘障」 — 除非真實，唔好作 connection</li>
+<li>「我覺得呢個 OK 啦」 — 太 dismissive，sound 似 underestimate</li>
+</ul>
+<h3 id="23">2.3 醫院探訪 + 白事</h3>
+<p>你 deck 已 cover 呢個（Section 4 Q5 同 Section 11 提過方舟會友嘅生命歷程比一般人短）。R2 可能直接問你：</p>
+<blockquote>
+<p>「你最近有冇 process 過親人 / 朋友離世嘅經驗？」</p>
+</blockquote>
+<p>呢條係 emotional readiness 測試。</p>
+<h4 id="short-dignified">預備一個 short, dignified 答案</h4>
+<p>如果你有真實 experience（祖父母、親戚、朋友離世），準備一個 1 分鐘嘅 reflection：</p>
+<ul>
+<li>邊位</li>
+<li>你經歷咗咩 emotional process</li>
+<li>從中學到咩有關信仰 / 死亡 / 生命嘅嘢</li>
+</ul>
+<p>如果你冇近期嘅 personal experience：</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">近年我冇直接親人離世嘅經歷。但我曾經
+[參加過教會嘅安息禮拜 / 探訪過長輩 / 等等]，
+我見到牧者點樣帶領家屬走過嗰段。我預咗呢個崗位
+會 push 我進入 emotional spaces 我未經歷過嘅 —
+我願意被主訓練、被牧者陪伴。
+</div></div>
+<p>關鍵字：<strong>「願意被主訓練、被牧者陪伴」</strong> — 呢句係 R2 嘅 magic phrase。</p>
+<h2 id="round-2-8">三Round 2 預測嘅 8 條問題</h2>
+<p>R1 7 條問題你 deck 已 cover。呢度係 R2 specific 嘅新問題。</p>
+<h3 id="q1-share-r1-calling">Q1. 「莊牧師同我哋 share 過你 R1 嘅情況。請你今日<strong>重新</strong>講你嘅 calling。」</h3>
+<p><strong>警告：consistency 測試</strong></p>
+<p>唔好 freestyle 一個新版本。Backbone 同 R1 一樣，但呢次 add 一 layer：經 R1 後嘅 reflection。</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">Round 1 之後我自己再花咗時間禱告反省。我嘅
+calling backbone 冇變 — 30 年信仰 + 25 年行政 +
+調解員/教練訓練 + 「使人和睦」嘅 framing。
+但 Round 1 之後我有兩個新體會：
+
+第一，當我詳細了解 11 sessions × 4 小時嘅
+schedule，我有時間問自己「呢個我頂得住嗎」 —
+我答案係肯定嘅，但帶住更具體嘅 awareness。
+
+第二，當我了解 toilet care 同 hospital 探訪嘅
+hands-on dimension，我從 abstract「事奉」轉
+為具體「服事」。Calling 由 idea 變為 reality。
+
+呢兩個 layer 令我更肯定，唔係更猶豫。
+</div></div>
+<p>呢個 framing：<strong>你嘅 calling 喺 R1 之後 strengthened，唔係 wavered</strong>。</p>
+<h3 id="q2">Q2. 「方舟係沙宣大家庭嘅一份子。你嚟唔淨係事奉方舟，係加入沙宣。你點睇呢個身份？」</h3>
+<p>呢條係母堂面試嘅 standard 問題。</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我明白方舟之家係沙宣旗下嘅分堂，technically
+我嘅 employer 係沙宣本堂，deployed 去方舟。
+
+呢個 dual identity 我覺得唔係 burden，係 privilege。
+我加入沙宣大家庭，成為呢個有 43 年植堂歷史嘅
+群體嘅一份子。方舟係我嘅 primary deployment，
+但我嘅 sense of belonging 係屬於整個沙宣。
+
+我希望可以參與沙宣 same-staff 嘅 retreat、
+training、fellowship — 唔係 nice-to-have，
+係我希望喺呢個身份入面被牧養。
+</div></div>
+<p>最後一句係 R2 magic phrase：<strong>「希望被牧養」</strong>。</p>
+<h3 id="q3-43-culture-traditions-introduce-corporate-background">Q3. 「沙宣有 43 年嘅 culture 同 traditions。你會唔會 introduce 你 corporate background 嘅嘢？」</h3>
+<p><strong>Hidden agenda：</strong>佢哋擔心你 disrupt 既有文化、想 over-engineer。</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">First 6 個月，我會 mostly observe + learn，唔急
+introduce 任何新嘢。沙宣 already 有 43 年成熟
+嘅 system，唔需要我去「優化」。
+
+我嘅 corporate experience 係 reserve — 喺我
+完全 understand 沙宣現有 way 之後，如果牧者
+覺得有需要，我先 selectively contribute。
+
+我嘅 default 永遠係 「沙宣 already does it this way」，
+唔係「corporate best practice 應該係 X」。
+</div></div>
+<p>呢個 framing 直接 address 佢哋嘅 concern。</p>
+<h3 id="q4">Q4. 「你而家屬於邊間教會？你會點過渡？」</h3>
+<p>牧師問呢條係 spiritual home 嘅 due diligence。</p>
+<h4 id="home-church">誠實答你而家嘅 home church</h4>
+<p>如果你 home church 係宣道會：plus point。</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我而家屬於 [XXX 堂]，已經 22 年。如果加入沙宣，
+我會以 grace 通知 [XXX 堂]，按教會嘅 process
+過渡 — 唔係立即 drop，係 properly transition。
+我會諮詢牧者點處理會員身份轉移、過渡時間表。
+</div></div>
+<p>呢段 demonstrate 你 respect ecclesial process — 唔係衝動 jumper。</p>
+<h4 id="sha-probe-xxx">如果 sha宣同工 probe：「咁 [XXX 堂] 點睇你嘅決定？」</h4>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我未正式通知，因為我認為應該等到 sha宣 confirm
+我嘅 offer 之後先 properly 處理。我唔想 prematurely
+攪動 [XXX 堂] 嘅 stability。
+</div></div>
+<p>呢句 sound stewardship — sha宣會 respect。</p>
+<h3 id="q5-11-sessions-4-sun-demanding-sustain">Q5. 「11 sessions × 4 小時 包括 Sun，係非常 demanding。你預咗點 sustain？」</h3>
+<p><strong>Frame：</strong>見上面 2.1。</p>
+<p>加多一個 layer：</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我 50 歲，呢個係我最後一次 major career transition。
+我唔係嚟試水溫 — 我嚟係要紮根到退休、甚至
+更後。所以我必須 build sustainability into the
+schedule，唔係靠 willpower 死頂。
+
+具體上：Sabbath rhythm、定期 spiritual retreat、
+同太太嘅 weekly check-in。呢啲我會主動安排，
+唔等 burnout 先至 react。
+</div></div>
+<p><strong>Magic phrase：</strong>「<strong>最後一次 major career transition</strong>」 — 呢個 reframe 你嘅 long-term commitment 係 structural，唔係 verbal。</p>
+<h3 id="q6-toilet-care-hands-on-care-ok">Q6. 「toilet care 等 hands-on care，你 OK 嗎？」</h3>
+<p><strong>Frame：</strong>見上面 2.2。</p>
+<h3 id="q7-attendance-drop-financial-pressure-navigate">Q7. 「假設方舟未來幾年面對 attendance drop / financial pressure / 牧者交接，你會點 navigate？」</h3>
+<p>呢個係 senior 牧者嘅 maturity 測試。</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我嚟唔係嚟「拯救」方舟。我嚟係嚟參與一個
+already-flowing 嘅事工。我嘅角色係 support 牧者，
+唔係 strategize on top of them。
+
+如果遇到呢類 challenge，我哋一齊禱告、一齊面對。
+我嘅 corporate experience 喺呢類情況可以 contribute
+practical 嘢 — 例如 budget reforecast、
+stakeholder communication — 但 strategic
+direction 係牧者嘅 call，唔係我嘅。
+
+我嘅 ownership 係：等牧者唔需要 micro-manage
+admin，等佢哋可以 fully focus 喺牧養。
+</div></div>
+<p>呢個 framing 將你定位為 <strong>enabler，唔係 strategist</strong> — 教會 senior 牧者最 want 聽嘅。</p>
+<h3 id="q8">Q8. 「你有冇問題想問我哋？」</h3>
+<p><strong>唔好用同 R1 一樣嘅 reverse questions</strong> — 沙宣同工 sync 過 R1，會察覺 copy-paste。</p>
+<p>預備 sha宣-specific 嘅 — 見下面第五節。</p>
+<h2 id="r2-4-silently-anchor">四R2 必勝經文（4 條，silently anchor 自己）</h2>
+<p>呢 4 條唔係叫你 quote 出嚟（quote 會 sound preachy）。係喺心入面 anchor — 對應 R2 specific 嘅 stress moments。</p>
+<h3 id="1314">約翰福音 13:14</h3>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我是你們的主、你們的夫子，
+尚且洗你們的腳，
+你們也當彼此洗腳。
+</div></div>
+<p><strong>Anchor moment：</strong>當沙宣同工問你 toilet care 嗰陣，呢句喺心入面 ground 你。Servant leadership 嘅 master class 來自主自己。</p>
+<h3 id="2540">馬太福音 25:40</h3>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">凡你們對我這弟兄中一個最小的所做的，
+就是做在我身上了。
+</div></div>
+<p><strong>Anchor moment：</strong>當你諗緊「我點解要做呢啲低層次嘅嘢」嗰陣 — 主自己 identify 同最小嘅一個。</p>
+<h3 id="1222-23">哥林多前書 12:22-23</h3>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">身上肢體人以為軟弱的，更是不可少的。
+身上肢體我們看為不體面的，越發給它加上體面。
+</div></div>
+<p><strong>Anchor moment：</strong>呢個係方舟「傷健合一」神學嘅核心經文。如果有合適 timing，可以淺淺一提，但 mostly 係內心 anchor。</p>
+<h3 id="8410">詩篇 84:10</h3>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">在你的院宇住一日，勝似在別處住千日。
+寧可在我神殿中看門，也不願住在惡人的帳棚裏。
+</div></div>
+<p><strong>Anchor moment：</strong>當你諗緊薪酬落差嗰陣 — 「看門」嘅心志比 corporate income 更值。</p>
+<h2 id="5">五俾沙宣同工嘅 5 條反問問題</h2>
+<p>唔好 reuse R1 嘅 reverse questions。呢度係 sha宣-specific 嘅。</p>
+<h3 id="1">1. 母堂視角嘅方舟</h3>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">方舟之家 30 年喇。過去 5 年，沙宣 leadership
+睇方舟有冇 significant evolution？下一個 5 年
+你哋對方舟嘅期望係咩？
+</div></div>
+<p><strong>Why：</strong>呢條問題 demonstrate 你睇方舟係 living institution，唔係 static job。</p>
+<h3 id="2-dual-reporting-structure">2. Dual reporting structure</h3>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我作為行政幹事，reporting line 喺莊牧師。但
+functionally 我亦會同沙宣其他 admin 同工有 overlap，
+亦可能要參與沙宣本堂活動。呢個 dual structure
+嘅 expectation 係點？我點 navigate？
+</div></div>
+<p><strong>Why：</strong>Show 你 already 思考 organizational nuance，唔係 naive 入職。</p>
+<h3 id="3-dna-trajectory">3. 植堂 DNA 同方舟嘅 trajectory</h3>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">沙宣 43 年成立咗 5 個分堂 — 沙角、頌安、廣恩、
+方舟、再加結束咗嘅圓洲角堂。其他 4 個都自立咗
+（或 historical complete），方舟係唯一仍未自立。
+呢個係策略 choice 還是 timing question？
+</div></div>
+<p><strong>Why：</strong>呢條問題 demonstrate 你 deeply researched，亦 acknowledge 方舟 distinctive。</p>
+<p><strong>警告：</strong> 呢條係 advanced question — 只喺氣氛好嘅時候問。如果氣氛緊張，skip 呢條。</p>
+<h3 id="4">4. 屬靈牧養（最重要嘅一條）</h3>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我作為新加入嘅同工 — 50 歲、由 corporate 過嚟、
+第一次 full-time ministry — 我預咗會有 emotional
++ spiritual stretch。沙宣有冇 mentor / supervisor
+角色畀我？我喺呢個崗位點被牧養？
+</div></div>
+<p><strong>Why：</strong>呢條係 sha宣同工最 want 聽嘅問題。直接告訴佢哋你 prioritize being shepherded — 而唔係 prioritize career advancement。</p>
+<h3 id="5-same-staff-fellowship">5. Same-staff fellowship</h3>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我希望可以參與沙宣 same-staff 嘅 retreat、
+training、fellowship。呢類 cross-分堂嘅
+同工 fellowship 係幾頻密嘅？我可以期望
+參與嘅 scope 係點？
+</div></div>
+<p><strong>Why：</strong>Show 你 想 belong 到 sha宣 大家庭，唔淨係方舟。</p>
+<h3 id="_2">唔好問嘅嘢</h3>
+<p>仍然係 R1 deck 講過嘅 — 假期、加薪、福利、reserve、budget。R2 呢類問題 sound 仲糟，因為 sha宣同工嘅 standard 比方舟更 conservative。</p>
+<h2 id="r2-checklist">六R2 Checklist</h2>
+<h3 id="55-59">由今日 (5/5 週二) 起至 5/9 (週六)</h3>
+<ul>
+<li>[ ] 向李傳道 confirm：(1) 面試地點 (都會廣場 B1 還是其他), (2) 出席嘅同工名單, (3) 形式 (純面談 vs 再有筆試)</li>
+<li>[ ] 如果有名單：<strong>唔好 google search 佢哋背景到深入</strong> — 知佢哋職位就夠，過度 research 會喺面試時 leak 出嚟，sound creepy</li>
+<li>[ ] 重溫 R1 你講過嘅 narrative（用 R1 後即時做嘅筆記，唔係靠記憶）</li>
+</ul>
+<h3 id="510-r2-3">5/10 (週日) — R2 前 3 日</h3>
+<ul>
+<li>[ ] 重讀 R1 deck Section 9（壓陣經文）+ Section 10（宣道會四重福音）+ Section 11（沙宣母堂）</li>
+<li>[ ] 練 Q1 嘅 reflective re-telling（30 年 timeline + R1 後嘅 evolution）</li>
+<li>[ ] 練 Q5 + Q6 嘅 framing（11 sessions, toilet care）— 大聲練 3 次，每次計時</li>
+<li>[ ] 預備 R2 specific reverse questions（揀 3 條，唔好 5 條都問）</li>
+</ul>
+<h3 id="512-r2">5/12 (週二) — R2 前一晚</h3>
+<ul>
+<li>[ ] 11 點前瞓</li>
+<li>[ ] 唔好臨急再加新 prep — confidence 比新資料更值</li>
+<li>[ ] 一段靜默禱告 — 求主賜「敬虔嘅穩重」</li>
+<li>[ ] 預備衣服：smart casual，比 R1 微微再 formal 啲（恤衫 + 西褲；可以唔打 tie，但帶定一條喺 bag 入面）</li>
+</ul>
+<h3 id="513">5/13 (週三) — 面試當日</h3>
+<ul>
+<li>[ ] 帶：聖經、R1 嘅筆記、CV 副本、原子筆、一張 R2 reverse questions 嘅小卡（唔讀，淨做 anchor）</li>
+<li>[ ] 食早餐（清淡）</li>
+<li>[ ] <strong>早出門 30 分鐘</strong> — 都會廣場 B1 你已去過，唔需要再 google map，但 buffer time 對 R2 心態好重要</li>
+</ul>
+<h3 id="200">入到面試房之後 (下午 2:00)</h3>
+<ul>
+<li>[ ] 同同工握手時可以 mention：「Round 1 我已經受咗莊牧師同方舟事工嘅 hospitality，今日好榮幸見到沙宣嘅同工。」呢句 establish gratitude continuity，sound mature</li>
+<li>[ ] 答問題前可以稍停 1–2 秒 — sha宣同工 expect contemplative pace，唔好 rush</li>
+<li>[ ] 多用：「我希望」、「我願意被牧養」、「我求主帶領」、「我以 learner 身份嚟」</li>
+<li>[ ] 出現 silence 時 — let it sit。沙宣同工會主動 fill。你急住填補 sound nervous</li>
+<li>[ ] 如果問到你唔肯定嘅嘢：「呢點我未深入諗過，可以畀我少少時間嗎？」<strong>比 BS 強 100 倍</strong></li>
+</ul>
+<h3 id="end-300330">面試 end 前 (預計 3:00–3:30)</h3>
+<ul>
+<li>[ ] 主動問：「請問下一步嘅 process 係點？」（不問 timeline 嘅 specific date — 問 process）</li>
+<li>[ ] 表達感謝：「多謝今日嘅時間，無論結果點，我都覺得呢個 process 對我嘅 calling discernment 好有幫助。」呢句 sound mature — 唔係將面試 frame 為 transactional</li>
+</ul>
+<h2 id="bonus-3-r2">七Bonus — 3 個 R2 細節 — 可以決定成敗</h2>
+<h3 id="71-30-r2-connection-deeper-framing">7.1 30 年巧合 — R2 應該用「沙宣三方 connection」嘅 deeper framing</h3>
+<p>R1 你 deploy 咗「我信主 30 年 + 方舟 30 年」嘅雙方 timing。R2 喺 sha宣面前，<strong>extend 到三方</strong>：</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我信主 + 受洗係 1996，方舟之家亦係 1996 成立。
+但我之後查資料發覺，1996 仲係沙宣嘅另一個
+重要 marker — 沙角堂喺 1996 年 7 月正式獨立、
+方舟使命團喺 1996 年 9 月 29 日喺突破青年村
+正式成立。三件事喺同一年發生。
+
+我唔想 over-interpret。但呢個 timing 唔似偶然。
+30 年後，如果主帶領我加入沙宣事奉方舟 — 呢個
+唔似係我自己 plan 出嚟嘅。
+</div></div>
+<p><strong>Deploy timing：</strong>喺討論「點解係沙宣 + 方舟」嗰陣，唔好早於此。一句講完就停 — 讓沙宣同工自己 register。</p>
+<h3 id="72-founding-heritage">7.2 鮑志承牧師嘅 founding heritage — 一句帶過嘅尊敬</h3>
+<p>R1 deck 已 cover 鮑牧師係沙宣創堂牧師、2007.8.8 安息主懷（同 1983.8.8 創堂日同月同日）。R2 喺沙宣同工面前，<strong>一句帶過嘅尊敬</strong>：</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">我見到鮑志承牧師係沙宣嘅創堂牧者，2007 年安息
+主懷。我相信沙宣今日嘅 culture，仍然帶住佢嘅
+spiritual fingerprint。我希望可以喺呢個傳承入面
+學習 + 事奉。
+</div></div>
+<p><strong>Deploy timing：</strong>只喺自然談到沙宣歷史嗰陣 deploy。唔好硬塞。如果無 timing，skip — 唔強求。</p>
+<h3 id="73-acknowledgment">7.3 「李傳道」嘅 acknowledgment</h3>
+<p>李傳道安排 R2 — 即係佢喺方舟 staff 嘅角色（推測係李嘉雯傳道）有一定 weight。面試開始時可以 mention：</p>
+<div class="quote-card"><div class="quote-card-label">建議答法</div><div class="quote-card-body">多謝李傳道安排今日嘅見面。佢嘅 communication
+好 considerate，畀我有充足時間預備。
+</div></div>
+<p>呢句 acknowledge 一個 not-in-the-room 嘅同工 — sha宣同工會 register 你 attentive to relational details，唔淨係 focus on 面試官。</p>
+<h2 id="r2">八最後一句（給 R2）</h2>
+<p>Round 1 你 demonstrated 你<strong>能做嘢</strong>。Round 2 你要 demonstrate 你係<strong>能被牧養嘅人</strong>。</p>
+<p>教會 senior 同工最 value 嘅唔係能力，係：</p>
+<ul>
+<li><strong>Humility</strong> — 我 50 歲但我以 learner 身份嚟</li>
+<li><strong>Teachability</strong> — 我願意被牧者 correct + train</li>
+<li><strong>Long-term commitment</strong> — 我嚟係紮根到退休，唔係 stepping stone</li>
+<li><strong>Spiritual fit</strong> — 我 sense 到神將我嘅 30 年 + 沙宣嘅 43 年 connect 起</li>
+</ul>
+<p>呢 4 樣嘢，比任何 corporate competency 重要。R1 你 cover 咗 competency layer。R2 你要 cover 呢 4 樣。</p>
+<hr />
+<h3 id="r2-say">收尾禱告（建議 R2 前一晚 say）</h3>
+<blockquote>
+<p>主，我已盡力預備。明日我交託俾你。</p>
+<p>求你賜我<strong>敬虔嘅穩重</strong> — 唔急於 perform，唔急於 impress。</p>
+<p>求你賜我<strong>真實嘅謙卑</strong> — 我係嚟被你帶領，唔係嚟證明自己。</p>
+<p>求你賜我<strong>清晰嘅頭腦</strong> — 記得我 R1 講過嘅嘢，講出真實嘅自己。</p>
+<p>如果係你嘅帶領，求你打開呢扇門。如果唔係，求你 redirect。</p>
+<p>阿們。</p>
+</blockquote>
+<p>主與你同行。</p>
+
+</div>
+
+<script>
+// Render markdown task list checkboxes as proper checkboxes
+document.querySelectorAll('li').forEach(li => {
+  const m = li.firstChild && li.firstChild.nodeType === 3 && li.firstChild.textContent.match(/^\s*\[([ xX])\]\s/);
+  if (m) {
+    li.classList.add('task-list-item');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.className = 'task-list-item-checkbox';
+    if (m[1].toLowerCase() === 'x') cb.checked = true;
+    li.firstChild.textContent = li.firstChild.textContent.replace(/^\s*\[[ xX]\]\s/, '');
+    li.insertBefore(cb, li.firstChild);
+  }
+});
+</script>
+
+</body>
+</html>
