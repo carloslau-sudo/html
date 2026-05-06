@@ -311,6 +311,57 @@
     font-weight: 500;
   }
 
+  /* In-panel signature preview + change button */
+  .sig-panel-row {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .sig-panel-preview {
+    flex: 1;
+    min-width: 0;
+    height: 52px;
+    background: white;
+    border: 1px solid var(--paper-edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 4px 8px;
+  }
+  .sig-panel-preview img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .sig-panel-preview .sig-empty {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .sig-panel-change {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    color: var(--ink-soft);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 0 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .sig-panel-change:hover {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+
   .action-group {
     display: flex;
     flex-direction: column;
@@ -427,6 +478,34 @@
   .download-btn:disabled {
     background: var(--ink-faint);
     cursor: not-allowed;
+  }
+
+  .print-btn {
+    width: 100%;
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+    padding: 14px 18px;
+    font-family: 'Crimson Pro', serif;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background 0.15s, color 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .print-btn:hover { background: var(--ink); color: var(--paper); }
+  .print-btn:disabled {
+    color: var(--ink-faint);
+    border-color: var(--paper-edge);
+    cursor: not-allowed;
+    background: transparent;
+  }
+  .print-btn:disabled:hover {
+    background: transparent;
+    color: var(--ink-faint);
   }
 
   .ghost-link {
@@ -548,6 +627,96 @@
   }
   .file-input-label:hover { background: var(--ink-soft); }
   .file-input-label input { display: none; }
+
+  /* === GitHub sync section in modal === */
+  .gh-section {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--paper-edge);
+  }
+  .gh-section h4 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink);
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .gh-section .gh-help {
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+    line-height: 1.45;
+  }
+  .gh-section .gh-help a {
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-decoration-color: var(--paper-edge);
+    text-underline-offset: 3px;
+  }
+  .gh-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .gh-row label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .gh-row input {
+    background: white;
+    border: 1px solid var(--paper-edge);
+    padding: 8px 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--ink);
+    width: 100%;
+  }
+  .gh-row input:focus {
+    outline: none;
+    border-color: var(--ink);
+  }
+  .gh-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .gh-actions button {
+    flex: 1;
+    min-width: 90px;
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  .gh-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+    padding: 8px 12px;
+    background: white;
+    border: 1px solid var(--paper-edge);
+    color: var(--ink-soft);
+  }
+  .gh-status.connected { border-color: #2a6a3a; color: #2a6a3a; }
+  .gh-status.error     { border-color: var(--accent); color: var(--accent); }
+  .gh-status.busy      { border-color: var(--ink-soft); color: var(--ink-soft); }
+  .gh-warn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    margin-top: 10px;
+    line-height: 1.5;
+  }
 </style>
 </head>
 <body>
@@ -631,11 +800,119 @@ const STORAGE_KEYS = {
   sig: 'signet.sig',
   dateFormat: 'signet.dateFormat',
 };
+const GH_STORAGE_KEYS = {
+  token:    'signet.gh.token',
+  gistId:   'signet.gh.gistId',
+  lastSync: 'signet.gh.lastSync',
+};
+const GH_SIG_FILENAME = 'signet-signature.txt';
+
 const safeStore = {
   get(k) { try { return localStorage.getItem(k); } catch { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch {} },
   remove(k) { try { localStorage.removeItem(k); } catch {} },
 };
+
+// === GitHub Gist sync ===
+// We store the signature as a base64 data URL in a single file inside a
+// private gist. The gist ID is remembered locally so subsequent edits
+// PATCH the same gist rather than spawning new ones.
+const gh = {
+  isConfigured() {
+    return !!(safeStore.get(GH_STORAGE_KEYS.token) && safeStore.get(GH_STORAGE_KEYS.gistId));
+  },
+  getToken()  { return safeStore.get(GH_STORAGE_KEYS.token); },
+  getGistId() { return safeStore.get(GH_STORAGE_KEYS.gistId); },
+  setToken(t) { if (t) safeStore.set(GH_STORAGE_KEYS.token, t); else safeStore.remove(GH_STORAGE_KEYS.token); },
+  setGistId(id) { if (id) safeStore.set(GH_STORAGE_KEYS.gistId, id); else safeStore.remove(GH_STORAGE_KEYS.gistId); },
+  getLastSync() { return safeStore.get(GH_STORAGE_KEYS.lastSync); },
+  markSynced() { safeStore.set(GH_STORAGE_KEYS.lastSync, new Date().toISOString()); },
+  disconnect() {
+    safeStore.remove(GH_STORAGE_KEYS.token);
+    safeStore.remove(GH_STORAGE_KEYS.gistId);
+    safeStore.remove(GH_STORAGE_KEYS.lastSync);
+  },
+
+  // Pull signature from the configured gist.
+  async pull() {
+    const token = this.getToken();
+    const gistId = this.getGistId();
+    if (!token) throw new Error('No GitHub token configured');
+    if (!gistId) throw new Error('No gist ID configured');
+    const res = await fetch(`https://api.github.com/gists/${encodeURIComponent(gistId)}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github+json',
+      },
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      throw new Error(`GitHub ${res.status}: ${body.slice(0, 200) || res.statusText}`);
+    }
+    const json = await res.json();
+    const file = json.files && json.files[GH_SIG_FILENAME];
+    if (!file) throw new Error(`No "${GH_SIG_FILENAME}" file in gist`);
+    // GitHub may truncate large gist contents; fetch raw_url if so.
+    let content = file.content;
+    if (file.truncated && file.raw_url) {
+      const raw = await fetch(file.raw_url);
+      if (!raw.ok) throw new Error(`Could not fetch raw gist content (${raw.status})`);
+      content = await raw.text();
+    }
+    if (!content || !content.startsWith('data:image/')) {
+      throw new Error('Gist content is not a valid signature data URL');
+    }
+    this.markSynced();
+    return content;
+  },
+
+  // Push signature to the configured gist. If no gist ID exists, create one.
+  async push(dataUrl) {
+    const token = this.getToken();
+    if (!token) throw new Error('No GitHub token configured');
+    if (!dataUrl) throw new Error('No signature to push');
+    const gistId = this.getGistId();
+    const body = {
+      description: 'Signet PDF Signer — saved signature (base64 data URL)',
+      files: { [GH_SIG_FILENAME]: { content: dataUrl } },
+    };
+    let res;
+    if (gistId) {
+      res = await fetch(`https://api.github.com/gists/${encodeURIComponent(gistId)}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ files: body.files }),
+      });
+    } else {
+      // Create a new private gist
+      body.public = false;
+      res = await fetch('https://api.github.com/gists', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+    }
+    if (!res.ok) {
+      const errBody = await res.text().catch(() => '');
+      throw new Error(`GitHub ${res.status}: ${errBody.slice(0, 200) || res.statusText}`);
+    }
+    const json = await res.json();
+    if (!gistId && json.id) this.setGistId(json.id);
+    this.markSynced();
+    return json.id || gistId;
+  },
+};
+
+// In-memory sync status used by the modal UI.
+const ghStatus = { kind: null, msg: null }; // kind: 'busy'|'connected'|'error'|null
 
 // === Date formatters ===
 const DATE_FORMATS = {
@@ -695,7 +972,35 @@ window.addEventListener('DOMContentLoaded', async () => {
   // Ensure data-URL @font-face is parsed before first measureText call.
   try { await document.fonts.load('22px "Kalam"'); } catch (e) { /* non-fatal */ }
   render();
+  // If GitHub sync is configured, try to pull the latest signature in the
+  // background. We don't block initial render on this — slow networks
+  // shouldn't make the app feel broken.
+  if (gh.isConfigured()) {
+    ghStatus.kind = 'busy';
+    ghStatus.msg = 'Syncing from GitHub…';
+    if (state.modal === 'settings') render(); // refresh modal if open
+    try {
+      const remoteSig = await gh.pull();
+      state.sigDataUrl = remoteSig;
+      safeStore.set(STORAGE_KEYS.sig, remoteSig); // also cache locally
+      ghStatus.kind = 'connected';
+      ghStatus.msg = `Synced ${formatSyncTime(gh.getLastSync())}`;
+    } catch (err) {
+      console.warn('GitHub auto-pull failed:', err);
+      ghStatus.kind = 'error';
+      ghStatus.msg = 'Sync failed: ' + err.message;
+    }
+    render();
+  }
 });
+
+function formatSyncTime(iso) {
+  if (!iso) return 'just now';
+  try {
+    const d = new Date(iso);
+    return d.toLocaleString();
+  } catch { return 'recently'; }
+}
 
 // === Header buttons ===
 function bindHeader() {
@@ -1046,6 +1351,18 @@ function updateGhostText(text) {
 // === Side panel ===
 function renderPanel() {
   return el('div', { class: 'panel' },
+    el('div', { class: 'sig-panel-row', title: 'This signature is used for all placements. Click Change to swap.' },
+      el('div', { class: 'sig-panel-preview' },
+        state.sigDataUrl
+          ? el('img', { src: state.sigDataUrl, alt: 'Current signature' })
+          : el('span', { class: 'sig-empty' }, 'No signature')
+      ),
+      el('button', {
+        class: 'sig-panel-change',
+        onclick: () => openModal('settings'),
+        title: 'Replace or reset your signature',
+      }, 'Change'),
+    ),
     el('h2', {}, 'Place items'),
     el('div', { class: 'action-group' },
       el('button', {
@@ -1095,6 +1412,15 @@ function renderPanel() {
       disabled: !state.placements.length,
       onclick: downloadSigned,
     }, 'Download Signed PDF'),
+    el('button', {
+      class: 'print-btn',
+      disabled: !state.placements.length,
+      onclick: printSigned,
+      title: 'Print with signature and date embedded',
+    },
+      el('span', {}, '⎙'),
+      el('span', {}, 'Print Signed PDF'),
+    ),
     state.status ? el('div', { class: 'status-msg ' + (state.status.kind || '') }, state.status.msg) : null,
   );
 }
@@ -1138,8 +1464,146 @@ function renderModal() {
         state.sigDataUrl !== DEFAULT_SIG ? el('button', { class: 'danger', onclick: resetSig }, 'Reset to default') : null,
         el('button', { class: 'primary', onclick: closeModal }, 'Done'),
       ),
+      renderGhSection(),
     ),
   );
+}
+
+function renderGhSection() {
+  const configured = gh.isConfigured();
+  return el('div', { class: 'gh-section' },
+    el('h4', {},
+      el('span', {}, '⇅'),
+      el('span', {}, 'GitHub Sync'),
+    ),
+    el('p', { class: 'gh-help' },
+      'Store your signature in a private GitHub Gist so it follows you across browsers and machines. ',
+      el('a', { href: 'https://github.com/settings/tokens/new?scopes=gist&description=Signet+PDF+Signer', target: '_blank', rel: 'noopener' }, 'Create a token'),
+      ' (classic) with ', el('code', { class: 'mono' }, 'gist'), ' scope only.'
+    ),
+    ghStatus.kind ? el('div', { class: 'gh-status ' + ghStatus.kind }, ghStatus.msg || '') : null,
+    configured ? renderGhConnected() : renderGhSetup(),
+  );
+}
+
+function renderGhSetup() {
+  // Use refs that survive re-render via id lookup at submit time.
+  return el('div', {},
+    el('div', { class: 'gh-row' },
+      el('label', { for: 'ghTokenInput' }, 'Personal Access Token'),
+      el('input', { id: 'ghTokenInput', type: 'password', placeholder: 'ghp_… or github_pat_…', autocomplete: 'off', spellcheck: 'false' }),
+    ),
+    el('div', { class: 'gh-row' },
+      el('label', { for: 'ghGistIdInput' }, 'Gist ID (optional — leave blank to create new)'),
+      el('input', { id: 'ghGistIdInput', type: 'text', placeholder: 'e.g. a1b2c3d4e5f6…', autocomplete: 'off', spellcheck: 'false' }),
+    ),
+    el('div', { class: 'gh-actions' },
+      el('button', { class: 'primary', onclick: ghHandleConnect }, 'Connect & sync'),
+    ),
+    el('div', { class: 'gh-warn' },
+      'Your token is stored in this browser\u0027s localStorage. Use a token scoped to gists only — not full repo access — and revoke it if your device is compromised.'
+    ),
+  );
+}
+
+function renderGhConnected() {
+  const last = gh.getLastSync();
+  const gistId = gh.getGistId();
+  return el('div', {},
+    el('div', { class: 'gh-row' },
+      el('label', {}, 'Connected gist'),
+      el('input', {
+        type: 'text',
+        value: gistId || '',
+        readonly: true,
+        onclick: e => e.target.select(),
+      }),
+    ),
+    last ? el('div', { class: 'gh-warn', style: { marginTop: '4px' } }, 'Last synced: ' + formatSyncTime(last)) : null,
+    el('div', { class: 'gh-actions' },
+      el('button', { onclick: ghHandlePull, title: 'Replace local signature with gist version' }, 'Pull'),
+      el('button', { onclick: ghHandlePush, title: 'Push current signature to gist' }, 'Push'),
+      el('button', { class: 'danger', onclick: ghHandleDisconnect, title: 'Forget token and gist ID on this device' }, 'Disconnect'),
+    ),
+  );
+}
+
+async function ghHandleConnect() {
+  const token = ($('#ghTokenInput')?.value || '').trim();
+  const gistId = ($('#ghGistIdInput')?.value || '').trim();
+  if (!token) {
+    ghStatus.kind = 'error';
+    ghStatus.msg = 'Token is required';
+    render();
+    return;
+  }
+  gh.setToken(token);
+  if (gistId) gh.setGistId(gistId);
+
+  ghStatus.kind = 'busy';
+  ghStatus.msg = gistId ? 'Pulling from gist…' : 'Creating gist with current signature…';
+  render();
+  try {
+    if (gistId) {
+      // Validate token + pull existing
+      const remoteSig = await gh.pull();
+      state.sigDataUrl = remoteSig;
+      safeStore.set(STORAGE_KEYS.sig, remoteSig);
+    } else {
+      // Create a new gist with current local signature
+      await gh.push(state.sigDataUrl);
+    }
+    ghStatus.kind = 'connected';
+    ghStatus.msg = 'Connected · synced ' + formatSyncTime(gh.getLastSync());
+  } catch (err) {
+    console.error(err);
+    // Clean rollback — leaving any partial config behind would mean
+    // isConfigured() returns true with bad creds, blocking future retries.
+    gh.disconnect();
+    ghStatus.kind = 'error';
+    ghStatus.msg = 'Connect failed: ' + err.message;
+  }
+  render();
+}
+
+async function ghHandlePull() {
+  ghStatus.kind = 'busy';
+  ghStatus.msg = 'Pulling from gist…';
+  render();
+  try {
+    const remoteSig = await gh.pull();
+    state.sigDataUrl = remoteSig;
+    safeStore.set(STORAGE_KEYS.sig, remoteSig);
+    ghStatus.kind = 'connected';
+    ghStatus.msg = 'Pulled · ' + formatSyncTime(gh.getLastSync());
+  } catch (err) {
+    ghStatus.kind = 'error';
+    ghStatus.msg = 'Pull failed: ' + err.message;
+  }
+  render();
+}
+
+async function ghHandlePush() {
+  ghStatus.kind = 'busy';
+  ghStatus.msg = 'Pushing to gist…';
+  render();
+  try {
+    await gh.push(state.sigDataUrl);
+    ghStatus.kind = 'connected';
+    ghStatus.msg = 'Pushed · ' + formatSyncTime(gh.getLastSync());
+  } catch (err) {
+    ghStatus.kind = 'error';
+    ghStatus.msg = 'Push failed: ' + err.message;
+  }
+  render();
+}
+
+function ghHandleDisconnect() {
+  if (!confirm('Forget your GitHub token and gist ID on this device? Your signature stays here, and the gist on GitHub is untouched.')) return;
+  gh.disconnect();
+  ghStatus.kind = null;
+  ghStatus.msg = null;
+  render();
 }
 
 async function handleSigUpload(e) {
@@ -1148,11 +1612,41 @@ async function handleSigUpload(e) {
   const dataUrl = await fileToDataUrl(file);
   state.sigDataUrl = dataUrl;
   safeStore.set(STORAGE_KEYS.sig, dataUrl);
+  // Push to GitHub if configured. Failures don't block the local update —
+  // the user has the signature locally either way.
+  if (gh.isConfigured()) {
+    ghStatus.kind = 'busy';
+    ghStatus.msg = 'Pushing to GitHub…';
+    render();
+    try {
+      await gh.push(dataUrl);
+      ghStatus.kind = 'connected';
+      ghStatus.msg = `Synced ${formatSyncTime(gh.getLastSync())}`;
+    } catch (err) {
+      console.warn('GitHub auto-push failed:', err);
+      ghStatus.kind = 'error';
+      ghStatus.msg = 'Push failed: ' + err.message;
+    }
+  }
   render();
 }
-function resetSig() {
+async function resetSig() {
   state.sigDataUrl = DEFAULT_SIG;
   safeStore.remove(STORAGE_KEYS.sig);
+  if (gh.isConfigured()) {
+    ghStatus.kind = 'busy';
+    ghStatus.msg = 'Pushing to GitHub…';
+    render();
+    try {
+      await gh.push(DEFAULT_SIG);
+      ghStatus.kind = 'connected';
+      ghStatus.msg = `Synced ${formatSyncTime(gh.getLastSync())}`;
+    } catch (err) {
+      console.warn('GitHub auto-push failed:', err);
+      ghStatus.kind = 'error';
+      ghStatus.msg = 'Push failed: ' + err.message;
+    }
+  }
   render();
 }
 function fileToDataUrl(file) {
@@ -1186,75 +1680,80 @@ async function loadPdfFile(file) {
 }
 
 // === Build & download signed PDF ===
+async function buildSignedPdfBytes() {
+  const { PDFDocument, StandardFonts } = PDFLib;
+
+  // Clone bytes — defensive copy in case pdf-lib internally detaches.
+  const bytesForLib = state.pdfBytes.slice(0);
+  const srcDoc = await PDFDocument.load(bytesForLib);
+  // Build a NEW doc; for each source page, embed it (which bakes rotation),
+  // then draw signatures/text on top.
+  const outDoc = await PDFDocument.create();
+
+  // Register fontkit so we can embed our custom TTF (Kalam).
+  if (window.fontkit && outDoc.registerFontkit) {
+    outDoc.registerFontkit(window.fontkit);
+  }
+  // Embed Kalam for handwritten-style text. Fall back to Times-Italic if it fails.
+  let textFont;
+  try {
+    textFont = await outDoc.embedFont(getKalamBytes(), { subset: true });
+  } catch (err) {
+    console.warn('Kalam embed failed, falling back:', err);
+    textFont = await outDoc.embedFont(StandardFonts.TimesRomanItalic);
+  }
+
+  // Embed signature once
+  let sigImage = null;
+  if (state.placements.some(p => p.type === 'sig')) {
+    const sigBytes = dataUrlToBytes(state.sigDataUrl);
+    // detect format
+    if (state.sigDataUrl.startsWith('data:image/png')) {
+      sigImage = await outDoc.embedPng(sigBytes);
+    } else {
+      sigImage = await outDoc.embedJpg(sigBytes);
+    }
+  }
+
+  const numPages = srcDoc.getPageCount();
+  for (let i = 0; i < numPages; i++) {
+    // Embed the source page (this gives a rotation-baked graphic)
+    const [embeddedPage] = await outDoc.embedPdf(srcDoc, [i]);
+    const dim = embeddedPage.size(); // displayed size, accounting for rotation
+    const newPage = outDoc.addPage([dim.width, dim.height]);
+    newPage.drawPage(embeddedPage, {
+      x: 0, y: 0, width: dim.width, height: dim.height,
+    });
+
+    // Draw any placements for this page
+    const placements = state.placements.filter(p => p.page === (i + 1));
+    for (const p of placements) {
+      if (p.type === 'sig' && sigImage) {
+        newPage.drawImage(sigImage, {
+          x: p.xPt, y: p.yPt, width: p.wPt, height: p.hPt,
+        });
+      } else if (p.type === 'text') {
+        newPage.drawText(p.text, {
+          x: p.xPt,
+          y: p.yPt + p.fontSize * 0.18,  // baseline adjustment from box bottom
+          size: p.fontSize,
+          font: textFont,
+          color: PDFLib.rgb(0, 0, 0),
+        });
+      }
+    }
+  }
+
+  return await outDoc.save();
+}
+
 async function downloadSigned() {
   try {
     state.status = { msg: 'Generating…' };
     render();
 
-    const { PDFDocument, StandardFonts, degrees } = PDFLib;
+    const outBytes = await buildSignedPdfBytes();
 
-    // Clone bytes — defensive copy in case pdf-lib internally detaches.
-    const bytesForLib = state.pdfBytes.slice(0);
-    const srcDoc = await PDFDocument.load(bytesForLib);
-    // Build a NEW doc; for each source page, embed it (which bakes rotation),
-    // then draw signatures/text on top.
-    const outDoc = await PDFDocument.create();
-
-    // Register fontkit so we can embed our custom TTF (Kalam).
-    if (window.fontkit && outDoc.registerFontkit) {
-      outDoc.registerFontkit(window.fontkit);
-    }
-    // Embed Kalam for handwritten-style text. Fall back to Times-Italic if it fails.
-    let textFont;
-    try {
-      textFont = await outDoc.embedFont(getKalamBytes(), { subset: true });
-    } catch (err) {
-      console.warn('Kalam embed failed, falling back:', err);
-      textFont = await outDoc.embedFont(StandardFonts.TimesRomanItalic);
-    }
-
-    // Embed signature once
-    let sigImage = null;
-    if (state.placements.some(p => p.type === 'sig')) {
-      const sigBytes = dataUrlToBytes(state.sigDataUrl);
-      // detect format
-      if (state.sigDataUrl.startsWith('data:image/png')) {
-        sigImage = await outDoc.embedPng(sigBytes);
-      } else {
-        sigImage = await outDoc.embedJpg(sigBytes);
-      }
-    }
-
-    const numPages = srcDoc.getPageCount();
-    for (let i = 0; i < numPages; i++) {
-      // Embed the source page (this gives a rotation-baked graphic)
-      const [embeddedPage] = await outDoc.embedPdf(srcDoc, [i]);
-      const dim = embeddedPage.size(); // displayed size, accounting for rotation
-      const newPage = outDoc.addPage([dim.width, dim.height]);
-      newPage.drawPage(embeddedPage, {
-        x: 0, y: 0, width: dim.width, height: dim.height,
-      });
-
-      // Draw any placements for this page
-      const placements = state.placements.filter(p => p.page === (i + 1));
-      for (const p of placements) {
-        if (p.type === 'sig' && sigImage) {
-          newPage.drawImage(sigImage, {
-            x: p.xPt, y: p.yPt, width: p.wPt, height: p.hPt,
-          });
-        } else if (p.type === 'text') {
-          newPage.drawText(p.text, {
-            x: p.xPt,
-            y: p.yPt + p.fontSize * 0.18,  // baseline adjustment from box bottom
-            size: p.fontSize,
-            font: textFont,
-            color: PDFLib.rgb(0, 0, 0),
-          });
-        }
-      }
-    }
-
-    const outBytes = await outDoc.save();
     // Trigger download
     const blob = new Blob([outBytes], { type: 'application/pdf' });
     const url = URL.createObjectURL(blob);
@@ -1272,6 +1771,115 @@ async function downloadSigned() {
   } catch (err) {
     console.error(err);
     state.status = { msg: 'Error: ' + err.message, kind: 'error' };
+    render();
+  }
+}
+
+// === Print signed PDF ===
+// Strategy: build the same signed PDF bytes used for download, then re-render
+// each page via pdf.js to a high-DPI canvas. Inject those into a popup window
+// as <img> tags with page-break CSS, and trigger window.print() there.
+// This is more reliable than iframe.print() on a PDF blob, which is blocked
+// or inconsistent across browsers (Chrome's built-in PDF viewer in particular).
+async function printSigned() {
+  // Open the popup FIRST, synchronously inside the click handler, so it's
+  // still considered a user-gesture-initiated window. Any await before this
+  // and Safari/Firefox popup blockers will refuse it.
+  const printWin = window.open('', '_blank', 'width=900,height=1100');
+  if (!printWin) {
+    state.status = { msg: 'Popup blocked. Allow popups and try again.', kind: 'error' };
+    render();
+    return;
+  }
+  // Write a placeholder immediately so the user sees something while we work.
+  printWin.document.open();
+  printWin.document.write(`<!DOCTYPE html>
+<html><head><title>Preparing print…</title>
+<style>
+  @page { margin: 0; }
+  html, body { margin: 0; padding: 0; background: #555; }
+  body { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 12px 0; }
+  .page { background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: block; max-width: 100%; }
+  .loading { color: white; font: 14px system-ui, sans-serif; padding: 40px; text-align: center; }
+  @media print {
+    html, body { background: white; }
+    body { display: block; padding: 0; gap: 0; }
+    .page { box-shadow: none; page-break-after: always; max-width: none; width: 100%; height: auto; }
+    .page:last-child { page-break-after: auto; }
+    .loading { display: none; }
+  }
+</style></head><body>
+<div class="loading">Rendering pages…</div>
+</body></html>`);
+  printWin.document.close();
+
+  try {
+    state.status = { msg: 'Preparing print…' };
+    render();
+
+    const outBytes = await buildSignedPdfBytes();
+
+    // Update the title now that we have the filename
+    try { printWin.document.title = signedFileName(state.pdfFileName); } catch {}
+
+    // Re-load the freshly-built PDF through pdf.js to rasterize each page.
+    // Clone bytes again — getDocument transfers/detaches the buffer.
+    const pdfForRender = outBytes.slice(0);
+    const renderedDoc = await pdfjsLib.getDocument({ data: pdfForRender }).promise;
+
+    const PRINT_SCALE = 2; // 2x for crisp print output (~144 dpi from 72-pt PDFs)
+    const imgDataUrls = [];
+    for (let i = 1; i <= renderedDoc.numPages; i++) {
+      const page = await renderedDoc.getPage(i);
+      const viewport = page.getViewport({ scale: PRINT_SCALE });
+      const c = document.createElement('canvas');
+      c.width  = viewport.width;
+      c.height = viewport.height;
+      const ctx = c.getContext('2d');
+      // White background so transparent areas don't print as black/grey
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(0, 0, c.width, c.height);
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      imgDataUrls.push(c.toDataURL('image/png'));
+    }
+
+    // Bail if user closed the popup while we were rendering
+    if (printWin.closed) {
+      state.status = { msg: 'Print cancelled.', kind: 'error' };
+      render();
+      return;
+    }
+
+    // Inject the rendered pages and trigger print
+    const body = printWin.document.body;
+    body.innerHTML = ''; // clear loading
+    let imgsLoaded = 0;
+    const total = imgDataUrls.length;
+
+    function maybePrint() {
+      if (imgsLoaded < total) return;
+      // Small delay so layout settles before the print dialog grabs a snapshot
+      setTimeout(() => {
+        try { printWin.focus(); printWin.print(); } catch (e) { console.error(e); }
+      }, 100);
+    }
+
+    imgDataUrls.forEach(src => {
+      const img = printWin.document.createElement('img');
+      img.className = 'page';
+      img.src = src;
+      img.onload  = () => { imgsLoaded++; maybePrint(); };
+      img.onerror = () => { imgsLoaded++; maybePrint(); };
+      body.appendChild(img);
+    });
+
+    state.status = { msg: 'Print dialog opened ✓', kind: 'success' };
+    render();
+    setTimeout(() => { state.status = null; render(); }, 4000);
+  } catch (err) {
+    console.error(err);
+    try { printWin.close(); } catch {}
+    state.status = { msg: 'Print error: ' + err.message, kind: 'error' };
     render();
   }
 }
