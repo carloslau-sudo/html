@@ -2,9 +2,10 @@
   "_meta": {
     "app": "hk-hiking-2026",
     "version": 2,
-    "exportedAt": "2026-05-04T23:20:44.352Z",
+    "exportedAt": "2026-05-10T06:59:46.431Z",
     "count": 12,
-    "peakOverrideCount": 0
+    "peakOverrideCount": 0,
+    "auto": true
   },
   "updates": {
     "2": {
@@ -19,7 +20,10 @@
     },
     "3": {
       "done": "done",
-      "doneDate": "2026-05-01"
+      "doneDate": "2026-05-01",
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null
     },
     "4": {
       "done": null,
@@ -44,6 +48,9 @@
     "8": {
       "done": "done",
       "doneDate": "2026-05-01",
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-06-07",
       "date": "6月7日(週日)",
       "sea": "summer"
@@ -89,11 +96,8 @@
       "sea": "summer"
     },
     "13": {
-      "done": null,
-      "doneDate": null,
-      "partialNote": null,
-      "partialDonePeaks": 0,
-      "doneNote": null,
+      "done": "done",
+      "doneDate": "2026-05-10",
       "isoDate": "2026-05-10",
       "date": "5月10日(週日)",
       "sea": "spring"
