@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DOCX ↔ PDF · Lean Converter</title>
+
+<!-- Typography: Fraunces for the wordmark, Geist for body & mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Libraries — pinned versions, all UMD globals -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx-preview@0.3.5/dist/docx-preview.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+
+<style>
+  :root {
+    --bg:        #faf8f3;
+    --surface:   #ffffff;
+    --ink:       #141414;
+    --ink-soft:  #2a2a2a;
+    --muted:     #6e695f;
+    --muted-2:   #a09a8e;
+    --line:      #e8e3d7;
+    --line-soft: #efeae0;
+    --accent:    #2d4f4f;
+    --accent-ink:#1c3636;
+    --warn:      #b8651b;
+    --shadow:    0 1px 0 rgba(20,20,20,0.04), 0 12px 32px -16px rgba(20,20,20,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body { background: var(--bg); color: var(--ink); }
+
+  body {
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background:
+      radial-gradient(ellipse 1200px 600px at 50% -200px, rgba(45,79,79,0.06), transparent 60%),
+      var(--bg);
+  }
+
+  ::selection { background: var(--accent); color: white; }
+
+  /* ─────── Top bar ─────── */
+  .topbar {
+    display: flex; align-items: baseline; justify-content: space-between;
+    padding: 24px 40px;
+    border-bottom: 1px solid var(--line);
+  }
+  .wordmark {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .wordmark .arrow {
+    font-style: italic;
+    color: var(--accent);
+    margin: 0 4px;
+    font-weight: 400;
+  }
+  .version {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  /* ─────── Main layout ─────── */
+  main {
+    flex: 1;
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 56px 40px 80px;
+    width: 100%;
+  }
+
+  /* ─────── Hero (start state) ─────── */
+  .hero {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: clamp(36px, 5vw, 52px);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 20px;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); font-weight: 500; }
+  .hero p {
+    max-width: 580px;
+    margin: 0 auto;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  /* ─────── Drop zone ─────── */
+  .dropzone {
+    border: 1.5px dashed var(--line);
+    border-radius: 16px;
+    background: var(--surface);
+    padding: 56px 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s ease, background .2s ease, transform .15s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .dropzone:hover {
+    border-color: var(--accent);
+    background: #fefcf7;
+  }
+  .dropzone.dragging {
+    border-color: var(--accent);
+    border-style: solid;
+    background: #f3f8f6;
+    transform: scale(0.995);
+  }
+  .dropzone-title {
+    font-family: 'Fraunces', serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 24px;
+    color: var(--ink);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .dropzone-subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+  .dropzone-formats {
+    display: inline-flex;
+    gap: 24px;
+    padding: 12px 24px;
+    background: var(--line-soft);
+    border-radius: 999px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .dropzone-formats span { display: flex; align-items: center; gap: 8px; }
+  .dropzone-formats span::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.6;
+  }
+  .privacy {
+    margin-top: 20px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--muted-2);
+    text-align: center;
+    letter-spacing: 0.02em;
+  }
+  .privacy::before { content: '·  '; }
+  .privacy::after  { content: '  ·'; }
+
+  /* ─────── Working state ─────── */
+  .working { display: none; }
+  .working.active { display: block; }
+  .start { display: block; }
+  .start.hidden { display: none; }
+
+  .file-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 28px;
+  }
+  .file-header-left { display: flex; align-items: center; gap: 16px; }
+  .file-mode {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(45,79,79,0.08);
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .file-name {
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-size: 17px;
+    color: var(--ink);
+  }
+  .file-change {
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--line);
+    transition: color .15s;
+  }
+  .file-change:hover { color: var(--ink); text-decoration-color: var(--accent); }
+
+  /* Sections (Fonts, Sizes, Settings) */
+  .section {
+    margin-bottom: 32px;
+  }
+  .section-title {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .kv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px 24px;
+  }
+  .kv {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .kv-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .kv-value {
+    font-family: 'Geist Mono', monospace;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .kv-value.pending { color: var(--muted-2); }
+
+  /* Settings form */
+  .field { margin-bottom: 18px; }
+  .field-label {
+    display: block;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .seg {
+    display: inline-flex;
+    background: var(--line-soft);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+  }
+  .seg button {
+    background: none;
+    border: none;
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-family: 'Geist', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .seg button:hover { color: var(--ink); }
+  .seg button.active {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 0 1px 2px rgba(20,20,20,0.08);
+  }
+
+  /* Action row */
+  .actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 36px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+  }
+  .btn {
+    font-family: 'Geist', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 12px 22px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all .15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent-ink);
+  }
+  .btn-primary:hover { background: var(--accent-ink); }
+  .btn-primary:disabled {
+    background: var(--muted-2);
+    border-color: var(--muted-2);
+    cursor: not-allowed;
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+    border-color: var(--line);
+  }
+  .btn-ghost:hover { color: var(--ink); border-color: var(--ink-soft); }
+
+  /* Status line */
+  .status {
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    color: var(--muted);
+    min-height: 18px;
+  }
+  .status.busy { color: var(--accent); }
+  .status.err  { color: var(--warn); }
+  .status .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 8px;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  /* ─────── How-it-works ─────── */
+  .howitworks {
+    margin-top: 80px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+  }
+  .howitworks h2 {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 22px;
+    letter-spacing: -0.01em;
+    margin-bottom: 24px;
+    color: var(--ink);
+  }
+  .howitworks-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  @media (max-width: 720px) {
+    .howitworks-grid { grid-template-columns: 1fr; }
+  }
+  .how-card h3 {
+    font-family: 'Geist', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  .how-card p {
+    font-size: 13.5px;
+    line-height: 1.7;
+    color: var(--muted);
+  }
+  .how-card p + p { margin-top: 10px; }
+  .how-card code {
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    background: var(--line-soft);
+    padding: 1px 6px;
+    border-radius: 3px;
+    color: var(--ink-soft);
+  }
+
+  /* Hidden render slot for docx-preview — must remain visible to the renderer
+     (html2canvas can't capture visibility:hidden); offscreen positioning is enough. */
+  #render-slot {
+    position: fixed;
+    left: -10000px;
+    top: 0;
+    width: auto;
+    pointer-events: none;
+  }
+
+  footer {
+    padding: 24px 40px;
+    border-top: 1px solid var(--line);
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--muted-2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  footer .changes { color: var(--accent); }
+
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wordmark">DOCX<span class="arrow">↔</span>PDF</div>
+  <div class="version">Lean Converter · v6</div>
+</header>
+
+<main>
+
+  <!-- START STATE -->
+  <section class="start" id="start">
+    <div class="hero">
+      <h1>Convert Word docs and PDFs <em>both ways</em>, locally.</h1>
+      <p>DOCX → PDF renders with full fidelity — fonts, colors, tables, headers, footers preserved — without browser print artifacts. PDF → DOCX extracts editable text and infers headings from font sizing. Everything happens in your browser; nothing is uploaded.</p>
+    </div>
+
+    <div class="dropzone" id="dropzone">
+      <div class="dropzone-title">Drop a file here</div>
+      <div class="dropzone-subtitle">or click to choose one</div>
+      <div class="dropzone-formats">
+        <span>.docx → .pdf</span>
+        <span>.pdf → .docx</span>
+      </div>
+    </div>
+    <input type="file" id="file-input" accept=".docx,.pdf,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+    <div class="privacy">Files stay on your device  ·  Nothing is uploaded</div>
+  </section>
+
+  <!-- WORKING STATE -->
+  <section class="working" id="working">
+
+    <div class="file-header">
+      <div class="file-header-left">
+        <span class="file-mode" id="mode-tag">DOCX → PDF</span>
+        <span class="file-name" id="file-name">document.docx</span>
+      </div>
+      <button class="file-change" id="reset-btn">Use a different file</button>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Detected</div>
+      <div class="kv-grid">
+        <div class="kv"><span class="kv-label">Body font</span><span class="kv-value pending" id="kv-body-font">—</span></div>
+        <div class="kv"><span class="kv-label">Heading font</span><span class="kv-value pending" id="kv-head-font">—</span></div>
+        <div class="kv"><span class="kv-label">Pages</span><span class="kv-value pending" id="kv-pages">—</span></div>
+        <div class="kv"><span class="kv-label">Source size</span><span class="kv-value pending" id="kv-src-size">—</span></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Settings</div>
+
+      <div class="field">
+        <span class="field-label">Page size</span>
+        <div class="seg" id="seg-page">
+          <button data-v="a4" class="active">A4 (210 × 297 mm)</button>
+          <button data-v="letter">Letter (8.5 × 11 in)</button>
+          <button data-v="legal">Legal (8.5 × 14 in)</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="field-label">Margins</span>
+        <div class="seg" id="seg-margin">
+          <button data-v="standard">Standard (2.5 cm)</button>
+          <button data-v="narrow" class="active">Narrow (1.8 cm)</button>
+          <button data-v="wide">Wide (3.2 cm)</button>
+        </div>
+      </div>
+
+      <div class="field" id="field-mode">
+        <span class="field-label">Output</span>
+        <div class="seg" id="seg-output">
+          <button data-v="text" class="active">Text — selectable, smaller file</button>
+          <button data-v="image">Page images — pixel-perfect fidelity</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <div class="status" id="status"></div>
+      <div style="display:flex; gap:10px;">
+        <button class="btn btn-ghost" id="reset-btn-2">Convert another</button>
+        <button class="btn btn-primary" id="convert-btn">Save converted file</button>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="howitworks">
+    <h2>How this works</h2>
+    <div class="howitworks-grid">
+      <div class="how-card">
+        <h3>DOCX → PDF</h3>
+        <p>The file is rendered in-browser by <code>docx-preview</code>, a proper OOXML renderer that parses <code>document.xml</code>, <code>styles.xml</code>, <code>theme1.xml</code>, and the header/footer parts to produce a layout that matches what Word renders.</p>
+        <p>The rendered page sections are then handed to <code>html2canvas</code> and <code>jsPDF</code>, which compose the PDF programmatically — <em>without</em> going through the browser's print engine. This eliminates the URL, date, and page-number captions that browsers inject automatically, and reclaims the ~30 mm of vertical space they consume.</p>
+      </div>
+      <div class="how-card">
+        <h3>PDF → DOCX</h3>
+        <p>The file is parsed by <code>PDF.js</code>, which returns positioned text fragments per page. Fragments are grouped into lines by Y-coordinate, lines into paragraphs by vertical gap, and each paragraph is classified as heading or body by comparing its font size to the document's median.</p>
+        <p>The result is assembled into <code>document.xml</code>, packaged with the minimum OOXML scaffolding, and zipped into a real <code>.docx</code> you can open in Word. Best for prose-heavy documents — diagrams and multi-column layouts may not survive the round-trip.</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Lean Converter · v6</span>
+  <span class="changes">v6: bypasses browser print → no URL footers, fits source page count</span>
+</footer>
+
+<div id="render-slot"></div>
+
+<script>
+//
+// ───────────────────── Boot ─────────────────────
+//
+// Initialise only after the page AND every CDN script have finished loading.
+// If any library is missing, show a visible banner instead of failing silently.
+//
+window.addEventListener('load', () => {
+  const missing = [];
+  if (!window.JSZip)        missing.push('JSZip');
+  if (!window.docx)         missing.push('docx-preview');
+  if (!window.jspdf)        missing.push('jsPDF');
+  if (!window.html2canvas)  missing.push('html2canvas');
+  if (!window.pdfjsLib)     missing.push('PDF.js');
+
+  if (missing.length) {
+    const banner = document.createElement('div');
+    banner.style.cssText =
+      'position:fixed;top:0;left:0;right:0;padding:14px 20px;' +
+      'background:#b8651b;color:white;font-family:Geist Mono,monospace;' +
+      'font-size:13px;text-align:center;z-index:9999';
+    banner.textContent =
+      'Could not load: ' + missing.join(', ') +
+      '. Check your connection and refresh.';
+    document.body.appendChild(banner);
+    return;
+  }
+
+  initApp();
+});
+
+function initApp() {
+//
+// ───────────────────── State & Config ─────────────────────
+//
+const PDFJS_LIB = window['pdfjsLib'];
+PDFJS_LIB.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const { jsPDF } = window.jspdf;
+
+const PAGE_DIMS = {
+  a4:     { w: 210, h: 297 },
+  letter: { w: 215.9, h: 279.4 },
+  legal:  { w: 215.9, h: 355.6 },
+};
+
+const MARGIN_MM = {
+  standard: 25,
+  narrow:   18,
+  wide:     32,
+};
+
+const STATE = {
+  file: null,
+  mode: null,           // 'docx2pdf' | 'pdf2docx'
+  pageSize: 'a4',
+  margin: 'narrow',
+  output: 'text',       // 'text' | 'image'
+  rendered: null,       // for docx: array of page elements
+  pdfDoc: null,         // for pdf: PDF.js document
+};
+
+//
+// ───────────────────── UI hooks ─────────────────────
+//
+const $ = (s) => document.querySelector(s);
+const dropzone     = $('#dropzone');
+const fileInput    = $('#file-input');
+const startView    = $('#start');
+const workView     = $('#working');
+const modeTag      = $('#mode-tag');
+const fileNameEl   = $('#file-name');
+const statusEl     = $('#status');
+const convertBtn   = $('#convert-btn');
+const resetBtn     = $('#reset-btn');
+const resetBtn2    = $('#reset-btn-2');
+const renderSlot   = $('#render-slot');
+const fieldMode    = $('#field-mode');
+
+const kvBody  = $('#kv-body-font');
+const kvHead  = $('#kv-head-font');
+const kvPages = $('#kv-pages');
+const kvSrc   = $('#kv-src-size');
+
+// Segment button wiring
+function wireSeg(id, key) {
+  document.querySelectorAll(`#${id} button`).forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll(`#${id} button`).forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      STATE[key] = btn.dataset.v;
+    });
+  });
+}
+wireSeg('seg-page',   'pageSize');
+wireSeg('seg-margin', 'margin');
+wireSeg('seg-output', 'output');
+
+// File picking
+dropzone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  if (e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+['dragover','dragenter'].forEach(ev =>
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.add('dragging'); })
+);
+['dragleave','drop'].forEach(ev =>
+  dropzone.addEventListener(ev, e => { e.preventDefault(); dropzone.classList.remove('dragging'); })
+);
+dropzone.addEventListener('drop', e => {
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+
+resetBtn.addEventListener('click', resetView);
+resetBtn2.addEventListener('click', resetView);
+convertBtn.addEventListener('click', runConversion);
+
+function setStatus(msg, kind = '') {
+  statusEl.className = 'status ' + kind;
+  statusEl.innerHTML = (kind === 'busy' ? '<span class="dot"></span>' : '') + msg;
+}
+
+function resetView() {
+  STATE.file = null;
+  STATE.mode = null;
+  STATE.rendered = null;
+  STATE.pdfDoc = null;
+  renderSlot.innerHTML = '';
+  fileInput.value = '';
+  startView.classList.remove('hidden');
+  workView.classList.remove('active');
+  setStatus('');
+}
+
+function fmtBytes(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n/1024).toFixed(1) + ' KB';
+  return (n/1024/1024).toFixed(2) + ' MB';
+}
+
+//
+// ───────────────────── File entry point ─────────────────────
+//
+async function handleFile(file) {
+  const name = file.name.toLowerCase();
+  if (name.endsWith('.docx')) {
+    STATE.mode = 'docx2pdf';
+    modeTag.textContent = 'DOCX → PDF';
+    fieldMode.style.display = '';
+  } else if (name.endsWith('.pdf')) {
+    STATE.mode = 'pdf2docx';
+    modeTag.textContent = 'PDF → DOCX';
+    fieldMode.style.display = 'none';
+  } else {
+    alert('Please choose a .docx or .pdf file.');
+    return;
+  }
+  STATE.file = file;
+  fileNameEl.textContent = file.name;
+  kvSrc.textContent = fmtBytes(file.size);
+  kvSrc.classList.remove('pending');
+
+  startView.classList.add('hidden');
+  workView.classList.add('active');
+
+  if (STATE.mode === 'docx2pdf') await prepareDocx(file);
+  else                            await preparePdf(file);
+}
+
+//
+// ───────────────────── DOCX → PDF: preparation ─────────────────────
+//
+async function prepareDocx(file) {
+  setStatus('Rendering DOCX…', 'busy');
+  try {
+    const buf = await file.arrayBuffer();
+
+    // Clean slate
+    renderSlot.innerHTML = '';
+
+    // Render with docx-preview (writes a series of <section class="docx"> pages)
+    await window.docx.renderAsync(buf, renderSlot, null, {
+      className: 'docx',
+      inWrapper: true,
+      ignoreWidth: false,
+      ignoreHeight: false,
+      ignoreFonts: false,
+      breakPages: true,
+      ignoreLastRenderedPageBreak: false,
+      experimental: false,
+      useBase64URL: false,
+      renderHeaders: true,
+      renderFooters: true,
+    });
+
+    // Allow fonts/layout to settle
+    await document.fonts.ready;
+    await new Promise(r => setTimeout(r, 80));
+
+    // Collect rendered pages (may be 1 long section if DOCX has no
+    // <w:lastRenderedPageBreak/> markers — that's handled in conversion).
+    const pages = renderSlot.querySelectorAll('section.docx');
+    STATE.rendered = Array.from(pages);
+
+    // Detect fonts from the rendered content
+    const fonts = detectFonts(renderSlot);
+    kvBody.textContent  = fonts.body  || 'Default';
+    kvHead.textContent  = fonts.head  || fonts.body || 'Default';
+    kvBody.classList.remove('pending');
+    kvHead.classList.remove('pending');
+
+    // Estimate output page count from content height rather than section count.
+    // 96dpi assumption: 1mm ≈ 3.7795 px → A4 page height = 297mm ≈ 1123px.
+    const dim = PAGE_DIMS[STATE.pageSize];
+    const pageHpx = dim.h * 3.7795;
+    const contentTarget =
+      pages[0] ||
+      renderSlot.querySelector('.docx-wrapper') ||
+      renderSlot.firstElementChild;
+    const contentHpx = contentTarget ? contentTarget.offsetHeight : 0;
+    const estPages = Math.max(1, Math.ceil(contentHpx / pageHpx));
+    kvPages.textContent = String(estPages);
+    kvPages.classList.remove('pending');
+
+    setStatus(`Ready · ${estPages} page${estPages === 1 ? '' : 's'} estimated`);
+  } catch (e) {
+    console.error(e);
+    setStatus('Could not render this DOCX. Try a different file.', 'err');
+  }
+}
+
+function detectFonts(root) {
+  const counts = new Map();
+  const headCounts = new Map();
+  root.querySelectorAll('p, span, h1, h2, h3, h4, td, th, li').forEach(el => {
+    const cs = getComputedStyle(el);
+    const f = (cs.fontFamily || '').split(',')[0].replace(/['"]/g, '').trim();
+    if (!f) return;
+    const size = parseFloat(cs.fontSize) || 0;
+    const map = (size >= 18 || el.matches('h1,h2,h3,h4')) ? headCounts : counts;
+    map.set(f, (map.get(f) || 0) + 1);
+  });
+  const top = (m) => {
+    let best = null, max = -1;
+    for (const [k, v] of m) if (v > max) { max = v; best = k; }
+    return best;
+  };
+  return { body: top(counts), head: top(headCounts) };
+}
+
+//
+// ───────────────────── DOCX → PDF: conversion ─────────────────────
+//
+async function convertDocxToPdf() {
+  if (!renderSlot.firstElementChild) {
+    setStatus('Nothing to convert.', 'err');
+    return;
+  }
+
+  setStatus('Composing PDF…', 'busy');
+  convertBtn.disabled = true;
+
+  const pdfFormat =
+    STATE.pageSize === 'a4'     ? 'a4' :
+    STATE.pageSize === 'letter' ? 'letter' : 'legal';
+
+  const pdf = new jsPDF({
+    orientation: 'portrait',
+    unit: 'mm',
+    format: pdfFormat,
+    compress: true,
+    putOnlyUsedFonts: true,
+  });
+
+  const pageWmm = pdf.internal.pageSize.getWidth();
+  const pageHmm = pdf.internal.pageSize.getHeight();
+
+  // Look for proper page sections produced by docx-preview.
+  // These only exist when the source DOCX was saved by Word (which writes
+  // <w:lastRenderedPageBreak/> markers). Script-generated DOCX files
+  // typically lack them, so docx-preview renders everything into one
+  // tall section. We handle both cases below.
+  const pageEls = Array.from(renderSlot.querySelectorAll('section.docx'));
+  let outputPages = 0;
+
+  if (pageEls.length >= 2) {
+    // ── Path A: native pagination from docx-preview ──
+    for (let i = 0; i < pageEls.length; i++) {
+      const c = await html2canvas(pageEls[i], {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      });
+      if (i > 0) pdf.addPage();
+      pdf.addImage(
+        c.toDataURL('image/jpeg', 0.92), 'JPEG',
+        0, 0, pageWmm, pageHmm, undefined, 'FAST'
+      );
+      setStatus(`Composing PDF… page ${i + 1} of ${pageEls.length}`, 'busy');
+    }
+    outputPages = pageEls.length;
+
+  } else {
+    // ── Path B: slice one tall canvas into page-sized pieces ──
+    // Pick the deepest container that holds the actual content.
+    const target =
+      pageEls[0] ||
+      renderSlot.querySelector('.docx-wrapper') ||
+      renderSlot.firstElementChild;
+
+    const fullCanvas = await html2canvas(target, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      logging: false,
+      windowWidth: target.offsetWidth,
+    });
+
+    // Canvas width corresponds to the rendered page width (e.g. 21 cm for A4
+    // source). Convert px → mm using that ratio.
+    const pxPerMm = fullCanvas.width / pageWmm;
+    const pageHpx = Math.floor(pageHmm * pxPerMm);
+    outputPages = Math.max(1, Math.ceil(fullCanvas.height / pageHpx));
+
+    for (let i = 0; i < outputPages; i++) {
+      const sliceH = Math.min(pageHpx, fullCanvas.height - i * pageHpx);
+      const slice = document.createElement('canvas');
+      slice.width = fullCanvas.width;
+      slice.height = sliceH;
+      slice.getContext('2d').drawImage(
+        fullCanvas,
+        0, i * pageHpx, fullCanvas.width, sliceH,   // source rect
+        0, 0,             fullCanvas.width, sliceH  // dest rect
+      );
+
+      if (i > 0) pdf.addPage();
+      // Place the slice at its true mm height so the aspect ratio is preserved
+      // (the slice may be shorter than a full page on the last page).
+      pdf.addImage(
+        slice.toDataURL('image/jpeg', 0.92), 'JPEG',
+        0, 0, pageWmm, (sliceH / pxPerMm),
+        undefined, 'FAST'
+      );
+      setStatus(`Composing PDF… page ${i + 1} of ${outputPages}`, 'busy');
+    }
+  }
+
+  const outName = STATE.file.name.replace(/\.docx$/i, '') + '.pdf';
+  pdf.save(outName);
+
+  const blob = pdf.output('blob');
+  kvPages.textContent = String(outputPages);
+  setStatus(`Saved ${outName} · ${fmtBytes(blob.size)} · ${outputPages} page${outputPages === 1 ? '' : 's'}`);
+  convertBtn.disabled = false;
+}
+
+//
+// ───────────────────── PDF → DOCX: preparation ─────────────────────
+//
+async function preparePdf(file) {
+  setStatus('Reading PDF…', 'busy');
+  try {
+    const buf = await file.arrayBuffer();
+    const pdfDoc = await PDFJS_LIB.getDocument({ data: buf }).promise;
+    STATE.pdfDoc = pdfDoc;
+
+    // Detect fonts (first page sample)
+    const firstPage = await pdfDoc.getPage(1);
+    const tc = await firstPage.getTextContent();
+    const fontMap = new Map();
+    for (const it of tc.items) {
+      const f = (it.fontName || '').replace(/^g_d\d+_/, '');
+      fontMap.set(f, (fontMap.get(f) || 0) + 1);
+    }
+    const topFonts = [...fontMap.entries()].sort((a,b) => b[1] - a[1]).slice(0, 2);
+    kvBody.textContent = topFonts[0] ? friendlyFont(topFonts[0][0]) : 'Default';
+    kvHead.textContent = topFonts[1] ? friendlyFont(topFonts[1][0]) : kvBody.textContent;
+    kvBody.classList.remove('pending');
+    kvHead.classList.remove('pending');
+
+    kvPages.textContent = String(pdfDoc.numPages);
+    kvPages.classList.remove('pending');
+
+    setStatus(`Ready · ${pdfDoc.numPages} page${pdfDoc.numPages === 1 ? '' : 's'} detected`);
+  } catch (e) {
+    console.error(e);
+    setStatus('Could not open this PDF.', 'err');
+  }
+}
+
+function friendlyFont(raw) {
+  // PDF.js fontNames look like "Helvetica-Bold" or "ABCDEF+Calibri,Bold"
+  let s = raw.replace(/^[A-Z]{6}\+/, '');
+  s = s.split(',')[0];
+  return s || 'Default';
+}
+
+//
+// ───────────────────── PDF → DOCX: conversion ─────────────────────
+//
+async function convertPdfToDocx() {
+  setStatus('Extracting text…', 'busy');
+  convertBtn.disabled = true;
+
+  const pdfDoc = STATE.pdfDoc;
+  const allLines = [];   // {text, size, page}
+
+  for (let p = 1; p <= pdfDoc.numPages; p++) {
+    const page = await pdfDoc.getPage(p);
+    const tc = await page.getTextContent();
+
+    // Group by y-coordinate (lines)
+    const lineMap = new Map();
+    for (const it of tc.items) {
+      const y = Math.round(it.transform[5] * 2) / 2;  // half-point rounding
+      const size = Math.abs(it.transform[0]);
+      if (!lineMap.has(y)) lineMap.set(y, []);
+      lineMap.get(y).push({ text: it.str, size, x: it.transform[4] });
+    }
+
+    // Sort lines top to bottom, fragments within a line left to right
+    const ys = [...lineMap.keys()].sort((a, b) => b - a);
+    for (const y of ys) {
+      const frags = lineMap.get(y).sort((a, b) => a.x - b.x);
+      const text  = frags.map(f => f.text).join('').replace(/\s+/g, ' ').trim();
+      if (!text) continue;
+      const avgSize = frags.reduce((s, f) => s + f.size, 0) / frags.length;
+      allLines.push({ text, size: avgSize, page: p });
+    }
+
+    setStatus(`Extracting text… page ${p} of ${pdfDoc.numPages}`, 'busy');
+  }
+
+  // Median size for heading classification
+  const sizes = allLines.map(l => l.size).sort((a, b) => a - b);
+  const median = sizes[Math.floor(sizes.length / 2)] || 12;
+
+  setStatus('Assembling DOCX…', 'busy');
+
+  const docXml = buildDocumentXml(allLines, median);
+  const zip = new JSZip();
+  zip.file('[Content_Types].xml', CONTENT_TYPES_XML);
+  zip.folder('_rels').file('.rels', RELS_XML);
+  const word = zip.folder('word');
+  word.file('document.xml', docXml);
+  word.folder('_rels').file('document.xml.rels', DOC_RELS_XML);
+  word.file('styles.xml', STYLES_XML);
+
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    compression: 'DEFLATE',
+    compressionOptions: { level: 6 },
+  });
+
+  const outName = STATE.file.name.replace(/\.pdf$/i, '') + '.docx';
+  downloadBlob(blob, outName);
+
+  setStatus(`Saved ${outName} · ${fmtBytes(blob.size)} · ${pdfDoc.numPages} source page${pdfDoc.numPages === 1 ? '' : 's'}`);
+  convertBtn.disabled = false;
+}
+
+function downloadBlob(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 100);
+}
+
+//
+// ───────────────────── OOXML building blocks ─────────────────────
+//
+function xmlEscape(s) {
+  return s.replace(/[<>&'"]/g, c => ({
+    '<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;'
+  }[c]));
+}
+
+function buildDocumentXml(lines, medianSize) {
+  const paragraphs = [];
+  for (const ln of lines) {
+    const ratio = ln.size / medianSize;
+    let style;
+    if (ratio >= 1.6) style = 'Heading1';
+    else if (ratio >= 1.3) style = 'Heading2';
+    else if (ratio >= 1.12) style = 'Heading3';
+    else style = null;
+
+    const pPr = style ? `<w:pPr><w:pStyle w:val="${style}"/></w:pPr>` : '';
+    paragraphs.push(
+      `<w:p>${pPr}<w:r><w:t xml:space="preserve">${xmlEscape(ln.text)}</w:t></w:r></w:p>`
+    );
+  }
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>
+${paragraphs.join('\n')}
+<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>
+</w:body>
+</w:document>`;
+}
+
+const CONTENT_TYPES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
+
+const RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+const DOC_RELS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+const STYLES_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:docDefaults>
+  <w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/></w:rPr></w:rPrDefault>
+  <w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault>
+</w:docDefaults>
+<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style>
+<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/>
+  <w:pPr><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr>
+  <w:rPr><w:b/><w:sz w:val="36"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/>
+  <w:pPr><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr>
+  <w:rPr><w:b/><w:sz w:val="28"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading3"><w:name w:val="heading 3"/><w:basedOn w:val="Normal"/>
+  <w:pPr><w:spacing w:before="160" w:after="80"/><w:outlineLvl w:val="2"/></w:pPr>
+  <w:rPr><w:b/><w:sz w:val="24"/></w:rPr></w:style>
+</w:styles>`;
+
+//
+// ───────────────────── Dispatcher ─────────────────────
+//
+async function runConversion() {
+  try {
+    if (STATE.mode === 'docx2pdf') await convertDocxToPdf();
+    else if (STATE.mode === 'pdf2docx') await convertPdfToDocx();
+  } catch (e) {
+    console.error(e);
+    setStatus('Conversion failed: ' + (e.message || e), 'err');
+    convertBtn.disabled = false;
+  }
+}
+
+}  // end initApp()
+</script>
+</body>
+</html>
