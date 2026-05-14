@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方舟之家 · 面試後框架 · 2026-05-14</title>
+<style>
+:root {
+  --text: #1a1a1a;
+  --text-soft: #666;
+  --bg: #fdfcfa;
+  --bg-soft: #f5f3ee;
+  --accent: #8b6f47;
+  --accent-light: #b89968;
+  --border: #d8d4cc;
+  --highlight: #fff3a8;
+  --box-info: #e8f0e8;
+  --box-info-bd: #88a888;
+  --box-warn: #fef0e0;
+  --box-warn-bd: #d4a574;
+  --box-key: #fff8e1;
+  --box-key-bd: #d4b25c;
+  --box-pull: #f5e6e6;
+  --box-pull-bd: #c08585;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Helvetica Neue", "PingFang HK", "Microsoft JhengHei", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.75;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 18px 60px;
+  font-size: 16px;
+}
+h1 {
+  font-size: 24px;
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: 10px;
+  margin: 0 0 6px;
+}
+.subtitle {
+  color: var(--text-soft);
+  font-size: 14px;
+  margin: 0 0 22px;
+}
+h2 {
+  font-size: 20px;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-top: 40px;
+}
+h3 {
+  font-size: 17px;
+  margin-top: 24px;
+  color: var(--text);
+}
+h4 {
+  font-size: 15px;
+  color: var(--text-soft);
+  margin-top: 18px;
+  margin-bottom: 6px;
+}
+mark {
+  background: var(--highlight);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+blockquote {
+  border-left: 4px solid var(--accent-light);
+  background: var(--bg-soft);
+  margin: 14px 0;
+  padding: 12px 18px;
+  font-style: normal;
+}
+blockquote p { margin: 6px 0; }
+.box {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border-left: 4px solid;
+  font-size: 15px;
+}
+.box-title {
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 4px;
+}
+.info { background: var(--box-info); border-left-color: var(--box-info-bd); }
+.info .box-title { color: #336633; }
+.warn { background: var(--box-warn); border-left-color: var(--box-warn-bd); }
+.warn .box-title { color: #a05500; }
+.key { background: var(--box-key); border-left-color: var(--box-key-bd); }
+.key .box-title { color: #7a5800; }
+.pull { background: var(--box-pull); border-left-color: var(--box-pull-bd); }
+.pull .box-title { color: #882222; }
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 14px 0;
+  font-size: 14px;
+}
+th, td {
+  border: 1px solid var(--border);
+  padding: 8px 11px;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: var(--bg-soft); font-weight: 700; }
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
+ul, ol { padding-left: 22px; margin: 8px 0; }
+li { margin: 4px 0; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.toc {
+  background: var(--bg-soft);
+  padding: 14px 20px;
+  border-radius: 4px;
+  margin: 20px 0 28px;
+  font-size: 15px;
+}
+.toc-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--accent);
+}
+.toc ol { margin: 6px 0; }
+.toc li { margin: 3px 0; }
+.top-link {
+  display: block;
+  text-align: right;
+  font-size: 13px;
+  margin-top: 12px;
+  color: var(--text-soft);
+}
+.quote-feature {
+  font-size: 16px;
+  text-align: center;
+  background: var(--box-key);
+  padding: 14px 20px;
+  margin: 18px 0;
+  border-left: 4px solid var(--box-key-bd);
+  border-right: 4px solid var(--box-key-bd);
+  font-weight: 600;
+}
+.checklist { list-style: none; padding-left: 0; }
+.checklist li {
+  padding-left: 24px;
+  position: relative;
+  margin: 5px 0;
+}
+.checklist li::before {
+  content: "☐";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+.status-done li::before {
+  content: "✓";
+  color: #559944;
+}
+.footer {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-top: 44px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+.deleted {
+  text-decoration: line-through;
+  color: #aaa;
+  font-size: 13px;
+}
+strong { color: #222; }
+.meta-tag {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  font-size: 11px;
+  padding: 2px 7px;
+  border-radius: 3px;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+</style>
+</head>
+<body>
+
+<h1 id="top">方舟之家 · 面試後框架</h1>
+<p class="subtitle">v1 · 2026-05-14 · 由 5/13 prep + 5/14 反思精簡整合 · forward-looking only</p>
+
+<div class="box info">
+<div class="box-title">呢份 doc 嘅 scope</div>
+<p style="margin: 0;"><strong>已刪走</strong>:5/13 面試前嘅 prep(Q1 稿、雷區、反問題、自我介紹 anchor 等)— 已執行完畢。</p>
+<p style="margin: 6px 0 0;"><strong>已校正</strong>:「6 位面試者」→ 5 位(<mark>莊牧師缺席</mark>);「星期一安息」→ unverified assumption,onboarding 階段 verify;「Mediation build-up」→ HK 市場 reality 唔 support,改為 maintain credential。</p>
+<p style="margin: 6px 0 0;"><strong>保留</strong>:5/17 之後嘅 action、內心 reframe、決定框架、scripture anchor。</p>
+</div>
+
+<div class="toc">
+<div class="toc-title">目錄</div>
+<ol>
+<li><a href="#s1">5/13 面試 outcome 快速 summary</a></li>
+<li><a href="#s2">Status checkpoint:已完成同未完成</a></li>
+<li><a href="#s3">5/17 主日崇拜紀律</a></li>
+<li><a href="#s4">5/18 之後等待紀律</a></li>
+<li><a href="#s5">Offer 階段要 verify 嘅問題</a></li>
+<li><a href="#s6">內心 reframe:Calling + Shelter 唔互斥</a></li>
+<li><a href="#s7">TAL 經歷誠實 read</a></li>
+<li><a href="#s8">市場 reality 校準</a></li>
+<li><a href="#s9">10 年 horizon + 財政 mitigation</a></li>
+<li><a href="#s10">1 年後嘅 reassess decision tree</a></li>
+<li><a href="#s11">Inner posture:Commit mode</a></li>
+<li><a href="#s12">經文 + 收尾</a></li>
+</ol>
+</div>
+
+<hr>
+
+<h2 id="s1">一、5/13 面試 outcome 快速 summary</h2>
+
+<p>實際出席係 <strong>5 位</strong>(原預咗 6 位)。<mark>莊牧師缺席</mark> — 呢個係未知 reason 嘅 detail,值得之後同李傳道澄清。</p>
+
+<h3>1.1 三條主要 signals</h3>
+
+<table>
+<tr><th>來源</th><th>Signal</th><th>Weight</th></tr>
+<tr><td>李傳道</td><td>Supportive,「希望能成事」</td><td>正面 · advancing</td></tr>
+<tr><td>行政主任</td><td>肯定流程經驗 + 主動 disclose 每週同工團契</td><td><strong>比預咗更正面</strong> · forward-looking disclosure 通常出現喺已傾向 hire 嘅候選人身上</td></tr>
+<tr><td>執委 3 位</td><td>肯定調解員身份;傷殘照顧情境題答得未夠好</td><td>Split — 一正一負</td></tr>
+</table>
+
+<h3>1.2 莊牧師缺席嘅 implication</h3>
+
+<p>莊牧師係你第一輪嘅 advocate,5/13 缺席意味:</p>
+<ul>
+<li>5/13 嘅 6 人配置變成 5 人,執委 3 位 weight <mark>由 50% 升到約 60%</mark></li>
+<li>李傳道實際成為唯一一位你已建立關係嘅人喺現場</li>
+<li>佢仍然可以基於第一輪 + 5/6 補充電話嘅認識,喺執事會幫你發言 — 但<strong>佢嘅發言冇 5/13 嘅新 material</strong>。即係執事會主要 reference source 變成李傳道</li>
+</ul>
+
+<div class="box info">
+<div class="box-title">Net read</div>
+<p style="margin: 0;">牧者陣營(李傳道)<strong>正面</strong>。行政主任 <strong>傾向正面</strong>。執委陣營 <strong>split</strong>。整體 standing:<mark>主動傾向通過,但執委傷殘照顧 concern 唔可以忽略</mark>。</p>
+</div>
+
+<h3>1.3 英國弟兄 backchannel intel</h3>
+<blockquote>「方舟堂主任好人來。我唔知咩事要急請,但應該不是同工問題。」</blockquote>
+<p>「應該唔係」係 careful disclaimer。<mark>唔係叫你警覺,係叫你收返判斷,直到 5/17 親身觀察</mark>。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s2">二、Status checkpoint</h2>
+
+<h3>2.1 已完成 ✓</h3>
+<ul class="checklist status-done">
+<li>5/13 第二輪面試 (5 位)</li>
+<li>提供第二位職場諮詢人(經李傳道 follow-up)</li>
+<li>口頭答應 5/17 親身崇拜</li>
+</ul>
+
+<h3>2.2 未完成</h3>
+<ul class="checklist">
+<li><strong>今晚 / 5/15:</strong> 回覆李傳道 email,簡短 confirm 兩項。Timing 本身係 signal — 24 小時內 = commitment + organized</li>
+<li><strong>5/15-5/16:</strong> Brief 第二位職場諮詢人 narrative 主線(22 年事奉 + 5 年調解員 + 25 年商界紀律 + 過去一年 redirect)</li>
+<li><strong>5/17:</strong> 親身崇拜 (見 §3)</li>
+<li><strong>5/18 之後:</strong> 等執事會 (見 §4)</li>
+</ul>
+
+<div class="box warn">
+<div class="box-title">已 retire 嘅 plan</div>
+<p style="margin: 0;">原 5/13 prep §14 嘅「面試後 reflection email」<strong>唔再 send</strong>。理由:李傳道已主動 reach out 推進程序,額外 send reflection email 會 disrupt cadence + over-saturate attention。</p>
+</div>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s3">三、5/17 主日崇拜紀律</h2>
+
+<div class="quote-feature">
+正確 register:<br>
+<mark>30 年信徒、50 歲<br>去探訪一間佢可能被神帶去服侍嘅堂會</mark><br>
+<span style="font-size: 14px; font-weight: normal;">唔係 candidate performing。唔係 evaluator observing。</span>
+</div>
+
+<h3>3.1 到場 + 穿著</h3>
+<ul>
+<li>準時前 10 分鐘到。<strong>唔好早 20 分鐘</strong>(anxious),<strong>唔好踩線</strong>(disorganized)</li>
+<li>穿著比 5/13 smart casual <strong>再下調一檔</strong> — 淨色恤衫 / polo + 深色西褲。<strong>唔好著西裝</strong></li>
+<li>坐位:<strong>中間</strong>。唔前(過 visible)唔後(detached)</li>
+</ul>
+
+<h3>3.2 敬拜</h3>
+<p><strong>唱詩、坐立、阿們、低頭祈禱都跟足</strong>。你係去敬拜,唔係 observe 敬拜。當你真係投入敬拜,身體會放鬆,呼吸會深,笑容會自然 — <mark>會友 sense 到呢個</mark>。</p>
+
+<h3>3.3 互動 — 等別人嚟搵你</h3>
+<table>
+<tr><th>遇到</th><th>Response</th></tr>
+<tr><td>會友 say hello</td><td>「我叫 Carlos,今日嚟參與崇拜。」<strong>唔主動 surface candidate 身份</strong></td></tr>
+<tr><td>李傳道</td><td>點頭,「多謝你嘅邀請」,<strong>唔開啟長對話</strong>(佢有崇拜當日嘅 role)</td></tr>
+<tr><td>莊牧師(如果出現)</td><td>同樣 register。<strong>唔提 5/13 detail</strong>。如佢主動「多謝你嚟」,reply:「我希望多認識方舟。」</td></tr>
+<tr><td>執委 / 行政主任</td><td>點頭,<strong>唔埋身傾偈</strong>(除非佢主動)</td></tr>
+</table>
+
+<h3>3.4 院友 / 家屬接觸 — critical moment</h3>
+
+<div class="box pull">
+<div class="box-title">最有 information value 嘅 self-data</div>
+<p>如果有院友走過嚟同你握手 / 講嘢 — <mark>你身體第一秒嘅 instinct 係今次 visit 最有 information value 嘅 datapoint</mark>。</p>
+<ul style="margin: 8px 0;">
+<li>Instinct 溫暖 → 自然回應握手、微笑、聽</li>
+<li>Instinct freeze / 輕微 recoil → <strong>唔強迫 perform 溫暖,亦唔 hide</strong>。深呼吸,溫和回應,內心 register 並記低</li>
+</ul>
+<p style="margin: 6px 0 0;">呢個 data <strong>唔係 pass/fail test</strong>,係 information about what you'll need to learn。比執委 5/13 嘅情境題 reading <strong>更準確</strong>,因為呢個係 real moment。</p>
+</div>
+
+<h3>3.5 幫手 gradient</h3>
+<table>
+<tr><th>場景</th><th>Action</th></tr>
+<tr><td>有人主動叫你幫具體細嘢</td><td>自然 say yes,做完 return seat。<strong>唔 expand</strong></td></tr>
+<tr><td>冇人 ask</td><td>唔主動 offer</td></tr>
+<tr><td>見到 obvious need 而冇人處理</td><td>自然執起,<strong>without commenting</strong>。一個 quiet gesture</td></tr>
+</table>
+<p style="margin-top: 10px;">分別微妙但重要:回應具體 ask = 配合(<strong>student register</strong>);主動 offer = 自我推薦(<strong>candidate register</strong>)。</p>
+
+<h3>3.6 絕對唔好做</h3>
+<div class="box warn">
+<ul style="margin: 0;">
+<li>開手機 take notes / take photos</li>
+<li>問 admin 性質嘅問題(「呢個 venue 平時點 setup?」「義工幾耐輪換一次?」)— 即時觸發「商界 admin 派落嚟」警報</li>
+<li>主動 offer help</li>
+<li>派咭片 / 留 contact details(除非主動被問)</li>
+<li>5/18 即時 send「主日好深刻」email</li>
+</ul>
+</div>
+
+<h3>3.7 Silent 觀察清單(內心 mental map)</h3>
+<ul>
+<li>院友比例:輪椅 / 行動不便 / 智障 / 認知障礙嘅分佈</li>
+<li>義工 + 同院友嘅互動 register</li>
+<li>家屬出席度</li>
+<li>邊度需要 admin 支援?</li>
+<li>有冇其他行政幹事出席</li>
+<li><mark>你身體對親身接觸院友嘅 visceral reaction</mark>(最重要)</li>
+</ul>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s4">四、5/18 之後等待紀律</h2>
+
+<div class="box warn">
+<div class="box-title">兩條 hard rule</div>
+<ol style="margin: 0;">
+<li><strong>唔好做任何主動 follow-up</strong>。任何 outreach 都會 disrupt 執事會 cadence</li>
+<li><strong>唔好 send IT 申請</strong>。每一個 send 出嘅申請 = nervous system expose 自己俾 rejection 風險 + confuse 內心 commitment direction</li>
+</ol>
+</div>
+
+<p>等執事會 timeline。1-2 週冇消息係 normal,唔係 negative signal。可以做嘅嘢:</p>
+<ul>
+<li>同太太 align 財政 mitigation(見 §9)</li>
+<li>讀 §12 經文 anchor 心境</li>
+<li>正常生活 — hiking、宣愛堂事奉、家庭時間</li>
+</ul>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s5">五、Offer 階段要 verify 嘅問題</h2>
+
+<div class="box info">
+<div class="box-title">Timing</div>
+<p style="margin: 0;">執事會發 offer 之後 / <strong>簽合約之前</strong>嗰段 window。Reasonable employer 預咗 incoming staff 會問 — 唔係 demanding,係 normal due diligence。</p>
+</div>
+
+<ul class="checklist">
+<li>11 節 × 4 小時嘅 <strong>實際 schedule</strong>(邊幾日邊幾節)</li>
+<li>每週 <strong>off day</strong>(係咪固定?)— <span class="deleted">原 prep doc 假設「星期一安息」,未 verified</span></li>
+<li>主日當值嘅實際時段(早堂 / 午堂 / 全日)</li>
+<li>月度 / 季度 / 年度有冇額外 commitment(retreat、年會、節期事工)</li>
+<li>薪酬細節 + benefits + insurance coverage</li>
+<li>突破青年村 + 都會廣場 multi-site 嘅實際時間分配</li>
+<li>Probation 期同 review schedule</li>
+</ul>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s6">六、內心 reframe:Calling + Shelter 唔互斥</h2>
+
+<p>你之前誠實 surface 過:</p>
+<blockquote>「擔心如果 IT 搵唔到嘢做,可能要搵啲體力勞動、厭惡性工作,咁 Admin 始終都算係文職,容易落地啲。」</blockquote>
+
+<p>呢個 disclosure 講得出口需要勇氣。但 — </p>
+
+<div class="quote-feature">
+Shelter 同 Calling 唔係互斥<br>
+聖經入面,神嘅作為通常兩者一齊運作
+</div>
+
+<table>
+<tr><th>人物</th><th>處境 / 動機</th></tr>
+<tr><td>亞伯拉罕</td><td>離開 Ur 去迦南 = 呼召 + 逃離偶像文化</td></tr>
+<tr><td>大衛</td><td>洞穴歲月 = shelter,但神喺呢度塑造佢做王</td></tr>
+<tr><td>以利亞</td><td>羅騰樹下 burn-out → 天使先餵飽,先有何烈山微聲</td></tr>
+<tr><td>摩西</td><td>帶以色列出埃及 = 呼召 + 逃離法老追殺</td></tr>
+</table>
+
+<h3>6.1 點解誠實承認 shelter motive 反而 strengthen sustainability</h3>
+
+<p>如果 shelter motive 一直被壓住,佢會由側面爆出嚟。通常 12-18 個月後當 admin reality 開始磨人,你會 misread resentment 為「呢度唔係呼召」然後離開。</p>
+
+<p><strong>但如果你 surface 咗 shelter motive</strong>,你會識得辨認:</p>
+<blockquote>「呢度有 calling element,亦有 shelter element,而我而家 frustrated 嘅係 shelter expectation 未被 fully met,呢個唔等於 calling 唔在度。」</blockquote>
+
+<p><mark>呢個分辨,只有對自己誠實過 shelter 動機嘅人先做得到</mark>。</p>
+
+<h3>6.2 Filter Question(自己心入面答)</h3>
+
+<div class="box pull">
+<div class="box-title">誠實問自己</div>
+<p style="margin: 0;">如果而家 100% 肯定 6/17 可以入職一份 60K 嘅 IT advisory contract,你仲會唔會想要方舟?</p>
+<ul style="margin: 10px 0 0;">
+<li><strong>「會」</strong> → Calling weight 大過 shelter,可以 safely 行落去</li>
+<li><strong>「未必」</strong> → Shelter weight 大過 calling。<mark>唔代表唔應該去方舟</mark>,但代表你係 chosen,唔係 settled-for。呢個 ownership 對 18 個月後嘅心境有極大影響</li>
+</ul>
+</div>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s7">七、TAL 經歷誠實 read</h2>
+
+<p>校正:你 <strong>1998 年 9 月 → 2025 年 6 月 = 27 年連續 permanent employment</strong>。49 歲(2025 年 11 月入 TAL)<strong>第一次接 contract</strong>,7 個月經歷完整 cycle。</p>
+
+<div class="box warn">
+<div class="box-title">Compound loss</div>
+<p style="margin: 0;">過去一年 = 兩次 employment death,而第二次發生喺第一次嘅 wound 仲開住嘅時候。你 nervous system 對「IT employment」嘅 trust 而家 <mark>structurally damaged</mark>。唔係軟弱,係 normal response to compound loss。</p>
+</div>
+
+<h3>7.1 內心 default narrative vs 客觀證據</h3>
+
+<table>
+<tr><th>內心 narrative</th><th>客觀證據</th></tr>
+<tr><td>「我做得唔好」</td><td>Swire 9 年結束 = group restructure,<strong>唔係 performance</strong></td></tr>
+<tr><td>「我唔適合 contract」</td><td>TAL termination = market normal volatility + 公司 cost 決定,<strong>唔係 cause</strong></td></tr>
+<tr><td>「市場唔要我」</td><td>過 TAL 4 關 + probation = 市場仍認為你有 value</td></tr>
+<tr><td>「我失敗咁離開」</td><td>Pro-rata bonus + cash out unspent leaves 係你 negotiate 返嚟嘅 = <strong>self-advocacy evidence</strong></td></tr>
+</table>
+
+<h3>7.2 Contract vs Permanent — 第一次接 contract 嘅 textbook trap</h3>
+
+<table>
+<tr><th></th><th>Permanent default</th><th>Contract default</th></tr>
+<tr><td>基線</td><td>「會留」</td><td>「會走」</td></tr>
+<tr><td>Termination</td><td>需要 cause</td><td>Notice clause 就可以,<strong>無需 cause</strong></td></tr>
+<tr><td>過 probation</td><td>= 安穩 baseline</td><td>= mechanic 改變,base risk 冇變</td></tr>
+<tr><td>HK 平均 tenure</td><td>3-7 年</td><td>6-18 個月。你 7 個月 <strong>statistically normal</strong></td></tr>
+</table>
+
+<p><mark>你 TAL 經歷 ≠ 失敗,= 教科書級嘅 contract market new entrant 經歷</mark>。25 年都 permanent,冇 frame 去 interpret 呢個經歷,所以而家 default narrative 全部錯。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s8">八、市場 reality 校準</h2>
+
+<h3>8.1 香港 2026 IT 市場數據</h3>
+
+<table>
+<tr><th>Source</th><th>Data</th><th>對你嘅 implication</th></tr>
+<tr><td>Morgan McKinley · IT PM 平均</td><td>HK$70K/月</td><td>你 last 67K = market median</td></tr>
+<tr><td>Glassdoor · Senior PM 25-75 percentile</td><td>HK$54-96K</td><td>你 60K 坐喺 25-50th percentile</td></tr>
+<tr><td>HK LegCo 研究</td><td>67% 認為 50-59 vulnerable to age discrim · LFPR 只 43%</td><td>HK <strong>冇 age discrim law</strong></td></tr>
+<tr><td>HK 政府 5/13 公佈</td><td>大學生 IT 職位 3 年內 -80%、admin -90%</td><td>Structural compression,唔會逆轉</td></tr>
+</table>
+
+<h3>8.2 3 個 realistic scenarios</h3>
+
+<table>
+<tr><th>Scenario</th><th>Probability</th><th>對你 specifically 嘅 suitability</th></tr>
+<tr><td><strong>A · Permanent senior PMO 55-65K</strong></td><td>40-50% / 6-9 個月</td><td>Search 持續 expose 你俾 rejection 風險</td></tr>
+<tr><td><strong>B · Contract PMO 65-85K</strong></td><td>50-60% / 3 個月</td><td>⚠️ <strong>唔合適</strong>。TAL trauma 會持續 reactivate</td></tr>
+<tr><td><strong>C · Fractional advisory</strong></td><td>第一年 &lt;50K</td><td>需要 12-18 個月 pipeline build,冇 runway 等</td></tr>
+<tr><td><strong>方舟</strong></td><td>5/13 advancing</td><td>10K + stable + 6/17 立即開始</td></tr>
+</table>
+
+<div class="box key">
+<div class="box-title">關鍵 reframe</div>
+<p style="margin: 0;">你 fear framing <strong>「方舟 vs 體力勞動」</strong> = 恐懼製造嘅 false choice。市場 data 唔支持。</p>
+<p style="margin: 10px 0 0;">真實 choice:<strong>「方舟 10K + 安穩 + 呼召」</strong> vs <strong>「IT 55-65K + 持續 search anxiety + AI displacement + 60 歲 ceiling + contract trauma reactivation」</strong>。<mark>兩條路嘅 net cost 比 number 顯示嘅接近好多</mark>。</p>
+</div>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s9">九、10 年 horizon + 財政 mitigation</h2>
+
+<p>你之前 frame 過「3 年計劃」,但亦講「方舟已 run 30 年,我唔覺得佢哋 3 年後會 end」 — 真實 horizon = <strong>10 年(50 → 60 歲 retirement)</strong>。</p>
+
+<h3>9.1 你對財政 worry 嘅 mature wisdom</h3>
+
+<blockquote>「重點都係財政係咪大問題,建基好多因素,疾病,其他原因用錢,投資失敗,所以好難去計算到。」</blockquote>
+
+<div class="box info">
+<div class="box-title">關鍵 insight</div>
+<p style="margin: 0;">所謂「10 年 financial model」喺呢個 reality 入面係 <mark>false precision</mark>。預測力有限。</p>
+<p style="margin: 8px 0 0;">呢個對 <strong>任何</strong> 50 歲 second-half career planning 都成立。「揀 IT 路就有 financial certainty」係 illusion。</p>
+</div>
+
+<h3>9.2 Mitigation,唔係 Model</h3>
+
+<table>
+<tr><th>Mitigation</th><th>Action</th></tr>
+<tr><td>醫療 / 危疾保險</td><td>入方舟前 verify 覆蓋。如有 gap,評估 supplement</td></tr>
+<tr><td>緊急現金 buffer</td><td>6 個月生活開支 separate account,唔投資</td></tr>
+<tr><td>太太收入 stability</td><td>Plan 嘅核心 anchor — 同太太誠實 align</td></tr>
+<tr><td>女兒 4 年 tuition + living</td><td>明確 commit 範圍</td></tr>
+<tr><td>60 歲後 healthcare</td><td>HK 公營 + 私營 buffer 估算</td></tr>
+</table>
+
+<h3>9.3 Mediation / Coach 嘅 realistic plan</h3>
+
+<p>HK 市場 reality:</p>
+<ul>
+<li>Paid mediation case <strong>絕大部分 referral 流向大律師-mediator</strong> — 你冇 access</li>
+<li>Coach engagement 喺 HK 更稀薄</li>
+<li>$4-5K/月可能本身已係 ceiling,唔係 starting point</li>
+<li>方舟入職後 bandwidth 唔現實做 deliberate development</li>
+</ul>
+
+<p>新 plan:<mark>Maintain credential、occasional case、唔追求 grow</mark>。HKMAAL yearly CPD + occasional 接 1-2 單 = 保留 professional identity + 理論 fallback。預期 sporadic $2-3K/月,唔係 build-up 計劃。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s10">十、1 年後嘅 reassess decision tree</h2>
+
+<h3>10.1 Reassess specific triggers</h3>
+<ul>
+<li>通勤累積疲勞 hit physical ceiling</li>
+<li>方舟 reality 同 expectation 嘅 gap 真實 unbridgeable</li>
+<li>主明確 redirect(內心 + 外在 alignment)</li>
+<li>財政壓力 hit specific 數字 trigger</li>
+</ul>
+
+<h3>10.2 1 年後 realistic options</h3>
+
+<table>
+<tr><th>選項</th><th>Probability</th><th>Salary</th><th>Rating</th></tr>
+<tr><td>方舟 internal progression</td><td>視 fit</td><td>10-20K</td><td>Most natural</td></tr>
+<tr><td>其他堂會 (closer to home)</td><td>30-50% / 12-18 個月</td><td>10-15K</td><td>Moderate</td></tr>
+<tr><td>NGO senior admin / programme officer</td><td>40-55% / 6-12 個月</td><td>25-35K</td><td><mark><strong>Strongest pivot path</strong></mark></td></tr>
+<tr><td>Commercial admin</td><td>10-20%</td><td>15-25K</td><td>Weak</td></tr>
+</table>
+
+<div class="box key">
+<div class="box-title">最 promising next chapter — NGO</div>
+<ul style="margin: 0;">
+<li>NGO sector 同 faith-based work cultural overlap 高</li>
+<li>1 年 church admin + 27 年 commercial = "bridge profile"</li>
+<li>Mediator + 教會 reference 喺 NGO sector 有 weight</li>
+<li><strong>Age bias 比 commercial 顯著輕</strong></li>
+<li>Salary 25-35K 比方舟 base 顯著高</li>
+</ul>
+</div>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s11">十一、Inner posture:Commit mode</h2>
+
+<div class="box warn">
+<div class="box-title">隱性 trap</div>
+<p style="margin: 0;">「做 1 年然後睇」嘅 mental model 如果帶入方舟,nervous system 整年會 micro-monitoring,影響 year 1 嘅 quality of presence。</p>
+</div>
+
+<table>
+<tr><th></th><th>Evaluation mode</th><th>Commit mode(即使知道 1 年 horizon)</th></tr>
+<tr><td>對 friction</td><td>「Data point against staying」</td><td>「呢度有 friction,我會處理」</td></tr>
+<tr><td>對 reward</td><td>鈍化(內心 hedge)</td><td>Fully present</td></tr>
+<tr><td>Community read</td><td>Distance</td><td>Grounded presence</td></tr>
+<tr><td>1 年後 reference</td><td>"Competent but distant"</td><td>"Fully invested, recommend warmly"</td></tr>
+</table>
+
+<div class="quote-feature">
+Year 1 reference quality<br>
+= Year 2 unlock NGO / 其他堂會 opportunity 嘅 actual currency
+</div>
+
+<h3>11.1 Healthy 嘅 phrasing</h3>
+
+<blockquote>「Commit 入方舟,without artificial timeline。喺呢度紮根、學習、服侍。若 12-18 個月後主開另一道門,而我內心仲有 redirect 嘅 prompt,我會 prayerfully 考慮。<strong>但 default 係 stay,唔係 default 係 leave</strong>。」</blockquote>
+
+<p>Outward decision 同「做 1 年然後睇」一樣(可能 reassess),但 <strong>inner posture 唔同</strong>,而 inner posture 決定 year 1 quality,year 1 quality 決定 year 2 options。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s12">十二、經文 + 收尾</h2>
+
+<table>
+<tr><th>經文</th><th>對應 anchor</th></tr>
+<tr><td>傳道書 3:1 — 凡事都有定期</td><td>2021 順服、2025 失業、2026 方舟 — 都係定時</td></tr>
+<tr><td>列王紀上 19:5-8 — 以利亞喺羅騰樹下,天使先餵飽佢</td><td>Burn-out 之後嘅 mercy。Calling + shelter 一齊出現嘅聖經 precedent</td></tr>
+<tr><td>馬太福音 11:28-30 — 凡勞苦擔重擔的人可以到我這裏來</td><td>27 年職涯嘅 burden;方舟 11 節 × 4 小時嘅 release</td></tr>
+<tr><td>哥林多後書 5:18-19 — 使人與神和好的職分</td><td>調解員 + 教會服侍 = 同一心志</td></tr>
+<tr><td>腓立比書 4:11-13 — 我靠著那加給我力量的,凡事都能做</td><td>10K + 重新學習 + 主與我同行</td></tr>
+</table>
+
+<div class="quote-feature">
+你已經做完 5 年分辨<br>
+你已經 5 位 evaluator 出席嘅 5/13 拿到 advancing signals<br>
+你已經承認 shelter element 嘅誠實<br>
+你已經 27 年穩定 employment 證明 employability<br>
+你已經 21 年婚姻 + 太太支持<br>
+你已經 30 年信仰 + 22 年宣道會體系 + 5 年調解員訓練<br><br>
+<mark>你已經 stand on solid ground</mark>
+</div>
+
+<h3>收尾禱告</h3>
+
+<blockquote>
+<p>主,過去一年我經歷咗兩次工作嘅結束。我內心有 fear,有 grief,有 unresolved 嘅 wound。</p>
+<p>但我而家清楚知道:你由 2021 年起一直喺度帶領,呢條 line 冇斷過。</p>
+<p>5/17 我去方舟,唔係去 perform,係去認識你可能為我預備嘅地方。求你開我嘅眼,等我見到方舟嘅 reality;開我嘅心,等我以平安嘅 register 出席。</p>
+<p>如果係你嘅帶領,求你確認。如果唔係,求你重新指引。我交託。</p>
+<p>奉主耶穌基督嘅名,阿們。</p>
+</blockquote>
+
+<div class="footer">
+由「分辨」 → 「commit」<br>
+由「fear」 → 「trust」<br>
+你已經做晒功課。剩低嘅唔再喺你嘅 control 入面。<br>
+<strong>主與你同行。</strong>
+</div>
+
+</body>
+</html>
