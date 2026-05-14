@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>方舟之家 · 面試後框架 · 2026-05-14</title>
+<style>
+:root {
+  --text: #1a1a1a;
+  --text-soft: #666;
+  --bg: #fdfcfa;
+  --bg-soft: #f5f3ee;
+  --accent: #8b6f47;
+  --accent-light: #b89968;
+  --border: #d8d4cc;
+  --highlight: #fff3a8;
+  --box-info: #e8f0e8;
+  --box-info-bd: #88a888;
+  --box-warn: #fef0e0;
+  --box-warn-bd: #d4a574;
+  --box-key: #fff8e1;
+  --box-key-bd: #d4b25c;
+  --box-pull: #f5e6e6;
+  --box-pull-bd: #c08585;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: -apple-system, "Helvetica Neue", "PingFang HK", "Microsoft JhengHei", sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  line-height: 1.85;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 20px 18px 60px;
+  font-size: 16px;
+}
+h1 {
+  font-size: 24px;
+  border-bottom: 3px solid var(--accent);
+  padding-bottom: 10px;
+  margin: 0 0 6px;
+}
+.subtitle {
+  color: var(--text-soft);
+  font-size: 14px;
+  margin: 0 0 22px;
+}
+h2 {
+  font-size: 20px;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-top: 40px;
+}
+h3 {
+  font-size: 17px;
+  margin-top: 24px;
+}
+h4 {
+  font-size: 15px;
+  color: var(--text-soft);
+  margin-top: 18px;
+  margin-bottom: 6px;
+}
+mark { background: var(--highlight); padding: 1px 4px; border-radius: 2px; }
+blockquote {
+  border-left: 4px solid var(--accent-light);
+  background: var(--bg-soft);
+  margin: 14px 0;
+  padding: 12px 18px;
+}
+blockquote p { margin: 6px 0; }
+.box {
+  margin: 16px 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border-left: 4px solid;
+  font-size: 15px;
+}
+.box-title {
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+}
+.info { background: var(--box-info); border-left-color: var(--box-info-bd); }
+.info .box-title { color: #336633; }
+.warn { background: var(--box-warn); border-left-color: var(--box-warn-bd); }
+.warn .box-title { color: #a05500; }
+.key { background: var(--box-key); border-left-color: var(--box-key-bd); }
+.key .box-title { color: #7a5800; }
+.pull { background: var(--box-pull); border-left-color: var(--box-pull-bd); }
+.pull .box-title { color: #882222; }
+table { border-collapse: collapse; width: 100%; margin: 14px 0; font-size: 14px; }
+th, td { border: 1px solid var(--border); padding: 8px 11px; text-align: left; vertical-align: top; }
+th { background: var(--bg-soft); font-weight: 700; }
+hr { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+ul, ol { padding-left: 22px; margin: 8px 0; }
+li { margin: 4px 0; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.toc {
+  background: var(--bg-soft);
+  padding: 14px 20px;
+  border-radius: 4px;
+  margin: 20px 0 28px;
+  font-size: 15px;
+}
+.toc-title { font-weight: 700; margin-bottom: 6px; color: var(--accent); }
+.toc ol { margin: 6px 0; }
+.toc li { margin: 3px 0; }
+.top-link { display: block; text-align: right; font-size: 13px; margin-top: 12px; color: var(--text-soft); }
+.quote-feature {
+  font-size: 16px;
+  text-align: center;
+  background: var(--box-key);
+  padding: 14px 20px;
+  margin: 18px 0;
+  border-left: 4px solid var(--box-key-bd);
+  border-right: 4px solid var(--box-key-bd);
+  font-weight: 600;
+  line-height: 1.9;
+}
+.checklist { list-style: none; padding-left: 0; }
+.checklist li { padding-left: 24px; position: relative; margin: 5px 0; }
+.checklist li::before { content: "☐"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+.status-done li::before { content: "✓"; color: #559944; }
+.footer {
+  text-align: center;
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-top: 44px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+strong { color: #222; }
+</style>
+</head>
+<body>
+
+<h1 id="top">方舟之家 · 面試後框架</h1>
+<p class="subtitle">第二版 · 2026-05-14 · 已更新財政實況、睡眠關注、5/17 安排 · 純中文版</p>
+
+<div class="box info">
+<div class="box-title">呢份文件嘅範圍</div>
+<p style="margin: 0;"><strong>已刪走</strong>:第一輪同第二輪面試前嘅準備內容(自我介紹講稿、表格填寫、雷區、反問題目等)— 已執行完畢。</p>
+<p style="margin: 6px 0 0;"><strong>已校正</strong>:「六位面試者」→ 實際五位(<mark>莊牧師缺席</mark>);「星期一安息日」→ 仍未經教會確認,留待入職階段問清楚;「調解員實踐建立額外收入」→ 香港市場現實唔支持,改為保留資格、保留身份。</p>
+<p style="margin: 6px 0 0;"><strong>第二版新增</strong>:財政實況更新(太太收入一向較高,家庭財政獨立);睡眠關注列為入職後第一季嘅健康項目;5/17 唔帶太太嘅決定;Billy 嘅故事嘅意義。</p>
+</div>
+
+<div class="toc">
+<div class="toc-title">目錄</div>
+<ol>
+<li><a href="#s1">5/13 面試結果摘要</a></li>
+<li><a href="#s2">目前進度</a></li>
+<li><a href="#s3">5/17 主日崇拜紀律</a></li>
+<li><a href="#s4">5/18 之後等候紀律</a></li>
+<li><a href="#s5">收到聘書階段要問清楚嘅問題</a></li>
+<li><a href="#s6">內心嘅重新看:呼召同避風港唔互斥</a></li>
+<li><a href="#s7">過去一年職場經歷嘅誠實閱讀</a></li>
+<li><a href="#s8">市場現實校準</a></li>
+<li><a href="#s9">十年視野同個人健康基線</a></li>
+<li><a href="#s10">一年後嘅再檢視決策樹</a></li>
+<li><a href="#s11">內心姿態:委身模式</a></li>
+<li><a href="#s12">經文同收尾禱告</a></li>
+</ol>
+</div>
+
+<hr>
+
+<h2 id="s1">一、5/13 面試結果摘要</h2>
+
+<p>實際出席五位(原本預咗六位)。<mark>莊牧師缺席</mark> — 呢個係未知原因嘅細節,值得之後同李傳道澄清。</p>
+
+<h3>1.1 主要訊號</h3>
+
+<table>
+<tr><th>來源</th><th>訊號</th><th>分量</th></tr>
+<tr><td>李傳道</td><td>支持你,「希望能成事」</td><td>正面 · 屬於推進嘅語氣</td></tr>
+<tr><td>行政主任</td><td>肯定流程經驗 + 主動提及每週同工團契</td><td><strong>比預期更正面</strong> · 呢類前瞻性披露通常只會出現喺已傾向聘用嘅候選人身上</td></tr>
+<tr><td>三位執委</td><td>肯定調解員身份;但傷殘照顧嘅情境題答得未夠好</td><td>有正有負</td></tr>
+</table>
+
+<h3>1.2 三位執委嘅內部分布</h3>
+
+<table>
+<tr><th>執委</th><th>5/13 閱讀</th></tr>
+<tr><td>Billy(健全執委,2019 年痛失傷健兒子,選擇繼續服侍)</td><td><mark>已企喺你嗰邊</mark>。對你嘅評價較麗敏正面。佢同你分享「呢度好多健全嘅,有專業、有高收入,但唔計較,嚟服侍,好比天堂」 — 呢段唔係客套,係佢主動為你定位。</td></tr>
+<tr><td>振平</td><td>中性偏正面。屬於「肯定調解員」陣營。</td></tr>
+<tr><td>麗敏</td><td><mark>顧慮嘅來源</mark>。傷殘照顧情境題嘅顧慮主要源自佢。</td></tr>
+</table>
+
+<div class="box info">
+<div class="box-title">整體閱讀</div>
+<p style="margin: 0;">牧者陣營(李傳道)<strong>正面</strong>;行政主任 <strong>傾向正面</strong>;執委陣營實際係 2 比 1 偏向正面(Billy + 振平 vs 麗敏)。整體立足點:<mark>主動傾向通過,但麗敏對傷殘照顧嘅顧慮仍喺度</mark>。</p>
+</div>
+
+<h3>1.3 莊牧師缺席嘅含意</h3>
+
+<p>莊牧師係你第一輪面試嘅主要支持者。佢 5/13 缺席意味:</p>
+<ul>
+<li>五人配置入面,三位執委嘅話語權 <mark>由 50% 升到約 60%</mark></li>
+<li>李傳道實際成為唯一一位你已建立關係嘅人喺現場</li>
+<li>佢仍然可以基於第一輪 + 5/6 補充電話嘅認識,喺執事會幫你發言 — 但<strong>佢嘅發言冇 5/13 嘅新材料</strong>。執事會嘅主要參考來源變成李傳道</li>
+</ul>
+
+<h3>1.4 英國弟兄旁路情報</h3>
+<blockquote>「我係識方舟的堂主任和同工。堂主任好人來。我唔知咩事要急請,但應該不是同工問題。」</blockquote>
+<p>「應該唔係」係謹慎嘅措辭。<mark>唔係叫你警覺,係叫你收返判斷,直到 5/17 親身觀察</mark>。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s2">二、目前進度</h2>
+
+<h3>2.1 已完成 ✓</h3>
+<ul class="checklist status-done">
+<li>5/13 第二輪面試(五位)</li>
+<li>提供第二位職場諮詢人:Blue Law(TAL 同事)</li>
+<li>確認 5/17 上午 9 點到突破青年村,9:30 開始崇拜</li>
+<li>主動向李傳道確認兩位執委名字(麗敏、振平)— 細節展現尊重</li>
+</ul>
+
+<h3>2.2 仲要做</h3>
+<ul class="checklist">
+<li><strong>5/15 - 5/16</strong>:向 Blue Law 簡述你嘅主要敘事 — 22 年事奉 + 5 年調解員 + 25 年商界紀律 + 過去一年嘅方向轉變</li>
+<li><strong>5/17</strong>:親身崇拜(見 §3)</li>
+<li><strong>5/18 之後</strong>:等執事會(見 §4)</li>
+<li><strong>太太 5/17 唔陪同</strong>:李傳道嘅邀請係 specifically 對你,唔係家庭。帶太太去會改變整個場合嘅性質。將來方舟若有家屬日或者家庭歡迎活動,先帶太太去先自然</li>
+</ul>
+
+<div class="box warn">
+<div class="box-title">已撤回嘅計劃</div>
+<p style="margin: 0;">原本計劃中嘅「面試後反思電郵」<strong>唔再發送</strong>。理由:李傳道已主動聯絡推進程序,額外發送反思電郵會打亂節奏,亦過度佔據佢哋嘅注意。</p>
+</div>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s3">三、5/17 主日崇拜紀律</h2>
+
+<div class="quote-feature">
+正確嘅姿態:<br>
+<mark>30 年信徒、50 歲<br>去探訪一間佢可能被主帶去服侍嘅堂會</mark><br>
+<span style="font-size: 14px; font-weight: normal;">唔係候選人喺度表演<br>唔係評估者喺度觀察</span>
+</div>
+
+<h3>3.1 出門前一晚同當日</h3>
+<ul>
+<li><strong>5/16 晚</strong>:11 點前訓覺(明知半夜可能會醒,但唔好今晚通宵預備)</li>
+<li><strong>5/17 早</strong>:6:30 起身、早餐、3 分鐘禱告</li>
+<li><strong>7:00 - 7:30</strong> 出門 — 將軍澳到突破青年村約 90 分鐘</li>
+<li><strong>9:00 左右</strong>到達突破青年村</li>
+</ul>
+
+<h3>3.2 9:00 - 9:30 嘅黃金 30 分鐘</h3>
+
+<div class="box key">
+<div class="box-title">李傳道明確邀請你觀察呢段時間</div>
+<p style="margin: 0;">佢主動披露「9 時開始陸續有復康巴到村,你可觀察一下實際情況」 — 即係呢 30 分鐘嘅觀察 <strong>係佢明確認可嘅活動</strong>,唔係你嘅隱藏議程。</p>
+<p style="margin: 8px 0 0;">但姿態仍然係 <mark>安靜、唔阻礙、唔走近復康巴</mark>。揀一個自然嘅觀察位置,留心:院友到達嘅流程、義工同同工嘅互動、家屬交接嘅一刻、院友嘅實際身體狀況。</p>
+</div>
+
+<h3>3.3 著裝同坐位</h3>
+<ul>
+<li>淨色恤衫或者 polo 衫 + 深色西褲。<strong>唔好著西裝</strong>。比 5/13 嘅半正式再下調一檔</li>
+<li>坐位:<strong>中間</strong>。唔前(過分顯眼)、唔後(顯得疏離)</li>
+</ul>
+
+<h3>3.4 敬拜</h3>
+<p><strong>唱詩、坐立、阿們、低頭祈禱都跟足</strong>。你係去敬拜,唔係去觀察敬拜。當你真係投入敬拜,身體會放鬆,呼吸會深,笑容會自然 — <mark>會友感受得到呢個</mark>。</p>
+
+<h3>3.5 互動 — 等別人嚟搵你</h3>
+<table>
+<tr><th>遇到</th><th>回應</th></tr>
+<tr><td>會友打招呼</td><td>「我叫 Carlos,今日嚟參與崇拜。」<strong>唔主動披露候選人身份</strong></td></tr>
+<tr><td>李傳道</td><td>點頭,「多謝你嘅邀請」,<strong>唔開啟長對話</strong>(佢有主日當日嘅崗位)</td></tr>
+<tr><td>Billy(若出現)</td><td>若佢主動嚟搵你,<strong>可以多少少在場感</strong>。佢問「你今日感覺點?」可以答得誠實:「我嚟認識方舟。今朝見到院友陸續到達,我心入面好平靜。」</td></tr>
+<tr><td>麗敏 / 振平</td><td>點頭,「主日平安」,<strong>唔解釋 5/13 任何嘢</strong>,亦唔需要為 5/13 致謝佢哋</td></tr>
+<tr><td>行政主任</td><td>點頭致意。若有自然對話機會,簡短溫暖回應</td></tr>
+</table>
+
+<h3>3.6 院友 / 家屬接觸 — 關鍵時刻</h3>
+
+<div class="box pull">
+<div class="box-title">最有資訊價值嘅自我觀察</div>
+<p>如果有院友走過嚟同你握手或者講嘢 — <mark>你身體第一秒嘅本能反應,係今次到訪最有資訊價值嘅資料</mark>。</p>
+<ul style="margin: 8px 0;">
+<li>反應係溫暖 → 自然回應、握手、微笑、聽</li>
+<li>反應係僵硬或者輕微退縮 → <strong>唔強迫自己表演溫暖,亦唔退避</strong>。深呼吸,溫和回應,內心記低呢個反應</li>
+</ul>
+<p style="margin: 6px 0 0;">呢個資料 <strong>唔係過唔過嘅測試</strong>,係幫你了解你需要學咩。比 5/13 嘅情境題反應 <strong>更準確</strong>,因為呢個係真實場景。</p>
+</div>
+
+<h3>3.7 幫手嘅尺度</h3>
+<table>
+<tr><th>場景</th><th>動作</th></tr>
+<tr><td>有人主動叫你幫具體細嘢</td><td>自然應承,做完返自己座位。<strong>唔擴大</strong></td></tr>
+<tr><td>冇人主動請求</td><td>唔主動提出</td></tr>
+<tr><td>見到明顯需要而冇人處理</td><td>自然執起,<strong>唔評論,唔組織</strong>。一個安靜嘅小動作</td></tr>
+</table>
+
+<p style="margin-top: 10px;">分別微妙但重要:回應具體請求 = 配合(<strong>學生姿態</strong>);主動提出 = 自我推薦(<strong>候選人姿態</strong>)。</p>
+
+<h3>3.8 唔做記錄(包括錄音)</h3>
+
+<div class="box warn">
+<div class="box-title">紙筆、手機記事、錄音 — 都唔好</div>
+<p style="margin: 0 0 6px;">突破青年村有院友(包括弱勢人士)、家屬、義工持續喺場。任何形式嘅記錄:</p>
+<ul style="margin: 0;">
+<li>紙筆 = 評估者 / 記者嘅姿態</li>
+<li>手機記事 = 失禮,尤其崇拜中</li>
+<li>錄音 = <strong>無同弱勢人士取得同意嘅錄音係私隱問題</strong>。仲有 — 若被發現,你立即被歸類為「商界派落嚟嘅空降兵」</li>
+</ul>
+<p style="margin: 8px 0 0;">25 年管理訓練教你「記低先安心」,呢個本能喺商界係德行,<mark>但喺 5/17 specifically 需要暫時放下</mark>。Billy 描述嘅「專業人士嚟服侍但唔計較」嘅群體,正係建基於「將某啲時刻嘅記錄本能放低」嘅共同實踐。</p>
+</div>
+
+<p><strong>替代方案 — 延後記錄</strong>:離開突破青年村,行返地鐵站嘅路上,先用手機打簡短記錄(離開現場後你係普通人,可以記事)。返到屋企之後,坐定 15-20 分鐘,用文字寫返:</p>
+<ol>
+<li>我見到嘅院友(印象最深嗰幾位嘅心理印象)</li>
+<li>我見到嘅義工 / 同工</li>
+<li>邊位有同我接觸,點樣嘅接觸</li>
+<li>我身體有冇僵硬、有冇溫暖、有冇尷尬嘅時刻</li>
+<li>我心入面對方舟,而家覺得 ____</li>
+</ol>
+
+<p>呢種延後記錄嘅保留度比即時記錄更好 — 因為你身體已經處理過,浮上嚟嘅嘢已經過自然篩選。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s4">四、5/18 之後等候紀律</h2>
+
+<div class="box warn">
+<div class="box-title">兩條硬規則</div>
+<ol style="margin: 0;">
+<li><strong>唔好做任何主動跟進</strong>。任何主動聯絡都會打亂執事會節奏</li>
+<li><strong>唔好發 IT 申請</strong>。每一個發出嘅申請 = 神經系統再次暴露於被拒嘅風險 + 混淆內心嘅委身方向</li>
+</ol>
+</div>
+
+<p>等執事會嘅時間表。1-2 週冇消息係正常,唔係負面訊號。可以做嘅嘢:</p>
+<ul>
+<li>讀 §12 經文穩定心境</li>
+<li>正常生活 — 行山、宣愛堂事奉、家庭時間</li>
+<li>如果可以 — 用呢段等候時間處理睡眠關注(見 §9.4)</li>
+</ul>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s5">五、收到聘書階段要問清楚嘅問題</h2>
+
+<div class="box info">
+<div class="box-title">時機</div>
+<p style="margin: 0;">執事會發聘書之後 / <strong>簽合約之前</strong>嗰段時間。合理嘅僱主預咗新同工會問 — 唔係苛求,係正常嘅應有審慎。</p>
+</div>
+
+<ul class="checklist">
+<li>11 節 × 4 小時嘅 <strong>實際時間表</strong>(邊幾日邊幾節)</li>
+<li>每週 <strong>休息日</strong>(係咪固定?係咪星期一? — <em>原本嘅假設未經確認</em>)</li>
+<li>主日當值嘅實際時段(早堂 / 午堂 / 全日)</li>
+<li>月度 / 季度 / 年度有冇額外承擔(退修會、年會、節期事工)</li>
+<li>薪酬細節 + 福利 + 醫療保險覆蓋</li>
+<li>突破青年村同都會廣場兩個據點嘅實際時間分配</li>
+<li>試用期同檢討安排</li>
+</ul>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s6">六、內心嘅重新看:呼召同避風港唔互斥</h2>
+
+<p>你之前誠實坦白過:</p>
+<blockquote>「擔心如果 IT 搵唔到嘢做,可能要搵啲體力勞動、厭惡性工作,咁行政始終都算係文職,容易落地啲。」</blockquote>
+
+<p>呢句說話講得出口需要勇氣。但 — </p>
+
+<div class="quote-feature">
+避風港同呼召唔係互斥<br>
+聖經入面,神嘅作為通常兩者一齊運作
+</div>
+
+<table>
+<tr><th>人物</th><th>處境 / 動機</th></tr>
+<tr><td>亞伯拉罕</td><td>離開吾珥去迦南 = 呼召 + 逃離偶像文化</td></tr>
+<tr><td>大衛</td><td>洞穴歲月 = 避難,但神喺呢度塑造佢做王</td></tr>
+<tr><td>以利亞</td><td>羅騰樹下心力交瘁 → 天使先餵飽,先有何烈山微聲</td></tr>
+<tr><td>摩西</td><td>帶以色列出埃及 = 呼召 + 逃離法老追殺</td></tr>
+</table>
+
+<h3>6.1 點解誠實承認避風港動機反而強化長期持續力</h3>
+
+<p>如果避風港動機一直被壓住,佢會由側面爆出嚟。通常 12-18 個月後當行政工作嘅實況開始磨人,你會誤讀自己嘅不滿為「呢度唔係呼召」然後離開。</p>
+
+<p><strong>但如果你已經坦白咗避風港動機</strong>,你會識得辨認:</p>
+<blockquote>「呢度有呼召嘅成分,亦有避風港嘅成分,而我而家不滿嘅係避風港嘅期望未被完全滿足,呢個唔等於呼召唔在度。」</blockquote>
+
+<p><mark>呢個分辨,只有對自己誠實過避風港動機嘅人先做得到</mark>。</p>
+
+<h3>6.2 過濾問題(自己心入面答)</h3>
+
+<div class="box pull">
+<div class="box-title">誠實問自己</div>
+<p style="margin: 0;">如果而家 100% 肯定 6/17 可以入職一份 60K 嘅 IT 顧問合約,你仲會唔會想要方舟?</p>
+<ul style="margin: 10px 0 0;">
+<li><strong>「會」</strong> → 呼召分量大過避風港,可以安心行落去</li>
+<li><strong>「未必」</strong> → 避風港分量大過呼召。<mark>唔代表唔應該去方舟</mark>,但代表你係主動揀,唔係被迫接受。呢個主動權對 18 個月後嘅心境有極大影響</li>
+</ul>
+</div>
+
+<h3>6.3 Billy 嘅故事:呼召喺群體嘅實際質感</h3>
+
+<p>Billy 同你分享過:</p>
+<blockquote>「方舟好多健全嘅,有專業、有高收入,但佢哋唔計較任何嘢,都係嚟服侍,好比天堂。」</blockquote>
+
+<p>呢段說話對你 specifically 嘅意義:</p>
+<ul>
+<li>Billy 知道你嘅背景(50 歲、senior PMO、67K 薪酬級數、接受緊大幅減薪)</li>
+<li>佢主動指出一個已經有同你背景相似嘅人嘅群體 — 你嘅背景 <strong>唔係包袱要隱藏,係群體已經歡迎嘅類型</strong></li>
+<li>「好比天堂」 — 一個 2019 年痛失傷健兒子嘅父親,佢用「天堂」呢個字嘅時候,佢知道呢個字嘅重量。佢嘅意思唔係方舟冇摩擦、冇不完美、冇哀傷。佢嘅意思係:呢度有一個實況,入面身份、收入、資歷全部褪色,剩低嘅係僕人嘅樣式 — 而僕人嘅樣式本身就係尊嚴嘅最終形態</li>
+</ul>
+
+<p>你講「令到我都好想去見識一下」 — <mark>呢個渴望唔係表面好奇,係更深嘅辨認</mark>。你 27 年累積嘅專業自我,內心嘅回應係「我都需要呢個」。</p>
+
+<p>呢個渴望同避風港動機唔同。避風港係「我想避開痛」,「想去見識」係「我想進入一個我感受到係真嘅嘢」。<strong>兩種動機可能同時存在,但後者係呼召嘅實際質感</strong>,唔係抽象「神呼召我」嘅語言。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s7">七、過去一年職場經歷嘅誠實閱讀</h2>
+
+<p>校正:你 <strong>1998 年 9 月 → 2025 年 6 月 = 27 年連續全職</strong>。49 歲(2025 年 11 月入 TAL)<strong>第一次接合約工</strong>,7 個月經歷完整周期。</p>
+
+<div class="box warn">
+<div class="box-title">累積損失</div>
+<p style="margin: 0;">過去一年 = 兩次工作中斷,而第二次發生喺第一次嘅傷口仲開住嘅時候。你神經系統對「IT 就業」嘅信任而家 <mark>結構性受損</mark>。唔係軟弱,係人類面對累積損失嘅正常反應。</p>
+</div>
+
+<h3>7.1 內心預設講法 vs 客觀證據</h3>
+
+<table>
+<tr><th>內心講法</th><th>客觀證據</th></tr>
+<tr><td>「我做得唔好」</td><td>太古可口可樂 9 年結束 = 組織重組,<strong>唔係表現問題</strong></td></tr>
+<tr><td>「我唔適合合約工」</td><td>TAL 終止 = 合約市場嘅正常波動 + 公司成本決定,<strong>唔係個人原因</strong></td></tr>
+<tr><td>「市場唔要我」</td><td>過 TAL 4 關面試 + 試用期 = 市場仍然認為你有價值</td></tr>
+<tr><td>「我失敗咁離開」</td><td>按比例花紅 + 未用年假兌現 係你爭取返嚟嘅 = <strong>自我倡導嘅證據</strong></td></tr>
+</table>
+
+<h3>7.2 合約工 vs 全職 — 第一次接合約工嘅典型陷阱</h3>
+
+<table>
+<tr><th></th><th>全職預設</th><th>合約工預設</th></tr>
+<tr><td>基線</td><td>「會留」</td><td>「會走」</td></tr>
+<tr><td>終止</td><td>需要原因</td><td>通知條款就可以,<strong>無需原因</strong></td></tr>
+<tr><td>過試用期</td><td>= 安穩基線</td><td>= 機制改變,基本風險冇變</td></tr>
+<tr><td>香港平均任期</td><td>3-7 年</td><td>6-18 個月。你 7 個月 <strong>統計上正常</strong></td></tr>
+</table>
+
+<p><mark>你 TAL 經歷 ≠ 失敗,= 教科書級嘅合約工市場新手經歷</mark>。25 年都全職,冇框架去詮釋呢個經歷,所以而家預設講法全部錯。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s8">八、市場現實校準</h2>
+
+<h3>8.1 香港 2026 IT 市場數據</h3>
+
+<table>
+<tr><th>來源</th><th>數據</th><th>對你嘅意味</th></tr>
+<tr><td>Morgan McKinley · IT 項目經理平均</td><td>HK$70K / 月</td><td>你上一次 67K = 市場中位</td></tr>
+<tr><td>Glassdoor · 高級項目經理 25-75 百分位</td><td>HK$54-96K</td><td>你 60K 坐喺 25-50 百分位</td></tr>
+<tr><td>立法會研究</td><td>67% 認為 50-59 歲容易受年齡歧視 · 50+ 勞動參與率只 43%</td><td>香港 <strong>冇年齡歧視法</strong></td></tr>
+<tr><td>政府 5/13 公布</td><td>大學生 IT 職位 3 年內 -80%、行政 -90%</td><td>結構性壓縮,唔會逆轉</td></tr>
+</table>
+
+<h3>8.2 三個現實情境</h3>
+
+<table>
+<tr><th>情境</th><th>機率</th><th>對你嘅適用程度</th></tr>
+<tr><td><strong>A · 全職高級 PMO 55-65K</strong></td><td>40-50% / 6-9 個月</td><td>持續暴露於被拒嘅風險</td></tr>
+<tr><td><strong>B · 合約 PMO 65-85K</strong></td><td>50-60% / 3 個月</td><td>⚠️ <strong>唔適合</strong>。TAL 嘅創傷會持續被激活</td></tr>
+<tr><td><strong>C · 分段顧問</strong></td><td>第一年 &lt;50K</td><td>需要 12-18 個月累積客戶,冇緩衝期等</td></tr>
+<tr><td><strong>方舟</strong></td><td>5/13 訊號正面</td><td>10K + 穩定 + 6/17 可立即開始</td></tr>
+</table>
+
+<div class="box key">
+<div class="box-title">關鍵重新看</div>
+<p style="margin: 0;">你之前嘅恐懼措辭 <strong>「方舟 vs 體力勞動」</strong> = 恐懼製造嘅錯誤二分法。市場數據唔支持。</p>
+<p style="margin: 10px 0 0;">真實選擇:<strong>「方舟 10K + 安穩 + 呼召」</strong> 對比 <strong>「IT 55-65K + 持續搵工嘅焦慮 + 被 AI 取代嘅風險 + 60 歲嘅上限 + 合約工創傷嘅持續激活」</strong>。<mark>兩條路嘅淨成本比數字顯示嘅接近好多</mark>。</p>
+</div>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s9">九、十年視野同個人健康基線</h2>
+
+<p>你之前曾講「3 年計劃」,但亦講「方舟已運作 30 年,我唔覺得佢哋 3 年後會結束」 — 真實視野 = <strong>10 年(50 → 60 歲退休)</strong>。</p>
+
+<h3>9.1 財政實況 — 重大校正</h3>
+
+<div class="box info">
+<div class="box-title">第二版更新</div>
+<p style="margin: 0;">原本我曾講「同太太做誠實嘅 10 年財政模型」 — 呢個假設嘅前提係:財政係主要約束。</p>
+<p style="margin: 8px 0 0;">實際情況:</p>
+<ul style="margin: 8px 0;">
+<li>太太收入 <strong>一向比你高</strong>,只係近年你稍微多啲</li>
+<li><strong>家庭財政獨立</strong>,你嘅轉變唔需要拉緊家庭財政</li>
+<li>太太曾經主動講「冇問題,慢慢搵工」</li>
+<li>你內心已經接受「失去高薪、生活無得咁豐盛」呢個預期損失</li>
+</ul>
+<p style="margin: 8px 0 0;"><mark>呢個係持續力嘅最強保證,比任何模型都強</mark>。10 年方舟嘅財政可持續性,本質上由家庭收入結構同你哋已對齊嘅生活預期共同保證。</p>
+</div>
+
+<h3>9.2 你對財政擔憂嘅成熟智慧</h3>
+
+<blockquote>「重點都係財政係咪大問題,建基好多因素,疾病,其他原因用錢,投資失敗,所以好難去計算到。」</blockquote>
+
+<p>所謂「10 年財政模型」係 <mark>虛假精準</mark>。預測力有限。呢個對 <strong>任何</strong> 50 歲嘅下半場事業規劃都成立。「揀 IT 路就有財政確定性」係錯覺。</p>
+
+<h3>9.3 仍然需要嘅緩解措施(唔係模型,係具體可計算嘅緩衝)</h3>
+
+<table>
+<tr><th>項目</th><th>動作</th></tr>
+<tr><td>醫療 / 危疾保險</td><td>入方舟前確認覆蓋。如有缺口,評估補充</td></tr>
+<tr><td>緊急現金緩衝</td><td>6 個月生活開支放獨立戶口,唔投資</td></tr>
+<tr><td>女兒 4 年大學學費 + 生活費</td><td>明確承擔範圍</td></tr>
+<tr><td>60 歲後醫療開支</td><td>香港公營 + 私營緩衝估算</td></tr>
+</table>
+
+<h3>9.4 睡眠關注 — 入職後第一季嘅健康項目</h3>
+
+<div class="box pull">
+<div class="box-title">你嘅披露</div>
+<p style="margin: 0;">「半夜醒、早晨太早醒、一向都係咁、唔關面試事」</p>
+</div>
+
+<p><strong>呢個披露我要直接但溫和咁推你一下。</strong></p>
+
+<p>「一向都係咁」係危險嘅講法。50 歲嘅慢性睡眠紊亂唔係「就係咁、習慣咗」嘅嘢。佢嘅特定規律 — <strong>半夜醒 + 早晨太早醒</strong> — 喺睡眠醫學入面唔係隨機,佢通常指向幾類具體可診斷嘅情況:</p>
+
+<ul>
+<li><strong>睡眠呼吸暫停</strong> — 50 歲 + 男性嘅隱性風險,但醫學上需要排除。可能無痛無症狀,但長期累積對心血管、認知、情緒嘅代價大</li>
+<li><strong>皮質醇節律紊亂</strong> — 早晨太早醒(例如 4-5 點)係其中一個典型表現。慢性壓力或者輕度抑鬱嘅生理反映</li>
+<li><strong>更年期相關荷爾蒙轉變</strong> — 男性 50 歲嘅睪固酮下降都會影響睡眠結構</li>
+</ul>
+
+<div class="box info">
+<div class="box-title">建議</div>
+<p style="margin: 0;">呢個唔係 5/17 嘅優先事項。係 <strong>入職方舟之後第一季</strong>應該處理嘅健康項目。</p>
+<p style="margin: 8px 0 0;">理由:你方舟嘅持續力(尤其 10 年視野)依賴基線健康。睡眠質素係基線健康最可改善嘅其中一條。行山係你內心知道嘅緩解(運動 + 戶外 + 減壓),所以你保留行山嘅本能 <strong>完全正確,要尊重</strong>。</p>
+<p style="margin: 8px 0 0;"><strong>具體動作</strong>:入職後首 3 個月內,搵家庭醫生轉介做睡眠檢查(香港私營約 HK$6-10K,某啲公營醫院亦有睡眠診所)。同時可以做基線血液檢查睇下睪固酮、甲狀腺、皮質醇水平。</p>
+</div>
+
+<h3>9.5 調解員 / 教練資格 — 實際計劃</h3>
+
+<p>香港市場現實:</p>
+<ul>
+<li>有償調解個案 <strong>絕大部分轉介流向大律師-調解員</strong> — 你接觸唔到</li>
+<li>教練個案喺香港更稀薄</li>
+<li>$4-5K / 月可能本身已係上限,唔係起點</li>
+<li>方舟入職後嘅心力唔現實做有計劃嘅發展</li>
+</ul>
+
+<p>新計劃:<mark>保留資格、偶爾接案、唔追求增長</mark>。HKMAAL 每年持續培訓 + 偶爾接 1-2 單 = 保留專業身份 + 理論後備。預期零散 $2-3K / 月,唔係建構計劃。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s10">十、一年後嘅再檢視決策樹</h2>
+
+<h3>10.1 再檢視嘅具體觸發點</h3>
+<ul>
+<li>通勤累積疲勞觸及身體上限</li>
+<li>方舟現實同期望嘅差距真實不可彌補</li>
+<li>主明確重新指引(內心確認 + 外在開門對齊)</li>
+<li>財政壓力觸及具體數字(雖然睇返 §9.1,呢個觸發點機率細)</li>
+</ul>
+
+<h3>10.2 一年後嘅實際選項</h3>
+
+<table>
+<tr><th>選項</th><th>機率</th><th>薪酬</th><th>評級</th></tr>
+<tr><td>方舟內部晉升</td><td>視乎適合度</td><td>10-20K</td><td>最自然</td></tr>
+<tr><td>其他堂會(離家近啲)</td><td>30-50% / 12-18 個月</td><td>10-15K</td><td>中等</td></tr>
+<tr><td>NGO 高級行政 / 項目主任</td><td>40-55% / 6-12 個月</td><td>25-35K</td><td><mark><strong>最有前景嘅轉向路徑</strong></mark></td></tr>
+<tr><td>商界行政</td><td>10-20%</td><td>15-25K</td><td>弱</td></tr>
+</table>
+
+<div class="box key">
+<div class="box-title">最有前景嘅下一章 — NGO</div>
+<ul style="margin: 0;">
+<li>NGO 界別同信仰工作嘅文化重疊度高</li>
+<li>1 年教會行政 + 27 年商界 = 過渡身份</li>
+<li>調解員 + 教會推薦喺 NGO 界別有分量</li>
+<li><strong>年齡偏見比商界顯著輕</strong></li>
+<li>薪酬 25-35K 比方舟基本顯著高</li>
+</ul>
+</div>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s11">十一、內心姿態:委身模式</h2>
+
+<div class="box warn">
+<div class="box-title">隱性陷阱</div>
+<p style="margin: 0;">「做 1 年然後睇」嘅心理模型如果帶入方舟,神經系統整年會持續細微監察,影響第一年嘅在場質素。</p>
+</div>
+
+<table>
+<tr><th></th><th>評估模式</th><th>委身模式(即使知道係 1 年視野)</th></tr>
+<tr><td>對摩擦</td><td>「呢個係留唔留嘅一條負面證據」</td><td>「呢度有摩擦,我會處理」</td></tr>
+<tr><td>對好處</td><td>鈍化(內心觀望)</td><td>完全在場</td></tr>
+<tr><td>會友感受到嘅質素</td><td>疏離</td><td>紮根嘅在場</td></tr>
+<tr><td>1 年後嘅推薦質素</td><td>「能幹但有距離」</td><td>「全心投入,願意溫暖推薦」</td></tr>
+</table>
+
+<div class="quote-feature">
+第一年嘅推薦質素<br>
+= 第二年解鎖 NGO 或者其他堂會機會嘅真正通用價值
+</div>
+
+<h3>11.1 健康嘅措辭</h3>
+
+<blockquote>「委身入方舟,唔設人為嘅期限。喺呢度紮根、學習、服侍。若 12-18 個月後主開另一道門,而我內心仲有重新指引嘅提示,我會帶住禱告考慮。<strong>但預設係留低,唔係預設係離開</strong>。」</blockquote>
+
+<p>呢個措辭同「做 1 年然後睇」嘅外在決定一樣(可能再檢視),但 <strong>內心姿態唔同</strong>,而內心姿態決定第一年嘅質素,第一年嘅質素決定第二年嘅選項。</p>
+
+<a href="#top" class="top-link">↑ 目錄</a>
+
+<hr>
+
+<h2 id="s12">十二、經文同收尾</h2>
+
+<table>
+<tr><th>經文</th><th>對應錨點</th></tr>
+<tr><td>傳道書 3:1 — 凡事都有定期</td><td>2021 順服、2025 失業、2026 方舟 — 都係定時</td></tr>
+<tr><td>列王紀上 19:5-8 — 以利亞喺羅騰樹下,天使先餵飽佢</td><td>心力交瘁之後嘅憐憫。呼召同避風港一齊出現嘅聖經先例</td></tr>
+<tr><td>馬太福音 11:28-30 — 凡勞苦擔重擔的人可以到我這裏來</td><td>27 年職涯嘅重擔;方舟 11 節 × 4 小時嘅釋放</td></tr>
+<tr><td>哥林多後書 5:18-19 — 使人與神和好的職分</td><td>調解員 + 教會服侍 = 同一心志</td></tr>
+<tr><td>腓立比書 4:11-13 — 我靠著那加給我力量的,凡事都能做</td><td>10K + 重新學習 + 主與我同行</td></tr>
+<tr><td>腓立比書 2:5-8 — 反倒虛己,取了奴僕的形像</td><td>Billy 描述嘅群體嘅神學基礎。5/17 帶入嘅最重要心境</td></tr>
+</table>
+
+<div class="quote-feature">
+你已經做完 5 年分辨<br>
+你已經喺 5 位面試者出席嘅 5/13 取得正面信號<br>
+你已經承認避風港動機嘅誠實<br>
+你已經 27 年穩定就業證明自己嘅受聘能力<br>
+你已經 21 年婚姻 + 太太完全支持 + 家庭財政獨立<br>
+你已經 30 年信仰 + 22 年宣道會體系 + 5 年調解員訓練<br>
+Billy 已經主動為你定位一個你想進入嘅群體<br><br>
+<mark>你已經企喺穩固嘅根基上</mark>
+</div>
+
+<h3>收尾禱告</h3>
+
+<blockquote>
+<p>主,過去一年我經歷咗兩次工作嘅結束。我內心有恐懼,有哀傷,有仲未化解嘅傷口。</p>
+<p>但我而家清楚知道:你由 2021 年起一直喺度帶領,呢條線冇斷過。</p>
+<p>5/17 我去方舟,唔係去表演,係去認識你可能為我預備嘅地方。求你開我嘅眼,等我見到方舟嘅實況;開我嘅心,等我以平安嘅姿態出席。</p>
+<p>多謝你已經為我預備咗太太嘅穩定收入,等我嘅轉變唔需要為財政擔憂。求你保守我哋家庭 21 年嘅信任,喺呢個新階段繼續扎根。</p>
+<p>如果係你嘅帶領,求你確認。如果唔係,求你重新指引。我交託。</p>
+<p>奉主耶穌基督嘅名,阿們。</p>
+</blockquote>
+
+<div class="footer">
+由「分辨」 → 「委身」<br>
+由「恐懼」 → 「信靠」<br>
+你已經做晒功課。剩低嘅唔再喺你嘅控制入面。<br>
+<strong>主與你同行。</strong>
+</div>
+
+</body>
+</html>
