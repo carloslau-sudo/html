@@ -2,9 +2,10 @@
   "_meta": {
     "app": "hk-hiking-2026",
     "version": 2,
-    "exportedAt": "2026-05-15T03:06:20.003Z",
-    "count": 12,
-    "peakOverrideCount": 0
+    "exportedAt": "2026-05-15T03:27:05.186Z",
+    "count": 17,
+    "peakOverrideCount": 0,
+    "auto": true
   },
   "updates": {
     "2": {
@@ -13,9 +14,9 @@
       "partialNote": null,
       "partialDonePeaks": 0,
       "doneNote": null,
-      "isoDate": "2026-06-28",
-      "date": "6月28日(週日)",
-      "sea": "summer"
+      "isoDate": "2026-10-18",
+      "date": "10月18日(週日)",
+      "sea": "autumn"
     },
     "3": {
       "done": "done",
@@ -40,9 +41,29 @@
       "partialNote": null,
       "partialDonePeaks": 0,
       "doneNote": null,
-      "isoDate": "2026-08-02",
-      "date": "8月2日(週日)",
-      "sea": "summer"
+      "isoDate": "2026-10-25",
+      "date": "10月25日(週日)",
+      "sea": "autumn"
+    },
+    "6": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
+      "isoDate": "2026-05-17",
+      "date": "5月17日(週日)",
+      "sea": "spring"
+    },
+    "7": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
+      "isoDate": "2026-05-31",
+      "date": "5月31日(週日)",
+      "sea": "spring"
     },
     "8": {
       "done": "done",
@@ -80,9 +101,9 @@
       "partialNote": null,
       "partialDonePeaks": 0,
       "doneNote": null,
-      "isoDate": "2026-05-31",
-      "date": "5月31日(週日)",
-      "sea": "spring"
+      "isoDate": "2026-06-07",
+      "date": "6月7日(週日)",
+      "sea": "summer"
     },
     "12": {
       "done": null,
@@ -90,9 +111,9 @@
       "partialNote": null,
       "partialDonePeaks": 0,
       "doneNote": null,
-      "isoDate": "2026-08-02",
-      "date": "8月2日(週日)",
-      "sea": "summer"
+      "isoDate": "2026-11-15",
+      "date": "11月15日(週日)",
+      "sea": "autumn"
     },
     "13": {
       "done": "done",
@@ -107,9 +128,29 @@
       "partialNote": null,
       "partialDonePeaks": 0,
       "doneNote": null,
+      "isoDate": "2026-09-20",
+      "date": "9月20日(週日)",
+      "sea": "summer"
+    },
+    "15": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-09-06",
       "date": "9月6日(週日)",
       "sea": "summer"
+    },
+    "16": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
+      "isoDate": "2026-10-04",
+      "date": "10月4日(週日)",
+      "sea": "autumn"
     },
     "19": {
       "done": null,
@@ -117,8 +158,18 @@
       "partialNote": null,
       "partialDonePeaks": 0,
       "doneNote": null,
-      "isoDate": "2026-11-15",
-      "date": "11月15日(週日)",
+      "isoDate": "2026-11-08",
+      "date": "11月8日(週日)",
+      "sea": "autumn"
+    },
+    "16b": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
+      "isoDate": "2026-10-11",
+      "date": "10月11日(週日)",
       "sea": "autumn"
     }
   },
