@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HKMAAL General · 調解個案集 · Case Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Noto+Serif+TC:wght@400;500;600;700&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF6EF;
+    --card: #FFFBF5;
+    --ink: #1B1F2A;
+    --ink-muted: #4A5060;
+    --ink-subtle: #8B8F9C;
+    --rule: #D4CFC4;
+    --brick: #A04B3F;
+    --brick-soft: #F2DDD9;
+    --brick-border: #D9B8B0;
+    --sage: #4A6B58;
+    --sage-soft: #E8EEE9;
+    --sage-border: #C5D2C7;
+    --dijon: #8B6F47;
+    --dijon-soft: #F0E5D0;
+    --dijon-border: #D8C09A;
+    --highlight: #F5EFE2;
+    --font-display: 'Fraunces', serif;
+    --font-body: 'Source Serif 4', serif;
+    --font-zh: 'Noto Serif TC', serif;
+    --font-ui: 'DM Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper); color: var(--ink); font-family: var(--font-body); min-height: 100vh; }
+  button { font-family: inherit; cursor: pointer; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+  .site-header { border-bottom: 1px solid var(--rule); }
+  .site-header-inner { display: flex; align-items: flex-end; justify-content: space-between; padding: 24px 0; gap: 16px; flex-wrap: wrap; }
+  .site-tag { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.18em; color: var(--ink-subtle); text-transform: uppercase; }
+  .site-title { font-family: var(--font-display); font-size: 38px; font-weight: 500; line-height: 1.05; color: var(--ink); margin: 4px 0 0; letter-spacing: -0.02em; font-variation-settings: 'opsz' 96; }
+  .site-title-en { font-family: var(--font-body); font-weight: 400; font-size: 22px; margin-left: 12px; color: var(--ink-muted); font-style: italic; }
+  .count-badge { font-family: var(--font-mono); font-size: 12px; color: var(--ink-subtle); letter-spacing: 0.05em; }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 14px; font-family: var(--font-ui); font-weight: 500; border: 1px solid transparent; letter-spacing: 0.01em; transition: all 0.15s; background: transparent; color: var(--ink); }
+  .btn-primary { background: var(--ink); color: var(--paper); }
+  .btn-primary:hover { background: #000; }
+  .btn-secondary { color: var(--ink); border-color: var(--ink); }
+  .btn-secondary:hover { background: var(--highlight); }
+  .btn-ghost { color: var(--ink-muted); }
+  .btn-ghost:hover { background: var(--highlight); color: var(--ink); }
+
+  .pill { display: inline-flex; align-items: center; font-size: 11px; padding: 2px 8px; border-radius: 2px; border: 1px solid; font-family: var(--font-mono); letter-spacing: 0.02em; }
+  .pill-ink { background: var(--highlight); color: var(--ink); border-color: var(--rule); }
+  .pill-sage { background: var(--sage-soft); color: var(--sage); border-color: var(--sage-border); }
+  .pill-brick { background: var(--brick-soft); color: var(--brick); border-color: var(--brick-border); }
+  .pill-dijon { background: var(--dijon-soft); color: var(--dijon); border-color: var(--dijon-border); }
+  .pill-warn { background: #FCE9C9; color: #876018; border-color: #E5C485; font-family: var(--font-ui); }
+
+  .rule { height: 1px; background: var(--rule); }
+
+  .library-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 12px; }
+  .filter-select { padding: 6px 12px; font-size: 14px; font-family: var(--font-ui); border: 1px solid var(--rule); background: transparent; color: var(--ink); border-radius: 2px; }
+  .checkbox-label { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-body); font-size: 13px; color: var(--ink-muted); cursor: pointer; }
+  .checkbox-label input { margin: 0; }
+
+  .case-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .case-card { padding: 24px; background: var(--card); cursor: pointer; transition: background 0.15s; }
+  .case-card:hover { background: var(--highlight); }
+  .case-pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+  .case-title-zh { font-family: var(--font-display); font-size: 22px; font-weight: 500; color: var(--ink); line-height: 1.2; margin: 0 0 4px; font-variation-settings: 'opsz' 96; }
+  .case-title-en { font-family: var(--font-body); font-size: 15px; font-style: italic; color: var(--ink-muted); line-height: 1.3; margin-bottom: 16px; }
+  .case-meta-line { font-family: var(--font-mono); font-size: 11px; color: var(--ink-subtle); letter-spacing: 0.05em; }
+  .empty-state { text-align: center; padding: 64px 24px; }
+
+  .case-topbar { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+
+  .case-header { padding: 32px; background: var(--card); border: 1px solid var(--rule); margin-bottom: 32px; }
+  .case-header-title { font-family: var(--font-display); font-size: 36px; font-weight: 500; color: var(--ink); line-height: 1.1; letter-spacing: -0.02em; font-variation-settings: 'opsz' 96; margin: 0; }
+  .case-header-en { font-family: var(--font-body); font-style: italic; font-size: 20px; color: var(--ink-muted); margin-top: 6px; }
+  .case-meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; }
+  .meta-col-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em; color: var(--ink-subtle); text-transform: uppercase; margin-bottom: 6px; }
+  .meta-col-body { font-family: var(--font-body); font-size: 14px; color: var(--ink); line-height: 1.5; }
+  .meta-col-body strong { font-family: var(--font-zh); font-weight: 500; }
+
+  .tabs { display: flex; align-items: center; gap: 4px; overflow-x: auto; margin-bottom: 24px; border-bottom: 1px solid var(--rule); }
+  .tab { display: flex; align-items: center; gap: 8px; padding: 10px 16px; background: none; border: none; font-size: 14px; font-family: var(--font-ui); font-weight: 500; color: var(--ink-muted); border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+  .tab.active { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
+  .tab.locked { opacity: 0.5; color: var(--ink-subtle); }
+  .tab-en { font-style: italic; font-weight: 400; color: var(--ink-subtle); margin-left: 2px; }
+
+  /* Stacked bilingual: zh on top, en beneath, separated by a soft rule */
+  .bilingual-block { margin-bottom: 24px; }
+  .bilingual-block .zh-block { margin-bottom: 16px; }
+  .bilingual-block .en-block { padding-top: 16px; border-top: 1px dashed var(--rule); }
+  .prose-zh p { font-family: var(--font-zh); font-size: 16px; line-height: 1.9; color: var(--ink); text-align: justify; margin: 0 0 14px; }
+  .prose-en p { font-family: var(--font-body); font-size: 15px; line-height: 1.7; color: var(--ink-muted); margin: 0 0 14px; font-style: italic; }
+
+  .brief-title-zh { font-family: var(--font-display); font-size: 26px; font-weight: 500; color: var(--ink); line-height: 1.1; letter-spacing: -0.01em; font-variation-settings: 'opsz' 96; margin: 0; }
+  .brief-title-en { font-family: var(--font-body); font-style: italic; font-size: 18px; font-weight: 500; color: var(--ink-muted); line-height: 1.2; margin: 4px 0 0; }
+  .brief-subtitle-zh { font-family: var(--font-zh); font-size: 14px; color: var(--ink-subtle); margin-top: 6px; }
+  .brief-subtitle-en { font-family: var(--font-body); font-style: italic; font-size: 13px; color: var(--ink-subtle); margin-top: 2px; }
+  .brief-head { margin-bottom: 24px; }
+
+  .confidential-alert { padding: 16px; background: var(--brick-soft); border: 1px solid var(--brick-border); margin-bottom: 16px; }
+  .confidential-alert-label-zh { font-family: var(--font-zh); font-weight: 600; font-size: 14px; color: var(--brick); }
+  .confidential-alert-label-en { font-family: var(--font-body); font-size: 12px; color: var(--brick); letter-spacing: 0.05em; text-transform: uppercase; font-style: italic; margin-top: 2px; }
+  .confidential-alert-desc-zh { font-family: var(--font-zh); font-size: 13px; color: var(--brick); margin-top: 6px; }
+  .confidential-alert-desc-en { font-family: var(--font-body); font-style: italic; font-size: 12px; color: var(--brick); margin-top: 2px; }
+
+  .role-player-box { margin-top: 32px; padding: 20px; background: var(--highlight); border: 1px solid var(--rule); }
+  .role-player-label { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em; color: var(--ink-subtle); text-transform: uppercase; margin-bottom: 12px; }
+
+  .overview-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1px solid var(--ink); }
+  .overview-col { padding: 20px; }
+  .overview-col + .overview-col { border-left: 1px solid var(--ink); }
+  .overview-col-title-zh { font-family: var(--font-display); font-size: 18px; font-weight: 600; color: var(--ink); padding-bottom: 4px; }
+  .overview-col-title-en { font-family: var(--font-body); font-style: italic; font-weight: 400; font-size: 13px; color: var(--ink-muted); padding-bottom: 8px; border-bottom: 1px solid var(--ink); margin-bottom: 12px; }
+  .overview-subhead-zh { font-family: var(--font-zh); font-size: 12px; font-weight: 600; color: var(--ink-muted); letter-spacing: 0.03em; margin-bottom: 4px; margin-top: 12px; text-decoration: underline; text-underline-offset: 3px; }
+  .overview-subhead-zh:first-of-type { margin-top: 0; }
+  .overview-subhead-en { font-family: var(--font-body); font-style: italic; font-size: 11px; color: var(--ink-subtle); margin-bottom: 6px; }
+  .overview-list { list-style: decimal; padding-left: 18px; margin: 0; }
+  .overview-list li { margin-bottom: 12px; }
+  .overview-zh { font-family: var(--font-zh); font-size: 14px; color: var(--ink); line-height: 1.55; margin-bottom: 4px; }
+  .overview-en { font-family: var(--font-body); font-style: italic; font-size: 12px; color: var(--ink-muted); line-height: 1.5; }
+
+  .locked { text-align: center; padding: 96px 32px; border: 1px dashed var(--rule); background: var(--card); }
+  .locked-icon { color: var(--ink-subtle); margin: 0 auto 16px; display: block; }
+  .locked-title-zh { font-family: var(--font-display); font-size: 28px; font-weight: 500; color: var(--ink); letter-spacing: -0.01em; font-variation-settings: 'opsz' 96; }
+  .locked-title-en { font-family: var(--font-body); font-style: italic; font-weight: 400; font-size: 18px; color: var(--ink-muted); display: block; margin-top: 4px; }
+  .locked-desc-zh { font-family: var(--font-zh); font-size: 14px; color: var(--ink-muted); margin: 16px auto 4px; max-width: 480px; }
+  .locked-desc-en { font-family: var(--font-body); font-style: italic; font-size: 13px; color: var(--ink-subtle); margin: 0 auto 24px; max-width: 480px; }
+
+  .site-footer { border-top: 1px solid var(--rule); margin-top: 32px; padding: 24px 0; }
+  .site-footer-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .site-footer-tag { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.15em; color: var(--ink-subtle); text-transform: uppercase; }
+  .site-footer-note { font-family: var(--font-body); font-style: italic; font-size: 13px; color: var(--ink-subtle); }
+
+  .icon { width: 14px; height: 14px; stroke-width: 1.75; }
+  .icon-md { width: 16px; height: 16px; stroke-width: 1.75; }
+  .icon-xl { width: 32px; height: 32px; stroke-width: 1.25; }
+
+  @media (max-width: 700px) {
+    .overview-grid { grid-template-columns: 1fr; }
+    .overview-col + .overview-col { border-left: none; border-top: 1px solid var(--ink); }
+    .case-meta-grid { grid-template-columns: 1fr 1fr; }
+    .site-title { font-size: 28px; }
+    .case-header-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script id="cases-data" type="application/json">[{"id":"seed_001","meta":{"title_zh":"消費爭議:婚宴酒席糾紛","title_en":"Consumer dispute: wedding banquet","archetype":1,"difficulty":"Foundation","parties_count":2,"agreement_variation":{"present":false,"note_zh":"","note_en":""}},"parties":[{"name_zh":"陳先生","name_en":"Mr Chan","role_zh":"新郎,投訴方","role_en":"Groom, complainant"},{"name_zh":"金麒麟酒家經理李小姐","name_en":"Ms Lee, Manager of Golden Qilin Restaurant","role_zh":"酒家代表","role_en":"Restaurant representative"}],"joint_brief":{"zh":"陳先生於本年三月在金麒麟酒家擺設婚宴,共四十席,合約總額HK$192,000,已繳訂金HK$60,000。婚宴日期為六月二十八日,星期六。簽訂合約時,陳先生與酒家樓面經理逐席確認餐單,並指明菜式必須包括「乳豬全體」、「鮑魚」及「中式龍蝦」三道主菜,合約亦列明每兩席派駐一名侍應,酒席於下午六時開始迎賓,八時準時開席。\n\n婚宴前一個月,陳先生收到酒家電話通知,指該日恰逢另一較早預訂的大型宴會,廚房及侍應人手嚴重緊絀,建議將婚宴改至七月五日,並可作HK$10,000折扣補償。陳先生立即指出婚禮所有環節包括教堂預約、攝影師、化妝師、禮車及司儀已全部敲定,部份海外親屬已訂機票,改期不可行。陳先生堅持按原日期進行,並要求酒家加派人手,確保服務質素;否則要求全數退還訂金及賠償所有已支付的相關費用,他粗略估計約HK$120,000。\n\n酒家方面回覆指願意維持原日期,但無法保證每兩席派駐一名侍應,菜式準時上桌亦有困難,並建議減少一兩道菜式以紓緩廚房壓力。雙方多次電話爭執不果,陳先生情緒激動,在facebook個人專頁公開投訴酒家「服務態度差、出爾反爾」,事件被網民廣泛轉發,亦有飲食評論版面跟進報道。酒家經理多次致電陳先生欲協商,均未獲積極回應。\n\n經酒家公關顧問建議,雙方同意嘗試以調解方式解決爭議,並由獨立調解機構派出認可調解員協助。","en":"Mr Chan booked a wedding banquet at Golden Qilin Restaurant in March for 40 tables, total contract value HK$192,000, with a HK$60,000 deposit paid. The banquet date is Saturday 28 June. At signing, Mr Chan went through the menu table by table with the restaurant's floor manager and specified three signature dishes (whole suckling pig, abalone, and Chinese-style lobster). The contract also stated one server per two tables, with guests received from 6pm and the banquet starting promptly at 8pm.\n\nOne month before the banquet, Mr Chan was telephoned by the restaurant: another large earlier-booked function fell on the same date, leaving the kitchen and service staff severely stretched. The restaurant proposed moving the banquet to 5 July with a HK$10,000 discount. Mr Chan immediately replied that the church, photographer, makeup artist, bridal cars, and MC were all locked in; some overseas relatives had already booked flights; the date could not be changed. He insisted on the original date with extra staff to secure service quality, failing which he demanded a full refund of the deposit and compensation for all related expenses already paid, which he roughly estimated at HK$120,000.\n\nThe restaurant said it could hold the date but could not guarantee one server per two tables, and on-time courses would be difficult; it suggested cutting one or two dishes to ease kitchen pressure. Several phone arguments followed without resolution. Mr Chan, agitated, posted a public complaint on his Facebook page accusing the restaurant of poor service and going back on its word; the post was widely shared and a dining review column picked it up. The manager's follow-up calls received no engagement.\n\nOn the recommendation of the restaurant's PR consultant, both sides agreed to attempt mediation, with an independent mediation body assigning an accredited mediator."},"confidential_briefs":[{"party_index":0,"content_zh":"陳先生事實上的底線是希望婚宴順利如期進行。改期會引起連鎖影響:教堂只有六月二十八日有檔期,下一個可行日期要等到九月後;父母及長輩共六人已訂機票從台灣及加拿大來港,改期他們未必能配合。婚宴失敗對家庭面子影響甚大,他的母親一向特別重視這場婚禮,事前已多次向親友提及。\n\n陳先生在facebook公開投訴時情緒過於激動,文字較為過火,他自己亦已開始後悔。事件背後另有兩重隱情。第一,他的岳父是金麒麟所屬集團的長期客戶,過去十年集團多次大型企業活動均在金麒麟旗下酒店舉行,如今次事件持續發酵,可能影響岳父與該集團另一商業合作項目。岳父若得悉,必對陳先生有所責難。第二,陳先生與未婚妻早前曾因婚禮花費及細節多次爭執,如今次再生事端,可能再次觸發感情緊張。陳先生暗中希望能盡快平息事件,避免岳父介入或未婚妻不悅。\n\n陳先生對「賠償HK$120,000」並無實際計算依據,只是談判時的開價姿態。他真正介意的是服務質素及面子問題,而非金錢。他已諮詢相熟律師朋友,朋友提醒他facebook帖文如被酒家反控誹謗,他可能面對的法律風險不小,並建議他盡快尋求和解。\n\n陳先生的接受底線:酒家維持六月二十八日原日期;書面承諾派出指定領班全程跟進,席間每兩席不少於一名侍應;主菜「乳豬全體」、「鮑魚」、「中式龍蝦」必須準時上桌;若服務不達標,事後按席數比例退款,以調解協議列明評估標準。原HK$10,000補償可改為當晚酒水升級或贈送回門酒席。陳先生會撤下facebook帖文,並於酒席後發新帖客觀肯定酒家補救。陳先生個人並不執著於額外現金賠償。","content_en":"Mr Chan's actual bottom line is for the banquet to go ahead smoothly on the original date. Changing date would cascade: the church has no slot until September; six parents and elders have booked flights from Taiwan and Canada and may not be able to reschedule. A failed banquet would be a serious face issue for the family; Mr Chan's mother has been especially invested in this wedding and has talked about it with relatives and friends for months.\n\nWhen Mr Chan posted on Facebook he was emotionally overheated; the wording was excessive and he already regrets it. There are two hidden layers behind the dispute. First, his father-in-law is a long-term customer of the group that owns Golden Qilin; for the past ten years multiple corporate events have been held at the group's hotels. If this matter keeps escalating, it may affect a separate commercial relationship the father-in-law is pursuing with the group, and the father-in-law, if he learns of it, would not be pleased with Mr Chan. Second, Mr Chan and his fiancee have had repeated arguments over wedding costs and details; a fresh dispute may strain things again. Mr Chan privately hopes to settle quickly before either party becomes a problem.\n\nMr Chan has no real basis for the HK$120,000 figure; it was an opening posture. What he really cares about is service quality and face, not money. He has consulted a lawyer friend who warned him that if the restaurant counter-sues for defamation over the Facebook post, his legal exposure is not small, and recommended settling quickly.\n\nMr Chan's acceptance floor: the restaurant holds the 28 June date; written commitment that a named captain will supervise the entire evening with no fewer than one server per two tables; the three signature dishes must be served on time; if service falls short, refund proportional to table count under standards spelled out in the settlement. The HK$10,000 compensation can be redirected to drinks upgrade on the night or a complimentary 回門 banquet. Mr Chan will take down the Facebook post and post a new objective update praising the recovery after the banquet. Mr Chan is not personally fixed on additional cash compensation.","role_player_instruction_zh":"首節聯合會議中表現強硬,堅持HK$120,000全數退款及賠償的立場;在私下會議中才逐步透露面子顧慮、岳父因素及對訴訟風險的擔憂。對未婚妻的家庭緊張,只在較深入的私下會議中提及。","role_player_instruction_en":"Hold hard in the first joint session on the HK$120,000 refund and compensation claim; only progressively reveal face concerns, the father-in-law factor, and litigation risk worry in caucus. The fiancee strain only emerges in deeper caucus."},{"party_index":1,"content_zh":"金麒麟酒家近年因競爭加劇,生意下跌約兩成。六月二十八日的衝突源於上月集團的姊妹酒樓尖沙咀分店爆水管,部份原訂該分店的婚宴需臨時改派至銅鑼灣金麒麟。集團要求酒家盡量收容,以保住集團客戶,結果該日總共要承辦三場大型宴會合共一百二十席,人手嚴重不足。\n\n李小姐獲集團授權的最大讓步包括:賠償上限HK$25,000現金或同等價值的酒水及禮券;指定領班全程督導;從尖沙咀及九龍分店臨時調撥一隊機動侍應,但人數不足以做到每兩席一名侍應。集團另一個底線是不能公開承認服務疏忽,因為集團旗下有另外四間酒家面對同類人手安排壓力,如本案先例一開,後續類似客戶索償風險極大,集團估計潛在賠償可達HK$1,500,000以上。\n\n李小姐個人方面,事件發生後其上司餐飲總監已警告她要妥善處理;若再上facebook或被傳媒進一步報道,她的年度評核及花紅都會受影響。她私下其實已責備銅鑼灣分店樓面經理當初不應同時接單,但這話不能向陳先生提及。她亦留意到陳先生岳父與集團另一商業合作項目正在進行中,集團市場部已暗示她「事件需低調處理」。\n\n李小姐可接受方案:酒家維持原日期六月二十八日;加派一隊由尖沙咀調撥的機動侍應(對外稱「特別支援團隊」);承諾三道主菜準時上桌;指定領班全程跟進;補償上限HK$25,000現金或HK$35,000價值的酒水升級;前提是陳先生撤下facebook帖文、承諾不再公開投訴,亦不向飲食評論版透露調解內容。她私下亦希望保住自己年度評核,不希望事件再上報。","content_en":"Golden Qilin Restaurant's business has declined about 20% in recent years due to competition. The 28 June conflict stems from a burst pipe at a sister restaurant in Tsim Sha Tsui last month, forcing some banquets originally booked there to be redirected to the Causeway Bay Golden Qilin. The group asked the restaurant to absorb as many as possible to retain group customers; the result is three large banquets totalling 120 tables that day, with severely stretched staff.\n\nMs Lee's group-authorised concessions include: compensation ceiling of HK$25,000 cash or equivalent in beverages and vouchers; named captain supervising throughout; a mobile service team seconded from Tsim Sha Tsui and Kowloon branches, though not enough to deliver one server per two tables. Another group bottom line: no public admission of service failure, because four other group restaurants face similar staffing pressure; setting a precedent in this case creates major follow-on claim risk, with potential exposure estimated above HK$1,500,000.\n\nOn a personal level, after the incident Ms Lee's supervisor (F&B Director) warned her to handle the matter cleanly; further Facebook or media escalation will affect her annual review and bonus. She has privately rebuked the Causeway Bay floor manager for accepting overlapping bookings but cannot say this to Mr Chan. She has also noted that the marketing team has hinted to her the matter must be handled quietly because Mr Chan's father-in-law is in the middle of a separate commercial discussion with the group.\n\nMs Lee's acceptable solution: keep the 28 June date; add a mobile service team seconded from Tsim Sha Tsui (publicly called the 'Special Support Team'); commit that the three signature dishes will be served on time; named captain throughout; compensation up to HK$25,000 cash or HK$35,000 value in beverages upgrade; conditional on Mr Chan removing the Facebook post, committing not to escalate publicly, and not disclosing the mediation content to dining columns. Privately she also wants her annual review protected and the matter not to re-enter the news.","role_player_instruction_zh":"對賠償金額初期較保守,只願出HK$10,000以「補貼禮券」名義;在感受到對方亦想盡快平息事件後才逐步加碼。對集團市場部的暗示及自己年度評核的考慮,僅在較深入的私下會議中流露。","role_player_instruction_en":"Initially conservative on compensation, offering only HK$10,000 framed as 'voucher subsidy'; only escalate the offer after sensing the other side also wants to settle quietly. The marketing-team hint and her annual review concern only surface in deeper caucus."}],"mediation_overview":{"common_ground":{"generic":{"zh":["大家都不想進行訴訟","盡快解決事件","大事化小","保留各自聲譽"],"en":["Neither side wants litigation","Resolve quickly","Keep it small","Preserve respective reputations"]},"case_specific":{"zh":["婚宴必須如期舉行,服務質素要有保證","保持商業及家族聲譽","避免媒體繼續關注","雙方背後均有第三方關係需考慮"],"en":["Banquet must go ahead on date with assured service quality","Preserve commercial and family reputation","Avoid continued media attention","Both sides have third-party relationships to consider"]}},"issues":{"zh":["如何確保婚宴當日的服務人手安排","如何確保主菜準時上桌及菜式質量","如何處理facebook帖文及聲譽修復","如何安排補償方式及內容","如何處理服務不達標時的事後評估","如何避免事件繼續在媒體發酵","如何處理日後類似情況"],"en":["How to secure service staffing arrangements on the night","How to secure on-time delivery and quality of the signature dishes","How to handle the Facebook post and reputation repair","How to structure compensation","How to handle post-event assessment if service falls short","How to prevent further media escalation","How to address similar situations going forward"]},"options":{"zh":["酒家委派指定領班全程督導,並調派「特別支援團隊」確保每兩席不少於一名侍應","「乳豬全體」、「鮑魚」、「中式龍蝦」三道主菜列為合約優先,須準時上桌,並於協議列明評估標準","酒家提供HK$22,000以酒水升級形式作為補償,當晚實現","酒家額外贈送陳先生未來三年回門酒席八折優惠","若服務不達標(以協議列明的客觀標準衡量),酒家按席數比例退款","陳先生於婚宴後一星期內撤下facebook原帖,並發新帖以正面語氣描述當晚服務體驗","雙方簽署保密條款,不對外披露調解內容及補償詳情","酒家於日後同類客戶溝通中,建立提早通知及補救方案的內部指引"],"en":["Restaurant assigns a named captain to supervise throughout, with a 'Special Support Team' to ensure no fewer than one server per two tables","The three signature dishes are designated contract priority items, served on time, with assessment standards spelled out in the settlement","Restaurant provides HK$22,000 compensation as beverages upgrade delivered on the night","Restaurant grants Mr Chan three-year 20% discount on future 回門 banquets","If service falls short (measured against objective standards in the settlement), restaurant refunds proportional to table count","Mr Chan removes original Facebook post within one week post-banquet and posts a new positive description of the service experience","Both sign confidentiality covering mediation content and compensation details","Restaurant to develop an internal early-notification and remediation guideline for similar customer situations going forward"]}}},{"id":"seed_002","meta":{"title_zh":"消費爭議:健身會籍合約糾紛","title_en":"Consumer dispute: gym membership contract","archetype":1,"difficulty":"Standard","parties_count":2,"agreement_variation":{"present":false,"note_zh":"","note_en":""}},"parties":[{"name_zh":"黃太","name_en":"Mrs Wong","role_zh":"會員,投訴方","role_en":"Member, complainant"},{"name_zh":"強體健身中心區域經理張先生","name_en":"Mr Cheung, Regional Manager of PowerFit","role_zh":"健身中心代表","role_en":"Gym representative"}],"joint_brief":{"zh":"黃太五十二歲,於去年九月在強體健身中心銅鑼灣分店簽訂三年會籍合約,總額HK$36,000,分三十六期月供HK$1,000,已支付九個月共HK$9,000。簽約時銷售員強調該套餐享有「全港分店無限次使用」、「無時段限制」,並包括十堂私人教練課程作為迎新優惠,可於六個月內預約。\n\n簽約後四個月,銅鑼灣分店因業主收回舖位而結業,中心通知黃太可改往灣仔分店繼續使用。黃太住北角,每日往返灣仔分店車程連等車約四十五分鐘,且灣仔分店面積較小、人多擠迫,瑜伽課及單車課經常爆滿無法預約,十堂私人教練亦因新教練輪換而難以一致。她於同月向中心申請退會,但中心管理層回覆指合約第十八條訂明「分店遷移、合併或結業不構成解約理由」,如要中途退會需支付「餘下會費的百分之五十」作為違約金,即HK$13,500。\n\n黃太認為該條款不公平,且簽約時銷售員口頭承諾的設施使用便利已無法兌現。她於上月向消費者委員會作書面投訴,並考慮入稟小額錢債審裁處索回HK$9,000及精神損失。期間有不少網上會員群組討論強體健身在連串分店結業中如何處理會員,黃太亦被網友邀請成為「集體投訴代表」之一,她暫未答應。\n\n中心方面為避免事件再擴大及消委會跟進過程曝光,主動建議調解,由獨立調解機構派出認可調解員協助。","en":"Mrs Wong, age 52, signed a three-year membership contract with PowerFit's Causeway Bay branch last September, total HK$36,000 over 36 monthly instalments of HK$1,000. She has paid nine months totalling HK$9,000. At signing, the salesperson emphasised the package offered 'unlimited use at all Hong Kong branches' and 'no time restrictions', and included ten personal trainer sessions as a welcome offer redeemable within six months.\n\nFour months after signing, the Causeway Bay branch closed because the landlord recovered the premises. The centre notified Mrs Wong she could use the Wan Chai branch. She lives in North Point; the round trip with waiting is about 45 minutes; the Wan Chai branch is smaller and crowded; yoga and spin classes are constantly full; the ten personal trainer sessions are difficult to keep consistent because of trainer rotation. She applied to terminate the same month and was told that under contract clause 18 ('branch relocation, merger or closure is not grounds for termination'), early termination triggers a penalty of 50% of remaining fees, i.e. HK$13,500.\n\nMrs Wong considers the clause unfair and the salesperson's verbal commitments unfulfilled. Last month she filed a written complaint with the Consumer Council and is considering a Small Claims Tribunal action to recover HK$9,000 plus distress. Several online member groups are discussing how PowerFit is handling members across its branch closures; Mrs Wong has been invited to act as a 'collective complaint representative' but has not yet agreed.\n\nTo prevent further escalation and Consumer Council follow-up becoming public, the centre proposed mediation, with an independent mediation body assigning an accredited mediator."},"confidential_briefs":[{"party_index":0,"content_zh":"黃太上月確診早期柏金遜症,目前症狀輕微但醫生建議減少高強度運動,避免器械健身及高強度間歇訓練,改以散步、太極等較緩和活動為主。她其實已不適合繼續使用健身會籍,但這正是她不希望以「健康原因」公開作為退會理由的核心:她的丈夫至今並不知道她確診一事,她希望先穩定情緒及與醫生討論治療方案後才告訴他;她不希望由健身中心方面透過任何渠道,讓丈夫或共同朋友圈得悉。\n\n黃太已諮詢一位熟悉合約法的舊同學,同學提醒她合約第十八條條文較複雜,單方面解約勝算不大,但因健身中心未能提供口頭承諾的「設施使用便利」(瑜伽單車課經常爆滿、私人教練難以一致),有機會以「重大違反」為由減輕違約金。但同學亦提醒她不要以健康作談判籌碼,因為一旦公開,日後購買保險、申請按揭等可能受影響。\n\n黃太對網友邀請她做「集體投訴代表」感到吸引但又猶豫:吸引是因為這樣可加快事件解決,猶豫是因為公開身份會被媒體採訪,從而暴露健康狀況。她暫未答應對方,期望本次調解能在公開化之前解決。\n\n黃太的接受底線:全數豁免餘下二十七個月會費(即HK$27,000),已繳付的九個月可不退款但希望轉換為其他服務(如轉讓予家姐使用全部餘下會籍,或轉換為SPA券、瑜伽墊及運動服裝禮包等),價值不少於HK$9,000。十堂私人教練改為其家姐(同住北角)可代用,延長至十二個月內使用完畢。文件以「個人原因」作為結案理由,絕不提及健康狀況。她願意撤回消委會投訴、不入稟小額錢債、亦不擔任集體投訴代表。如健身中心堅持收取部份違約金,上限為HK$3,000。","content_en":"Mrs Wong was diagnosed last month with early-stage Parkinson's. Symptoms are mild but her doctor recommends reducing high-intensity exercise, avoiding weights and HIIT, in favour of walking and tai chi. She is no longer suited to continue the gym membership, which is precisely why she will not use 'health reasons' as the public termination ground: her husband still does not know about the diagnosis. She wants to first stabilise emotionally and discuss treatment with her doctor before telling him, and she does not want the gym to be the channel by which her husband or their mutual circle learns about it.\n\nShe has consulted an old classmate familiar with contract law, who noted clause 18 is complex and unilateral termination is unlikely to succeed, but the gym's failure to deliver the promised facility convenience (chronically full yoga and spin classes, inconsistent personal trainers) may support arguing material breach to reduce the penalty. The classmate warned her not to use health as a bargaining chip; once disclosed, future insurance applications and mortgage applications may be affected.\n\nMrs Wong finds the 'collective complaint representative' invitation tempting but is reluctant. Tempting because it speeds resolution; reluctant because being publicly named would draw media interviews and risk exposing her health. She has not yet accepted, and hopes this mediation closes the matter before it goes public.\n\nMrs Wong's acceptable floor: full waiver of remaining 27 months (HK$27,000); already-paid nine months need not be refunded but should be converted into other services (transfer the remaining membership to her elder sister, or convert to spa vouchers, yoga mat, sportswear bundle, etc.) at value no less than HK$9,000. Ten personal trainer sessions transferable to her elder sister (also living in North Point), redeemable within 12 months. Closure document cites 'personal reasons'; absolutely no mention of health. She will withdraw the Consumer Council complaint, not file at the Tribunal, and not act as collective complaint representative. If the gym insists on partial penalty, ceiling HK$3,000.","role_player_instruction_zh":"對健康狀況絕對保密。如調解員嘗試探討退會的真正原因,以「對銅鑼灣分店環境有感情」、「灣仔分店不便」、「銷售員口頭承諾未能兌現」等公開可說的理由回答。家姐及朋友提及的法律意見只在較深入的私下會議中流露。","role_player_instruction_en":"Strict confidentiality on health. If the mediator probes the real termination reason, fall back on publicly-acceptable reasons such as attachment to Causeway Bay, Wan Chai inconvenience, and unfulfilled verbal promises. References to the elder sister and the classmate's legal advice only surface in deeper caucus."},{"party_index":1,"content_zh":"強體健身近兩年積極擴張,於二零二三至二零二五年期間新開十二間分店,但去年下半年起整體市場放緩,租金壓力上升,公司不得不關閉表現較弱的分店,銅鑼灣只是其中之一,預計未來十二個月還有兩至三間分店需要結業或合併。已關閉的銅鑼灣分店引發超過二十名會員投訴,公司面對連串相似的退會申請;另有約五十名會員觀望中。如果黃太個案以全額退款解決,將形成不利先例,公司估算潛在賠償風險約HK$300,000至HK$500,000,而事件如再被媒體放大,集體投訴成立後賠償總額可能突破HK$1,200,000。\n\n張先生獲總公司授權的賠償上限為:餘下會費全免再加HK$5,000現金券或同等價值服務,即等於黃太餘下二十七個月會費HK$27,000;但不能退還已繳付的九個月即HK$9,000,亦不能公開承認任何違約。如客戶要求,可將九個月「轉換」為其他服務,但價值上限不超過HK$8,000,且需以「公司商譽考慮」名義內部記錄。\n\n張先生個人方面,他是區域經理,該批投訴的處理結果直接影響他的年度花紅。他亦聽聞網上有人組織「集體投訴」,並把矛頭指向他所管的東區及九龍東分店群,如他無法妥善處理黃太一案,可能成為集體投訴的引爆點。他內心更傾向以「商譽考慮」為名給予較大讓步,但只能以「個別處理」方式進行,絕不能形成可公開引用的先例。\n\n張先生可接受方案:解除合約、餘下會費HK$27,000全免;已繳費用HK$9,000改為等值服務套餐(SPA券六堂、瑜伽及健身用品套裝),公司內部記錄為「商譽補償」;十堂私人教練可轉讓予黃太指定的一名家人;黃太需簽署保密條款,不得對外披露條件,並承諾不擔任集體投訴代表;結案文件以「個別商業考慮」為由,不提及違約。","content_en":"PowerFit has expanded aggressively in 2023 to 2025, opening 12 new branches, but the market slowed in the second half of last year and rent pressures rose; the company is forced to close weaker branches, of which Causeway Bay is one. Two to three more closures or mergers are expected in the next 12 months. The closed Causeway Bay branch has triggered more than 20 member complaints and a wave of similar termination requests; about 50 more members are watching. If Mrs Wong's case is resolved with full refund it sets an adverse precedent; estimated company exposure is HK$300,000 to HK$500,000, and if the matter is further amplified by media and a collective complaint forms, total compensation could exceed HK$1,200,000.\n\nMr Cheung's HQ-authorised ceiling: full waiver of remaining fees plus HK$5,000 voucher or equivalent service, i.e. HK$27,000; the nine months already paid (HK$9,000) cannot be refunded and no admission of breach is permitted. The HK$9,000 can be 'converted' to other services with a value cap of HK$8,000, recorded internally as 'company goodwill consideration'.\n\nPersonally, Mr Cheung is the regional manager; the outcome directly affects his annual bonus. He has also heard that organisers of the 'collective complaint' are targeting his Eastern District and Kowloon East branch group; if he cannot handle Mrs Wong's case cleanly, it may become the trigger for collective action. He leans toward larger concessions framed as 'goodwill', but only on a 'case-by-case' basis with no precedent that can be cited publicly.\n\nMr Cheung's acceptable solution: terminate contract, fully waive remaining HK$27,000; convert paid HK$9,000 to equivalent service bundle (six spa sessions, yoga and sports gear set), recorded internally as 'goodwill compensation'; ten personal trainer sessions transferable to one designated family member; Mrs Wong signs confidentiality, no external disclosure, commits not to act as collective complaint representative; closure document cites 'individual commercial consideration', no breach reference.","role_player_instruction_zh":"強調公司的「個別處理」原則,初期不主動提出退款方案,要求對方先表達意願。如黃太主動提及健康因素,以同情但「個別處理」的態度回應,絕不在文件上記錄。集體投訴的擔憂及自己年度花紅的考慮,僅在較深入的私下會議中流露。","role_player_instruction_en":"Emphasise the company's 'individual treatment' principle; initially do not propose a refund, wait for the other side to express. If Mrs Wong volunteers health, respond sympathetically but maintain 'case-by-case' framing and never record in documents. Concern over collective complaint and his own annual bonus only surface in deeper caucus."}],"mediation_overview":{"common_ground":{"generic":{"zh":["不想進行訴訟","盡快解決事件","大事化小","保留各自聲譽"],"en":["No litigation","Resolve quickly","Keep it small","Preserve respective reputations"]},"case_specific":{"zh":["希望結束會員關係","避免事件影響其他會員或公司聲譽","保留雙方面子","希望事件不再公開化"],"en":["End the membership relationship","Avoid impact on other members or company reputation","Preserve face on both sides","Prevent further public exposure"]}},"issues":{"zh":["如何結束三年合約","如何處理餘下二十七個月會費","如何處理已繳付的九個月費用","如何處理十堂未用私人教練","如何處理消委會投訴及集體投訴的關係","如何確保事件保密及結案文件用語","如何避免日後同類事件"],"en":["How to terminate the three-year contract","How to handle the remaining 27 months of fees","How to handle the nine months already paid","How to allocate the ten unused personal trainer sessions","How to manage the Consumer Council complaint and collective complaint dynamics","How to ensure confidentiality and the language of the closure document","How to prevent recurrence"]},"options":{"zh":["合約即時終止,餘下二十七個月會費HK$27,000全免","已繳付HK$9,000轉換為等值服務套餐(SPA券、瑜伽墊、運動服裝及健身用品套裝),價值不少於HK$8,500","十堂私人教練轉讓予黃太家姐,並延長至十二個月內使用完畢","黃太撤回消委會投訴,並書面承諾不擔任集體投訴代表","黃太簽署保密條款,不得對外披露和解條件","結案文件以「個別商業考慮」為由,不提及健康、不提及違約","公司內部記錄為「商譽補償」,不形成可公開引用先例","公司日後分店結業時,提供同類客戶可選擇的「商譽方案」內部指引"],"en":["Contract terminated immediately; remaining 27 months HK$27,000 fully waived","Paid HK$9,000 converted to equivalent service bundle (spa vouchers, yoga mat, sportswear, sports gear set) valued no less than HK$8,500","Ten personal trainer sessions transferred to Mrs Wong's elder sister, extended to 12 months for use","Mrs Wong withdraws Consumer Council complaint and commits in writing not to act as collective complaint representative","Mrs Wong signs confidentiality covering settlement terms","Closure document cites 'individual commercial consideration'; no mention of health, no breach reference","Company records internally as 'goodwill compensation'; no public-citable precedent created","Company to develop internal 'goodwill option' guideline for similar customers during future branch closures"]}}},{"id":"seed_003","meta":{"title_zh":"消費爭議:裝修工程貨不對辦","title_en":"Consumer dispute: renovation not as specified","archetype":1,"difficulty":"Standard","parties_count":2,"agreement_variation":{"present":false,"note_zh":"","note_en":""}},"parties":[{"name_zh":"林先生及林太","name_en":"Mr and Mrs Lam","role_zh":"業主","role_en":"Homeowners"},{"name_zh":"新匠裝飾公司負責人吳先生","name_en":"Mr Ng, owner of NewCraft Decoration","role_zh":"承辦商","role_en":"Contractor"}],"joint_brief":{"zh":"林先生及林太於去年十月以HK$580,000委託新匠裝飾為其將軍澳新居(實用面積約700平方呎)進行全屋裝修,合約列明採用德國品牌Hettich五金、意大利雲石廚櫃枱面,以及指定型號的意大利進口浴缸。合約亦列明工程於今年一月底完成,並由林先生及林太簽署正式驗收文件。\n\n工程於今年二月初完成,期間進度大致順利,雙方關係不錯。林氏夫婦因林太需頻繁出差及林先生工作繁忙,並無逐項仔細檢查物料品牌及型號,只就外觀粗略檢視後簽署驗收文件,並支付尾款HK$80,000。\n\n林太於三月入伙後一個月,在浴缸內側發現品牌標籤與合約不符,經查證為某內地品牌仿製品,市場價約為原意大利品牌的三分之一。再仔細檢查,廚櫃五金部份件款式正確但較合約少了「快關」(soft-close)功能,而雲石枱面顏色亦較簽約時樣板偏黃,紋理也不一致。林太聯絡吳先生質詢,吳先生承認部份物料因供應問題替換,但堅稱性能相若,屬「合理替代」。\n\n林氏夫婦要求賠償差價並重做浴缸及廚櫃五金,雲石枱面亦需要重做或大幅補償,合共索償HK$95,000。雙方多次傾談不果,林太已準備收集所有單據準備入稟小額錢債審裁處(上限HK$75,000),並向兩個裝修中介平台留下負評。負評已引起平台網民查詢,新匠裝飾的評分由原本4.6星跌至3.4星,正在洽談中的另外兩單客戶因此擱置簽約。吳先生為避免事件再擴大,主動建議調解,由獨立調解機構派出認可調解員協助。","en":"Mr and Mrs Lam engaged NewCraft Decoration last October for a full renovation of their new Tseung Kwan O flat (around 700 sq ft usable) at HK$580,000. The contract specified German Hettich hardware, Italian marble kitchen counters, and a specific Italian imported bathtub model. Work was contractually due by end of January and required formal sign-off by Mr and Mrs Lam.\n\nThe project completed in early February with the relationship generally good. Because Mrs Lam travelled frequently and Mr Lam was busy at work, they did not carefully inspect material brands and models, only checked appearance superficially, signed off, and paid the HK$80,000 balance.\n\nA month after moving in March, Mrs Lam noticed the bathtub's internal brand label did not match the contract; investigation confirmed it was a mainland imitation worth about one-third of the Italian original. Closer inspection showed kitchen hardware was the right style but missing the soft-close feature, and the marble counter was yellower than the sample with inconsistent veining. Mrs Lam contacted Mr Ng who admitted some materials were substituted due to supply issues but insisted performance was equivalent and substitution 'reasonable'.\n\nThe Lams demand the price difference and replacement of bathtub and kitchen hardware, with marble counter to be redone or substantially compensated, totalling HK$95,000. After repeated failed discussions, Mrs Lam is gathering receipts for a Small Claims Tribunal filing (ceiling HK$75,000) and has left negative reviews on two renovation platforms. The reviews have prompted enquiries; NewCraft's rating dropped from 4.6 to 3.4 stars and two clients in negotiation have suspended signing. To prevent further escalation, Mr Ng proposed mediation, with an independent mediation body assigning an accredited mediator."},"confidential_briefs":[{"party_index":0,"content_zh":"林氏夫婦最重視的其實不是金錢,而是受騙的感覺及對工程整體質量的不安。林太尤其在意,因她於facebook裝修群組「新居裝修分享」(約一萬五千名成員)向組員推薦過新匠裝飾,亦曾分享自己選用Hettich及意大利雲石的過程,如今組員陸續私訊查詢「物料是否真的Hettich」、「雲石是否假?」,她面子掛不住,亦擔心自己「推薦」一事日後被翻舊賬。\n\n林先生較理性,在小額錢債審裁處上限為HK$75,000;索償HK$95,000實際上必須拆分或放棄部份。他亦明白入稟時間長(通常六個月以上),訴訟費用及精神成本不低,加上對方一旦以「已簽署驗收文件」為由抗辯,案件並不易勝。他亦擔心對方反控誹謗(因facebook裝修群組屬公開言論)。\n\n林氏另一隱情:他們的兒子(三歲)患有輕度哮喘,新居入伙至今已兩次因吸入空氣品質問題而需到診所求醫,林太懷疑與雲石枱面或廚櫃膠合劑釋出物質有關,但醫生未確診。她私下擔心整個工程質量都有問題,日後可能要再花錢檢測。\n\n林氏可接受底線:浴缸更換為原合約意大利型號,由吳先生承擔全部費用(包括拆裝);廚櫃五金按差價賠償約HK$8,000現金;雲石枱面如吳先生能在六個月內安排另一塊較接近原樣板色澤的替換則接受,否則賠HK$15,000至HK$18,000現金。如吳先生能委派獨立第三方檢測新居空氣品質(費用約HK$3,000),林氏可額外接受。林太希望吳先生在「新居裝修分享」群組以實名發帖客觀澄清替代物料事件,並承諾不再向其他客戶替換物料而不通知。林太願意刪除負評,並於同一群組發帖更新事件結果。","content_en":"The Lams' main concern is not money but the sense of being deceived and unease about overall workmanship quality. Mrs Lam in particular: she recommended NewCraft on the Facebook renovation group 'New Home Renovation Sharing' (around 15,000 members) and had shared her selection of Hettich hardware and Italian marble. Members are now privately messaging her asking whether the materials are 'really Hettich' or whether the marble is fake; she is losing face and worries about her 'recommendation' being raised against her later.\n\nMr Lam is more pragmatic. The Tribunal ceiling is HK$75,000; the HK$95,000 claim would have to be split or partially abandoned. Filing takes 6+ months; legal costs and stress are real; and if the contractor counters with 'inspection signed off', the case is not easy. He also worries about a defamation counterclaim because the Facebook group is public speech.\n\nA further hidden concern: their three-year-old son has mild asthma; since moving in, he has been to the clinic twice for breathing difficulties tied to air quality. Mrs Lam suspects emissions from the marble counter or kitchen cabinet adhesives, but the doctor has not confirmed. She privately worries the whole job may be poor, requiring further investigation later.\n\nThe Lams' acceptable floor: bathtub replaced with the original Italian contract model with Mr Ng bearing all cost (including removal and installation); HK$8,000 cash for kitchen hardware difference; marble counter either replaced within six months with a slab closer to the original sample (Lams accept), or HK$15,000 to HK$18,000 cash. If Mr Ng arranges third-party air-quality testing of the unit (about HK$3,000), Mrs Lam accepts that as a bonus. Mrs Lam wants Mr Ng to post a real-name clarification on the 'New Home Renovation Sharing' group and commit not to substitute materials without notice. Mrs Lam will delete the negative review and post an update on the same group on the outcome.","role_player_instruction_zh":"首節聯合會議堅持HK$95,000索償,並指對方涉嫌欺詐;在私下會議才透露面子顧慮、訴訟可行性的擔憂、兒子哮喘的擔心,以及對誹謗反控的恐懼。","role_player_instruction_en":"Hold the HK$95,000 claim and an implicit fraud accusation in joint; reveal face concerns, litigation worries, son's asthma concern, and fear of defamation counterclaim only in caucus."},{"party_index":1,"content_zh":"吳先生承認替換物料未通知客戶屬不對。實情是去年下半年起,意大利及德國進口物料因物流及匯率影響嚴重缺貨及加價,他承接的多個工程都受影響;部份工程的替換是與客戶協商後執行,但林氏一單因林太多次出差未能即時聯絡,而林先生則表示「太太不在不能決定」,吳先生最終決定按時完工先處理,計劃完工後再向客戶提出補回差價,但因驗收時林氏夫婦未提異議,他便沒再主動提及。\n\n吳先生的公司規模不大(只有兩名全職員工及五至八名臨時工),現金流緊張。原意大利浴缸入口價約HK$22,000(連安裝HK$28,000),廚櫃五金差價約HK$6,000,雲石枱面如完全重做(包括拆除及安裝)成本約HK$35,000。如全部按客戶要求賠償,直接成本約HK$60,000至HK$70,000;加上工程延誤對其他客戶的賠償及商譽損失(已導致兩單擱置簽約),公司六個月內現金流可能崩斷。\n\n吳先生最擔心的不是金錢損失,而是裝修中介平台的負評持續發酵。如評分跌至3.0以下,平台會將公司列入「警示名單」,他承接的另外三宗未交付工程都可能受影響,客戶可能要求降價甚至取消。他亦聽聞「新居裝修分享」群組內已有人轉發林太的投訴帖文,輿論不利。\n\n吳先生的接受底線:浴缸他願意全數更換為意大利原型號,並承擔施工費(總計約HK$28,000);廚櫃五金以HK$8,000現金作差價賠償;雲石枱面提出兩個方案讓客戶選擇,一是賠HK$13,000現金(他可分兩期支付),二是六個月內替換相同品牌但較接近原色澤的批次,費用約HK$28,000由他承擔。獨立第三方檢測空氣品質,費用約HK$3,000他可承擔。吳先生希望林太刪除負評,並在新居裝修分享群組客觀澄清。他不希望事件被進一步傳開,以免影響另外三宗未交付的工程。他亦希望雙方簽署保密條款,日後不再翻舊事。","content_en":"Mr Ng admits substituting materials without notice was wrong. The reality: from the second half of last year, Italian and German imports have been severely affected by logistics and currency, with shortages and price increases; multiple of his projects were affected. On some he negotiated substitution; for the Lams, Mrs Lam was repeatedly away and Mr Lam said 'cannot decide without my wife', so to keep to schedule he proceeded, intending to raise the difference after completion. Because the Lams raised no issue at sign-off, he did not bring it up.\n\nMr Ng's company is small (two full-time staff and five to eight temporary workers) with tight cash flow. The original Italian bathtub is around HK$22,000 import (HK$28,000 with installation); kitchen hardware difference around HK$6,000; full marble counter redo (including removal and installation) around HK$35,000. Full compensation as claimed would cost HK$60,000 to HK$70,000 directly; plus delay penalties to other clients and reputation damage (already costing two suspended signings), the company's cash flow could break within six months.\n\nMr Ng's main concern is not the money but the snowballing negative review. If the platform rating drops below 3.0, the company is placed on a 'warning list'; his three other undelivered projects may suffer client requests for price reduction or even cancellation. He has heard the 'New Home Renovation Sharing' group has begun to reshare Mrs Lam's complaint.\n\nMr Ng's acceptable floor: full bathtub replacement to the Italian original at his cost including installation (around HK$28,000); HK$8,000 cash for kitchen hardware difference; two options for the marble counter, either HK$13,000 cash (payable in two instalments) or replacement within six months with a same-brand batch closer to the original colour at around HK$28,000 at his cost. Third-party air-quality testing (about HK$3,000) he can cover. Mr Ng wants Mrs Lam to delete the review and post an objective clarification on the New Home Renovation Sharing group. He does not want the matter spread further to avoid impact on the three undelivered projects, and wants both sides to sign confidentiality so the matter is not raised again.","role_player_instruction_zh":"對客戶不滿表示理解,但強調自己亦有苦衷(供應鏈問題)。願意賠償但需控制現金支出;初期不主動提出第三方檢測,在感受到對方亦關心兒子健康後才提出。三宗未交付工程的擔憂在較深入的私下會議中流露。","role_player_instruction_en":"Acknowledge the client's frustration but emphasise own constraints (supply chain). Willing to compensate but must control cash; do not propose third-party testing initially, raise only after sensing concern for the son's health. Concern over the three undelivered projects only surfaces in deeper caucus."}],"mediation_overview":{"common_ground":{"generic":{"zh":["不想進行訴訟","盡快解決事件","大事化小","保留各自聲譽"],"en":["No litigation","Resolve quickly","Keep it small","Preserve respective reputations"]},"case_specific":{"zh":["雙方都希望裝修工程能圓滿結束","避免事件在裝修群組進一步發酵","保留雙方商業及社區聲譽","希望事件不影響日後雙方各自的業務或生活"],"en":["Both want the project closed properly","Avoid further escalation on the renovation Facebook group","Preserve commercial and community reputation","Both want the matter not to affect their respective business or life going forward"]}},"issues":{"zh":["如何處理浴缸更換的時間及費用","如何處理廚櫃五金差價","如何處理雲石枱面色差","如何處理新居空氣品質的疑慮","如何修復裝修群組的客戶口碑","如何處理已支付的訴訟準備及精神成本","如何避免日後同類事件"],"en":["How to handle bathtub replacement timing and cost","How to handle kitchen hardware price difference","How to handle marble counter colour difference","How to address concerns about the unit's air quality","How to repair reputation on the renovation Facebook group","How to address sunk costs of litigation preparation and stress","How to prevent recurrence"]},"options":{"zh":["吳先生於兩星期內全數更換浴缸為合約原型號,費用全包(約HK$28,000)","廚櫃五金以HK$8,000現金作差價賠償,於和解後一個月內支付","雲石枱面客戶可選:六個月內以同品牌較接近原色澤批次更換,或HK$14,000現金分兩期支付","吳先生委派獨立第三方於兩星期內進行新居空氣品質檢測,費用約HK$3,000由他承擔,結果供雙方參考","吳先生於「新居裝修分享」群組以實名發帖,客觀澄清替代物料事件,並承諾日後通知制度","林太刪除兩個平台的負評,並於同一裝修群組發帖更新事件處理結果","雙方簽署保密條款,涵蓋協商過程、賠償條款及內部資料","新匠裝飾於日後合約中明確列明物料替代通知程序,並送一份新合約範本予林氏夫婦留底"],"en":["Mr Ng fully replaces the bathtub with the original contract model within two weeks, costs included (about HK$28,000)","HK$8,000 cash compensation for kitchen hardware difference, payable within one month of settlement","Client chooses for marble counter: replacement with same-brand closer-colour batch within six months, or HK$14,000 cash in two instalments","Mr Ng arranges independent third-party air-quality testing of the unit within two weeks at his cost (about HK$3,000); results shared with both sides","Mr Ng posts a real-name clarification on the 'New Home Renovation Sharing' group, committing to a notification protocol going forward","Mrs Lam deletes negative reviews on both platforms and posts an update on the renovation group on the outcome","Both sign confidentiality covering the negotiation process, settlement terms, and internal information","NewCraft adds an explicit material-substitution notification process to future contracts and provides a sample of the new contract to the Lams as a courtesy"]}}},{"id":"seed_004","meta":{"title_zh":"消費爭議:私人教練課程退款","title_en":"Consumer dispute: personal training package refund","archetype":1,"difficulty":"Foundation","parties_count":2,"agreement_variation":{"present":false,"note_zh":"","note_en":""}},"parties":[{"name_zh":"鄭小姐","name_en":"Ms Cheng","role_zh":"顧客,投訴方","role_en":"Customer, complainant"},{"name_zh":"勁力健身工作室東主馬先生","name_en":"Mr Ma, owner of PowerVibe Studio","role_zh":"工作室東主","role_en":"Studio owner"}],"joint_brief":{"zh":"鄭小姐二十八歲,從事市場推廣工作,於三個月前在勁力健身工作室(銅鑼灣)購買私人教練二十堂套餐,合共HK$24,000,並已上完八堂。她原本指定由教練Jason跟進,因Jason的訓練風格較適合她準備十二月份尼泊爾安納普爾納行山旅程的體能需要。鄭小姐選擇勁力的主要原因正是Jason,她在Instagram看過他的訓練片段,並親自試堂後才決定簽約。\n\n上月Jason因與工作室東主馬先生意見不合而離職,並轉往一間新開的私人教練工作室。馬先生隨即安排另一位教練Alex接手鄭小姐的餘下十二堂課程。鄭小姐試了兩堂後認為Alex的訓練風格與Jason差距甚大:Alex主力做塑形及肌肉鍛鍊,並不熟悉行山所需的耐力及山徑訓練;鄭小姐要求退還餘下十二堂費用合共HK$14,400。\n\n馬先生回應指,合約第五條訂明「私人教練由工作室安排,工作室有權因應實際情況調配合資格教練」,並無指定教練條款。馬先生願意安排再另一位教練Wendy試堂,或退回部份費用作為「商譽考慮」,但金額遠低於鄭小姐要求。鄭小姐則指當初購買時銷售員以Jason為主要推銷點,並在Instagram廣告中直接展示Jason的訓練片段,構成「以特定教練作招徠」的口頭及書面承諾。\n\n雙方爭執三星期,鄭小姐已草擬入稟小額錢債審裁處的文件,並在Instagram自己的賬號上發布一段約一分鐘的短片,公開指控勁力「換教練」、「不退款」、「銷售誤導」。短片有約八千次播放及二百多個轉發,部份觀眾為勁力的現有及潛在會員。馬先生考慮商譽,主動建議調解,由獨立調解機構派出認可調解員協助。","en":"Ms Cheng, age 28, works in marketing. Three months ago she bought a 20-session personal trainer package at PowerVibe Studio (Causeway Bay) for HK$24,000, and has used eight sessions. She specifically chose trainer Jason because his style suited her preparation for a December trek to Annapurna in Nepal. Ms Cheng chose PowerVibe primarily for Jason; she had seen his training clips on Instagram and trialled with him before signing.\n\nLast month Jason left following a disagreement with studio owner Mr Ma and moved to a newly opened personal training studio. Mr Ma assigned another trainer, Alex, to take over Ms Cheng's remaining 12 sessions. Ms Cheng tried two sessions and felt Alex's style was far from Jason's: Alex focuses on toning and muscle building and is not experienced with the endurance and trail training needed for hiking. She demanded refund of the remaining 12 sessions, HK$14,400.\n\nMr Ma responded that contract clause 5 says 'the personal trainer is assigned by the studio, which may reassign qualified trainers as circumstances require'; there is no named-trainer clause. Mr Ma offered another trainer, Wendy, for a trial session or a partial refund as 'goodwill', but the amount is far below Ms Cheng's claim. Ms Cheng argued the original sale pitched Jason directly and the studio's Instagram ads featured Jason's training clips, constituting both verbal and written 'specific-trainer-as-pitch' commitments.\n\nAfter three weeks of dispute, Ms Cheng has drafted a Small Claims Tribunal filing and posted a one-minute video on her own Instagram accusing PowerVibe of trainer-switching, refusal to refund, and sales misrepresentation. The video has around 8,000 views and 200+ shares, including some PowerVibe current and prospective members. Mr Ma proposed mediation out of reputation concern, with an independent mediation body assigning an accredited mediator."},"confidential_briefs":[{"party_index":0,"content_zh":"鄭小姐其實對Jason有特別好感。Jason離職後曾發訊息給她,透露自己會在新工作室「源動工作室」(尖沙咀)開班,並邀請她過去繼續訓練。新工作室會員費比勁力低約一成五,Jason亦承諾為她設計專屬的安納普爾納行山訓練計劃。鄭小姐已答應跟過去,並計劃十一月開始在新工作室訓練,但她需要先處理勁力的退款問題,以免造成尷尬或被馬先生發現後追究。\n\n鄭小姐另一個隱情:她與Jason的關係其實已超出單純教練與學員。過去兩個月二人開始私下約會,Jason離職部份原因是與馬先生因「教練不應與學員私下交往」的工作室規則發生衝突。Jason曾叮囑鄭小姐不要透露二人的私下關係,以免影響他在新工作室的形象及鄭小姐的退款。\n\n鄭小姐對於Instagram短片有點後悔,因為涉及實名指控,如和解可順利進行她願意刪除。她其實亦明白合約上的確無指定教練條款,Jason曾告訴她「合約條款是工作室慣例,實際運作會以教練為核心」。她諮詢過一位律師朋友,朋友提醒「以Instagram廣告作為書面承諾」的法律論據雖有支持,但勝算約五成。\n\n鄭小姐的接受底線:餘下十二堂以八成價計算退款,即HK$11,520(可一次過或最多分兩期);或者轉讓給朋友使用全部餘下堂數,並折扣HK$4,000現金。她願意刪除Instagram短片並承諾不再公開提及勁力負面資訊。她不希望馬先生知道她準備跟Jason走,亦不希望Jason與她私下關係被外傳。","content_en":"Ms Cheng has a particular soft spot for Jason. After leaving, Jason messaged her that he is opening classes at a new studio (SourceMove in Tsim Sha Tsui) and invited her to follow; the new studio's fees are about 15% lower than PowerVibe, and Jason promised a tailored Annapurna trekking training programme. Ms Cheng has agreed and plans to start in November, but needs to settle the PowerVibe refund first to avoid awkwardness or repercussions if Mr Ma finds out.\n\nA further hidden layer: her relationship with Jason has moved beyond trainer-student. They have been quietly dating for the past two months; Jason's departure was partly over a clash with Mr Ma about the studio rule that 'trainers should not date members'. Jason asked Ms Cheng to keep their private relationship confidential to protect his standing at the new studio and her refund prospects.\n\nMs Cheng somewhat regrets the Instagram video as it named names; if settlement goes smoothly she will delete it. She privately acknowledges the contract has no named-trainer clause; Jason once said 'the contract terms are studio boilerplate, but in practice it's all about the trainer'. She has consulted a lawyer friend who noted the 'Instagram ads as written commitment' argument has some support but maybe 50% prospects.\n\nMs Cheng's acceptable floor: refund of the remaining 12 sessions at 80% value, i.e. HK$11,520 (lump sum or up to two instalments); or transfer all remaining sessions to a friend with HK$4,000 cash discount. She will delete the Instagram video and commit not to publicly mention PowerVibe negatively. She does not want Mr Ma to know she plans to follow Jason or to learn of their private relationship.","role_player_instruction_zh":"對Jason的去向及與Jason的私下關係絕對保密。聯合會議中堅持要求全數退款及指控「銷售誤導」;在私下會議才表現出彈性。對律師朋友的法律意見只在較深入的私下會議中流露。","role_player_instruction_en":"Strict confidentiality on Jason's destination and the private relationship. In joint, insist on full refund and 'sales misrepresentation' accusation; show flexibility only in caucus. The lawyer friend's legal view only surfaces in deeper caucus."},{"party_index":1,"content_zh":"馬先生最近因Jason及另外兩名教練於三個月內相繼離職,公司形象及運營受壓。Jason離職時帶走了約十五名熟客;另外兩名教練流失再帶走約十名。短短三個月公司流失約二十五名活躍會員,佔總會員數約一成五。馬先生估算這批流失客戶帶來的潛在收入損失約HK$280,000。\n\n馬先生其實知道銷售員當初推銷鄭小姐時把Jason的個人風格作為主打,亦在Instagram廣告直接使用Jason訓練片段,這做法雖屬行業普遍但確有風險。他亦聽聞鄭小姐與Jason私交不錯,並懷疑她會跟過去;如鄭小姐確認轉投Jason新工作室,他將再失去一名長期客戶,亦會給予「同行挖角成功」的市場訊號。\n\n馬先生個人方面,他與Jason之間因「教練與學員私下交往」的規則發生衝突,Jason離職時並未承認有關係,但馬先生有理由懷疑Jason與鄭小姐之間存在私交,只是無證據。他在這個問題上的立場是:即使無法阻止鄭小姐離開,亦不希望事件成為勁力「強迫教練不與會員交往」的負面標籤。\n\n馬先生的接受底線:餘下十二堂以七成價退款即HK$10,080(可一次過);或者讓鄭小姐自由選擇任一現職教練上完餘下堂數,並送兩堂作為補償,合共十四堂。馬先生希望鄭小姐撤下Instagram短片並承諾不對外公開教練流失情況。馬先生內心更傾向讓鄭小姐儘快離開,只要不公開事件及Jason流失的細節,他可承擔較高的退款比例(最高八成,即HK$11,520),但需以「特殊個別處理」名義,絕不公開。","content_en":"Mr Ma's studio is under image and operational pressure: Jason and two other trainers have left in the past three months, taking around 15 and 10 regular clients respectively, a total of about 25 active members lost (about 15% of total). Estimated potential revenue loss is around HK$280,000.\n\nMr Ma knows the sale was pitched around Jason's personal style and Instagram ads used Jason's training clips, a common industry practice but carrying risk. He has heard Ms Cheng is close to Jason and suspects she may follow; if confirmed, he loses another long-term client and signals 'competitor poaching successful' to the market.\n\nPersonally, Mr Ma had a conflict with Jason over the 'no trainer-member dating' rule; Jason did not admit to anything when leaving but Mr Ma has reason to suspect a private relationship between Jason and Ms Cheng without proof. His position: even if he cannot stop Ms Cheng leaving, he does not want the matter to brand PowerVibe negatively as 'forcing trainers not to date members'.\n\nMr Ma's acceptable floor: refund the remaining 12 sessions at 70%, HK$10,080 (lump sum); or allow Ms Cheng to choose any current trainer plus two bonus sessions, total 14 sessions. He wants the Instagram video removed and a commitment not to publicise trainer departures. Privately he would prefer Ms Cheng leaves quickly; provided the matter and Jason's departure details stay confidential, he can refund up to 80% (HK$11,520) framed as 'special individual treatment' but never disclosed.","role_player_instruction_zh":"初期堅持合約第五條並無指定教練條款,只願小幅補償(HK$3,000至HK$5,000);在感受到對方亦想盡快了結後才提升退款比例。Jason流失帶走客戶的損失及自己對「教練與學員交往」規則的考慮,僅在較深入的私下會議中流露。","role_player_instruction_en":"Initially hold the line that contract clause 5 has no named-trainer term and offer minor compensation (HK$3,000 to HK$5,000); raise the refund percentage only after sensing the other side also wants to close. The loss from Jason taking clients and his concern over the trainer-member rule only surface in deeper caucus."}],"mediation_overview":{"common_ground":{"generic":{"zh":["不想進行訴訟","盡快解決事件","大事化小","保留各自聲譽"],"en":["No litigation","Resolve quickly","Keep it small","Preserve respective reputations"]},"case_specific":{"zh":["雙方都希望低調解決","避免Instagram事件繼續發酵","保留各自在健身行業圈的聲譽","避免事件成為日後同類爭議的先例"],"en":["Both prefer low-key settlement","Prevent further Instagram escalation","Preserve respective standing in the fitness industry circle","Avoid the case becoming a precedent for similar disputes"]}},"issues":{"zh":["如何處理餘下十二堂的退款或轉換","如何處理Instagram短片及公開言論","如何處理鄭小姐日後在勁力的會員身份","如何處理對教練流失情況的保密","如何處理銷售推銷時使用特定教練形象的做法","如何避免日後同類爭議"],"en":["How to handle refund or conversion of the remaining 12 sessions","How to handle the Instagram video and public commentary","How to handle Ms Cheng's future membership status with PowerVibe","How to maintain confidentiality on trainer departures","How to address the use of specific trainer images in sales pitches","How to prevent recurrence"]},"options":{"zh":["工作室退還餘下十二堂的七成五,即HK$10,800,可一次過或分兩期(每期HK$5,400)","鄭小姐三日內刪除Instagram短片,並承諾不再公開提及勁力負面資訊","鄭小姐簽署保密條款,不對外公開退款條件及調解內容","鄭小姐的會員身份即時終止,雙方不再有合約關係","雙方於和解協議中明文不就教練流失情況作出公開評論","工作室於日後合約及銷售推銷中,明文列明「教練可能調配」的安排,並於宣傳片中加入相關免責聲明","雙方承諾日後若再相遇於業界活動,以禮相待,不再翻舊事"],"en":["Studio refunds 75% of remaining 12 sessions, HK$10,800, lump sum or two instalments of HK$5,400","Ms Cheng deletes the Instagram video within three days and commits not to publicise negative comments on PowerVibe","Ms Cheng signs confidentiality covering refund terms and mediation content","Membership terminated immediately; no further contract relationship","Both sides commit in the settlement not to publicly comment on trainer departures","Studio adds explicit 'trainer reassignment may apply' language to future contracts and sales material, including disclaimers in promotional clips","Both sides commit to civility if they cross paths at industry events; the matter will not be raised again"]}}},{"id":"seed_005","meta":{"title_zh":"社區爭議:屋苑訪客車位糾紛","title_en":"Community: visitor parking dispute","archetype":2,"difficulty":"Standard","parties_count":2,"agreement_variation":{"present":false,"note_zh":"","note_en":""}},"parties":[{"name_zh":"黎先生","name_en":"Mr Lai","role_zh":"15樓業主","role_en":"15/F owner"},{"name_zh":"蘇太","name_en":"Mrs So","role_zh":"12樓業主","role_en":"12/F owner"}],"joint_brief":{"zh":"黎家及蘇家位於將軍澳「翠湖花園」第二期同一座,黎先生及黎太住15樓,蘇太及蘇先生住12樓,兩家正下上的單位關係。「翠湖花園」第二期共三百戶,訪客車位有限,合共僅八個,屋苑使用守則訂明「訪客車位先到先得,每次不得超過二十四小時」。\n\n過去半年,蘇太多次向業主立案法團投訴,指黎家「霸佔訪客車位」,經常有「朋友」、「親戚」及「裝修工人」停泊。法團主席查閱屋苑停車場閉路電視紀錄後確認:過去六個月,有四輛不同車牌的車輛聲稱屬於黎家親友,合共停泊訪客位約七十次,平均每星期約三次。蘇太家中亦有一輛車屬其兄長,每月需來訪兩至三次,因訪客位被佔用,蘇太兄長曾被迫繳付屋苑外停車場費用,蘇太已先後租用外面停車場合共三星期,共付HK$9,000。\n\n蘇太上月正式入稟業主立案法團,要求黎家賠償該HK$9,000及書面道歉。黎家拒絕,並反指蘇太曾於停車場對其裝修工人大聲叫罵,有屋苑閉路電視畫面為證。畫面內蘇太用「廢老」、「無公德心」等字眼;雙方關係惡化,蘇太亦準備入稟小額錢債審裁處,黎先生則考慮反控誹謗及向蘇太發律師信。法團主席發現事件如繼續發酵,可能影響屋苑日常運作及鄰里關係,並考慮為其他類似爭議制定先例,故主動提議由獨立調解機構派出認可調解員介入。","en":"The Lai and So families live in the same block of Phase 2 of Emerald Lake Garden in Tseung Kwan O. Mr and Mrs Lai are on 15/F; Mrs and Mr So on 12/F; directly above and below. Phase 2 has 300 units sharing only eight visitor parking spaces; the estate rules state 'visitor parking is first-come-first-served, maximum 24 hours per visit'.\n\nOver the past six months, Mrs So has filed multiple complaints with the IO that the Lais are 'monopolising' the visitor parking with frequent 'friends', 'relatives', and 'renovation workers'. The IO chair reviewed six months of CCTV: four different vehicle plates claimed by the Lais as belonging to family or friends used visitor parking around 70 times, averaging three uses per week. Mrs So's family includes a car owned by her brother who needs to visit two to three times a month; with the visitor parking occupied, the brother has been forced to pay external carpark fees, and Mrs So has rented external parking for three weeks at HK$9,000 total.\n\nLast month Mrs So formally claimed against the Lais via the IO for HK$9,000 plus a written apology. The Lais refused and countered that Mrs So has repeatedly shouted at their renovation workers in the carpark, with estate CCTV showing her using terms like 'useless old man' and 'no public morality'. Relations deteriorated. Mrs So is preparing a Small Claims Tribunal filing; Mr Lai is considering a defamation counterclaim and a lawyer's letter. The IO chair, recognising the matter could continue to damage estate operations and neighbour relations and may set a precedent, proposed bringing in an accredited mediator from an independent mediation body."},"confidential_briefs":[{"party_index":0,"content_zh":"黎先生近兩個月家中「裝修」其實另有隱情。他於三個月前被一間中型金融顧問公司裁員,離職時拿到約三個月遣散費,但太太(目前為全職主婦)及兩名年幼子女(七歲及四歲)仍需供養,加上單位按揭月供約HK$22,000,壓力極大。為了維持家庭收入,他將客廳一部份改裝為網購商品分發倉庫,自己做兼職物流轉售。每星期有兩至三日,合作夥伴及貨車司機會駕車到屋苑送貨及取貨,有時甚至深夜抵達。所謂「四個車牌的親友」其實是合作夥伴及司機。\n\n太太對他在家中堆貨已多次埋怨,認為影響家居衛生及小朋友學習。他不希望失業狀況對外傳開,因為他正在面試另外兩間公司,如僱主聽聞他做「兼職物流」,可能影響聘用決定。蘇太「霸佔車位」的指控基本屬實,但他不能公開原因。他亦明白繼續這樣下去並非長遠之計,預計兩到三個月內如能成功面試,可恢復正常並停止家中分發業務。\n\n黎先生另一隱情:他與蘇太兄長其實是中學同學,二人五年前因投資糾紛而鬧不和,目前互不往來。他不希望蘇太知道這層關係,以免事件變得複雜。\n\n黎先生的接受底線:承認過度使用訪客車位,書面道歉(可不公開);承諾未來六個月內,每月「自家朋友來訪」次數限制在四次以內(現在約每星期兩到三次,即每月十至十二次);賠償HK$3,000至HK$5,000現金作為「平息」,可一次過或分兩期;希望蘇太撤回所有投訴及小額錢債計劃,並承諾不公開閉路電視畫面或將其轉發給法團以外人士。","content_en":"Mr Lai's 'renovation' over the past two months has hidden context. He was made redundant from a mid-sized financial advisory firm three months ago with about three months' severance, but his wife (full-time housewife) and two young children (ages 7 and 4) still need support, plus the unit's mortgage at around HK$22,000 per month. To maintain income he converted part of the living room into a distribution warehouse for online retail and works part-time on resale logistics. Two to three days a week, partners and truck drivers come to the estate to drop off and pick up, sometimes late at night. The 'four vehicle plates of family and friends' are in fact partners and drivers.\n\nHis wife has repeatedly complained about the goods piling up at home, affecting hygiene and the children's study. He does not want the unemployment to become known; he is interviewing at two other firms, and if an employer hears he is doing 'part-time logistics' it may affect hiring decisions. Mrs So's accusation of monopolising parking is substantially correct, but he cannot disclose the reason. He knows this is not sustainable; if interviews succeed in two to three months, he can resume normal life and stop the home distribution.\n\nA further hidden layer: Mr Lai was a secondary school classmate of Mrs So's elder brother; the two fell out over an investment dispute five years ago and are not in contact. He does not want Mrs So to learn of this connection to avoid further complication.\n\nMr Lai's acceptable floor: acknowledge over-use of visitor parking, written apology (need not be public); commit to a maximum of four 'family visitor' uses per month for the next six months (currently roughly two to three per week, i.e. 10 to 12 per month); pay HK$3,000 to HK$5,000 cash as goodwill, lump sum or two instalments; in exchange Mrs So withdraws all complaints and Tribunal plans and commits not to release the CCTV footage or forward it to anyone outside the IO.","role_player_instruction_zh":"對失業、家中倉庫運作、與蘇太兄長的舊事均絕對保密。聯合會議中強調「訪客位是公共資源」、「合理使用」、「鄰里互助精神」;在私下會議才表現出妥協意願,但仍不披露失業真相。","role_player_instruction_en":"Absolute confidentiality on unemployment, the home warehouse, and the history with Mrs So's brother. In joint, emphasise 'visitor parking is a shared resource', 'reasonable use', and 'neighbourly mutual help'; show willingness to compromise in caucus but still do not reveal the unemployment."},{"party_index":1,"content_zh":"蘇太對訪客車位的執著背後另有原因。她父親將於下月入九龍區公立醫院做心臟搭橋手術,手術風險屬中至高,術後三至四個月需家人輪流接送照顧。她的哥哥住元朗,屆時需駕車來接送父親往返醫院及屋苑,如黎家繼續長期佔用訪客位,蘇太的家庭照顧計劃將大亂。她不想公開父親病情,因為事件牽涉她與哥哥就照顧父親責任分配的家庭矛盾:哥哥認為自己照顧得多,蘇太認為自己負擔家庭日常較多,兩兄妹半年前因此鬧過一場,差點不再來往。如蘇太公開父親手術一事,等於把家庭內部矛盾「擺上枱面」,她不希望這樣。\n\n蘇太承認自己上月在停車場確實對黎家的裝修工人大聲叫罵,當時情緒激動,亦自知失態。閉路電視畫面若公開,她在屋苑社交圈(她是屋苑業主立案法團其中一個委員會的成員)及金融專業圈(她是一間中型銀行的副總裁)會非常尷尬。她平日形象一向是「冷靜、理性、專業」,失態畫面與此形象嚴重不符。\n\n蘇太的接受底線:HK$9,000現金賠償其實非她真正所求,她實際只想確保父親術後三至四個月內訪客位可用。底線是黎家承諾未來六個月優先讓出訪客位給她的兄長(尤其每月特定接送日,初步定為每月第一及第三星期六日),書面承諾;HK$2,000至HK$3,000「象徵式」賠償亦可接受;她願意刪除閉路電視畫面的個人副本(原件由法團保管),並書面承諾不向法團以外人士轉發,亦撤回所有投訴。她希望事件不對外公開,亦不影響她與法團委員會的關係。","content_en":"Mrs So's insistence on the parking has another reason. Her father is admitted next month to a Kowloon public hospital for cardiac bypass surgery; the risk is moderate to high, and post-op care requires family rotation including transport for three to four months. Her elder brother in Yuen Long needs to drive in to ferry their father between hospital and the estate. If the Lais continue to occupy the visitor parking, her family care plan collapses. She does not want to disclose the father's condition because it involves an unresolved family conflict with her brother over care responsibilities: the brother thinks he handles more medical care; Mrs So thinks she handles more day-to-day; they nearly stopped speaking six months ago. Publicising the father's surgery would put the internal conflict on the table; she does not want this.\n\nMrs So admits she did shout at the Lais' renovation workers in the carpark last month, in the heat of the moment, and knows she lost composure. If the CCTV footage becomes public, she will be deeply embarrassed in her estate social circle (she is a member of one of the IO sub-committees) and in her finance professional circle (she is a VP at a mid-sized bank). Her usual image is 'composed, rational, professional', which the footage contradicts.\n\nMrs So's acceptable floor: the HK$9,000 cash is not what she actually wants. She really needs reliable visitor parking for three to four months post-surgery. Floor: Lais commit in writing to give priority on visitor parking to her brother for the next six months (especially on agreed pickup days, initially proposed as the first and third Saturday Sunday of each month); HK$2,000 to HK$3,000 token compensation is acceptable; she will delete her personal copy of the CCTV (the original is held by the IO) and commit in writing not to forward to anyone outside the IO, and withdraws all complaints. She wants the matter not to go public and to leave her IO sub-committee relationships intact.","role_player_instruction_zh":"對父親病情及與兄長的家庭矛盾絕對保密。聯合會議中堅持HK$9,000賠償及道歉;私下會議中才透露對訪客位的真正需求(但只說「家人來訪」,不提父親手術)。對她在銀行的高級職位及法團委員身份的擔憂只在較深入的私下會議中流露。","role_player_instruction_en":"Strict confidentiality on father's condition and conflict with brother. In joint, hold HK$9,000 compensation and apology demand; in caucus reveal real need for visitor parking (framed as 'family visiting', not surgery). Concern about her senior banking role and IO committee position only surfaces in deeper caucus."}],"mediation_overview":{"common_ground":{"generic":{"zh":["不想進行訴訟","盡快解決事件","大事化小","保留各自聲譽"],"en":["No litigation","Resolve quickly","Keep it small","Preserve respective reputations"]},"case_specific":{"zh":["雙方均居於同一屋苑,長遠需共處","希望保留各自在屋苑社交圈的聲譽","不想事件影響法團關係","希望事件不引致家庭內部矛盾外泄"],"en":["Both live in the same estate long-term","Preserve respective reputations in the estate","Avoid impact on IO relations","Avoid exposing internal family conflicts"]}},"issues":{"zh":["如何分配未來六個月的訪客車位使用","如何處理蘇太兄長指定接送日的安排","如何處理已發生的金錢爭議","如何處理停車場閉路電視畫面","如何撤回各項投訴及小額錢債計劃","如何處理事件對外保密","如何避免日後類似爭議"],"en":["How to allocate visitor parking for the next six months","How to schedule Mrs So's brother's designated pickup days","How to handle the existing financial dispute","How to handle the carpark CCTV footage","How to withdraw the complaints and Tribunal filing","How to ensure confidentiality","How to prevent similar disputes"]},"options":{"zh":["黎家未來六個月每月限用訪客位四次,並於前一日通知保安","蘇太指定每月第一及第三星期六日為兄長接送父親日,黎家承諾該日不佔用訪客位","黎家支付HK$3,000現金作和解,可一次過或分兩期","蘇太刪除閉路電視畫面個人副本(原件由法團保管),書面承諾不向法團以外人士轉發","蘇太撤回業主立案法團投訴及小額錢債計劃,黎先生撤回誹謗反控考慮","雙方簽署保密條款,事件不對外公開,亦不在屋苑社交圈或專業圈傳開","由法團發出一般性訪客車位使用指引,適用全屋苑,作為日後類似爭議的處理依據","雙方同意如未來有突發家庭需要(如手術、緊急醫療),可提前溝通安排訪客位優先使用"],"en":["Lais limit visitor parking to four uses per month for six months, notifying security one day prior","Mrs So designates first and third Saturday Sunday of each month as her brother's pickup days for their father; Lais commit not to occupy visitor parking those days","Lais pay HK$3,000 cash settlement, lump sum or two instalments","Mrs So deletes personal CCTV copy (original held by IO) and commits in writing not to forward outside the IO","Mrs So withdraws IO complaint and Tribunal filing; Mr Lai drops the defamation counter-consideration","Both sign confidentiality; no external disclosure within the estate social circle or professional circle","IO issues a general visitor parking guideline applicable to all residents, as reference for similar disputes","Both agree that future urgent family needs (surgery, emergency medical) can be communicated in advance for priority visitor parking arrangement"]}}}]</script>
+
+<script>
+const CASES = JSON.parse(document.getElementById('cases-data').textContent);
+
+const ARCHETYPES = [
+  { id: 1, name_zh: "消費爭議:第三方壓力隱情" },
+  { id: 2, name_zh: "社區爭議:雙方各有隱情" },
+  { id: 3, name_zh: "商業爭議:資金流不對等" },
+  { id: 4, name_zh: "機構爭議:第三方暗藏議程" },
+  { id: 5, name_zh: "社區爭議:面子與跨家庭關係" },
+  { id: 6, name_zh: "傷亡爭議:私密會議內欺詐自白" },
+  { id: 7, name_zh: "商業爭議:私密會議內貪腐自白" },
+  { id: 8, name_zh: "商業爭議:輩分與性別權力不對等" },
+];
+
+const ICONS = {
+  arrowLeft: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>',
+  eye: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg>',
+  eyeOff: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>',
+  eyeOffLg: '<svg class="icon-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"/><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/><path d="m2 2 20 20"/></svg>',
+  shuffle: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18h1.4c1.3 0 2.5-.6 3.3-1.7l6.1-8.6c.7-1.1 2-1.7 3.3-1.7H22"/><path d="m18 2 4 4-4 4"/><path d="M2 6h1.9c1.5 0 2.9.9 3.6 2.2"/><path d="M22 18h-5.9c-1.3 0-2.6-.7-3.3-1.8l-.5-.8"/><path d="m18 14 4 4-4 4"/></svg>',
+  fileText: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>',
+  shieldAlert: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>',
+  scale: '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>',
+};
+
+const state = {
+  view: 'library',
+  currentCase: null,
+  revealOverview: false,
+  currentTab: 'joint',
+  archetypeFilter: 0,
+  difficultyFilter: 'all',
+  ignoreFilters: false,
+};
+
+function esc(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function isPatched(c) {
+  // Patched cases have no 'code_triggers' in meta and no 'debrief_prompts'
+  return !c.meta.code_triggers && !c.debrief_prompts;
+}
+
+function paragraphs(text) {
+  if (!text) return '';
+  return String(text).split(/\n\n+/).filter(p => p.trim()).map(p => `<p>${esc(p.trim())}</p>`).join('');
+}
+
+function bilingualProse(zh, en) {
+  return `
+    <div class="bilingual-block">
+      <div class="zh-block prose-zh">${paragraphs(zh)}</div>
+      ${en ? `<div class="en-block prose-en">${paragraphs(en)}</div>` : ''}
+    </div>
+  `;
+}
+
+function pill(text, color) {
+  return `<span class="pill pill-${color}">${esc(text)}</span>`;
+}
+
+function render() {
+  document.getElementById('app').innerHTML = renderHeader() + renderMain() + renderFooter();
+}
+
+function renderHeader() {
+  return `
+    <header class="site-header">
+      <div class="container site-header-inner">
+        <div>
+          <div class="site-tag">HKMAAL · General Stream · Library</div>
+          <h1 class="site-title">調解個案集<span class="site-title-en">Case Library</span></h1>
+        </div>
+        <div class="count-badge">${CASES.length} cases · 個案</div>
+      </div>
+    </header>
+  `;
+}
+
+function renderMain() {
+  if (state.view === 'library') return renderLibrary();
+  if (state.view === 'case' && state.currentCase) return renderCaseDetail();
+  return '';
+}
+
+function renderFooter() {
+  return `
+    <footer class="site-footer">
+      <div class="container site-footer-inner">
+        <div class="site-footer-tag">HKMAAL General · Review Build</div>
+        <div class="site-footer-note">原創個案,並非源自版權材料。Original cases; not derived from copyrighted material.</div>
+      </div>
+    </footer>
+  `;
+}
+
+function filteredCases() {
+  if (state.ignoreFilters) return CASES;
+  return CASES.filter(c => {
+    if (state.archetypeFilter !== 0 && c.meta.archetype !== state.archetypeFilter) return false;
+    if (state.difficultyFilter !== 'all' && c.meta.difficulty !== state.difficultyFilter) return false;
+    return true;
+  });
+}
+
+function renderLibrary() {
+  const filtered = filteredCases();
+  const archOptions = '<option value="0">所有原型 · All archetypes</option>' +
+    ARCHETYPES.map(a => `<option value="${a.id}" ${state.archetypeFilter === a.id ? 'selected' : ''}>${a.id}. ${esc(a.name_zh)}</option>`).join('');
+  return `
+    <main class="container" style="padding: 40px 32px;">
+      <div class="library-controls">
+        <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+          <select class="filter-select" onchange="setArchetypeFilter(Number(this.value))">${archOptions}</select>
+          <select class="filter-select" onchange="setDifficultyFilter(this.value)">
+            <option value="all">所有難度 · All difficulties</option>
+            <option value="Foundation" ${state.difficultyFilter === 'Foundation' ? 'selected' : ''}>基礎 · Foundation</option>
+            <option value="Standard" ${state.difficultyFilter === 'Standard' ? 'selected' : ''}>標準 · Standard</option>
+            <option value="Curveball" ${state.difficultyFilter === 'Curveball' ? 'selected' : ''}>進階 · Curveball</option>
+          </select>
+          <label class="checkbox-label">
+            <input type="checkbox" ${state.ignoreFilters ? 'checked' : ''} onchange="toggleIgnoreFilters(this.checked)">
+            隨機抽案忽略篩選 · Draw ignores filters
+          </label>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <span class="count-badge">${filtered.length} / ${CASES.length}</span>
+          <button class="btn btn-primary" onclick="drawRandom()" ${filtered.length === 0 ? 'disabled' : ''}>${ICONS.shuffle} 隨機抽案 · Draw random</button>
+        </div>
+      </div>
+      ${filtered.length === 0 ? `
+        <div class="empty-state">
+          <div style="font-family: var(--font-display); font-style: italic; font-size: 22px; color: var(--ink-muted);">沒有符合條件的個案</div>
+          <div style="font-family: var(--font-body); font-size: 15px; font-style: italic; color: var(--ink-subtle); margin-top: 8px;">No cases match the filters.</div>
+        </div>
+      ` : `<div class="case-grid">${filtered.map(renderCaseCard).join('')}</div>`}
+    </main>
+  `;
+}
+
+function renderCaseCard(c) {
+  const patched = isPatched(c);
+  return `
+    <div class="case-card" onclick="openCase('${c.id}')">
+      <div class="case-pills">
+        ${pill('原型 ' + c.meta.archetype, 'ink')}
+        ${pill(c.meta.difficulty, 'sage')}
+        ${c.meta.parties_count === 3 ? pill('三方', 'dijon') : ''}
+        ${!patched ? pill('待更新格式 · Pre-update', 'warn') : ''}
+      </div>
+      <h3 class="case-title-zh">${esc(c.meta.title_zh)}</h3>
+      <div class="case-title-en">${esc(c.meta.title_en)}</div>
+      <div class="case-meta-line">${esc(c.id)}</div>
+    </div>
+  `;
+}
+
+function renderCaseDetail() {
+  const c = state.currentCase;
+  const tabs = [
+    { id: 'joint', label_zh: '聯合背景', label_en: 'Joint Brief', icon: ICONS.fileText, locked: false },
+    ...c.parties.map((p, i) => ({
+      id: 'cb_' + i,
+      label_zh: '機密 · ' + p.name_zh,
+      label_en: 'Confidential · ' + p.name_en,
+      icon: ICONS.shieldAlert,
+      locked: false,
+    })),
+    { id: 'overview', label_zh: '概覽表', label_en: 'Overview', icon: ICONS.scale, locked: !state.revealOverview },
+  ];
+
+  return `
+    <main class="container" style="padding: 32px;">
+      <div class="case-topbar">
+        <button class="btn btn-ghost" onclick="goLibrary()">${ICONS.arrowLeft} 個案庫 · Library</button>
+        <button class="btn btn-secondary" onclick="drawRandom()">${ICONS.shuffle} 再抽一案 · Draw another</button>
+      </div>
+
+      ${renderCaseHeaderCard(c)}
+
+      <div class="tabs">
+        ${tabs.map(t => `
+          <button class="tab ${state.currentTab === t.id ? 'active' : ''} ${t.locked ? 'locked' : ''}" onclick="setTab('${t.id}')">
+            ${t.icon} ${t.locked ? ICONS.eyeOff : ''} ${esc(t.label_zh)}<span class="tab-en">${esc(t.label_en)}</span>
+          </button>
+        `).join('')}
+      </div>
+
+      <div style="padding-bottom: 64px;">${renderTabContent()}</div>
+    </main>
+  `;
+}
+
+function renderCaseHeaderCard(c) {
+  const patched = isPatched(c);
+  return `
+    <div class="case-header">
+      <div class="case-pills">
+        ${pill('原型 ' + c.meta.archetype, 'ink')}
+        ${pill(c.meta.difficulty, 'sage')}
+        ${c.meta.parties_count === 3 ? pill('三方 · Three-party', 'dijon') : ''}
+        ${!patched ? pill('待更新格式 · Pre-update', 'warn') : ''}
+      </div>
+      <h2 class="case-header-title">${esc(c.meta.title_zh)}</h2>
+      <div class="case-header-en">${esc(c.meta.title_en)}</div>
+      <div class="rule" style="margin: 20px 0;"></div>
+      <div class="case-meta-grid">
+        <div>
+          <div class="meta-col-label">當事方 · Parties</div>
+          <div class="meta-col-body">
+            ${c.parties.map(p => `<div><strong>${esc(p.name_zh)}</strong> <span style="color: var(--ink-subtle); font-size: 12px; margin-left: 6px;">${esc(p.role_zh)}</span></div>`).join('')}
+          </div>
+        </div>
+        <div>
+          <div class="meta-col-label">難度 · Difficulty</div>
+          <div class="meta-col-body">${esc(c.meta.difficulty)}</div>
+        </div>
+        ${c.meta.agreement_variation?.present ? `
+        <div>
+          <div class="meta-col-label">協議變動 · Agreement</div>
+          <div class="meta-col-body" style="font-size: 13px;">${esc(c.meta.agreement_variation.note_zh || '有變動')}</div>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderTabContent() {
+  const c = state.currentCase;
+  const t = state.currentTab;
+  if (t === 'joint') return renderJoint(c);
+  if (t.startsWith('cb_')) return renderConfidential(c, parseInt(t.split('_')[1]));
+  if (t === 'overview') return state.revealOverview ? renderOverview(c.mediation_overview) : renderLockedOverview();
+  return '';
+}
+
+function renderJoint(c) {
+  return `
+    <div class="brief-head">
+      <h3 class="brief-title-zh">聯合背景資料</h3>
+      <div class="brief-title-en">Joint Brief</div>
+      <div class="brief-subtitle-zh">調解員及雙方均可閱讀;不含隱藏資料</div>
+      <div class="brief-subtitle-en">Visible to mediator and all parties; no hidden facts</div>
+    </div>
+    ${bilingualProse(c.joint_brief.zh, c.joint_brief.en)}
+  `;
+}
+
+function renderConfidential(c, idx) {
+  const cb = c.confidential_briefs.find(b => b.party_index === idx) || c.confidential_briefs[idx];
+  if (!cb) return '';
+  const party = c.parties[idx];
+  return `
+    <div class="confidential-alert">
+      <div class="confidential-alert-label-zh">機密資料</div>
+      <div class="confidential-alert-label-en">Confidential</div>
+      <div class="confidential-alert-desc-zh">僅供 ${esc(party.name_zh)} 的角色扮演者閱讀。另一方不應看到此頁。</div>
+      <div class="confidential-alert-desc-en">For ${esc(party.name_en)}'s role-player only. The other party should not see this brief.</div>
+    </div>
+    <div class="brief-head">
+      <h3 class="brief-title-zh">${esc(party.name_zh)} 的機密資料</h3>
+      <div class="brief-title-en">${esc(party.name_en)} confidential brief</div>
+    </div>
+    ${bilingualProse(cb.content_zh, cb.content_en)}
+    ${(cb.role_player_instruction_zh || cb.role_player_instruction_en) ? `
+      <div class="role-player-box">
+        <div class="role-player-label">角色扮演指引 · Role-player Instruction</div>
+        ${bilingualProse(cb.role_player_instruction_zh, cb.role_player_instruction_en)}
+      </div>
+    ` : ''}
+  `;
+}
+
+function renderOverview(overview) {
+  return `
+    <div class="brief-head">
+      <h3 class="brief-title-zh">調解概覽表</h3>
+      <div class="brief-title-en">Mediation Overview</div>
+    </div>
+    <div class="overview-grid">
+      <div class="overview-col">
+        <div class="overview-col-title-zh">共同基礎</div>
+        <div class="overview-col-title-en">Common Ground</div>
+        <div class="overview-subhead-zh">一般適用</div>
+        <div class="overview-subhead-en">Generic</div>
+        ${renderListBilingual(overview.common_ground.generic)}
+        <div class="overview-subhead-zh">此個案適用</div>
+        <div class="overview-subhead-en">Case Specific</div>
+        ${renderListBilingual(overview.common_ground.case_specific)}
+      </div>
+      <div class="overview-col">
+        <div class="overview-col-title-zh">待議事項</div>
+        <div class="overview-col-title-en">Issues</div>
+        ${renderListBilingual(overview.issues)}
+      </div>
+      <div class="overview-col">
+        <div class="overview-col-title-zh">可行方案</div>
+        <div class="overview-col-title-en">Options</div>
+        ${renderListBilingual(overview.options)}
+      </div>
+    </div>
+  `;
+}
+
+function renderListBilingual(items) {
+  if (!items) return '';
+  const zh = items.zh || [];
+  const en = items.en || [];
+  const max = Math.max(zh.length, en.length);
+  let html = '<ol class="overview-list">';
+  for (let i = 0; i < max; i++) {
+    html += `<li>
+      <div class="overview-zh">${esc(zh[i] || '')}</div>
+      ${en[i] ? `<div class="overview-en">${esc(en[i])}</div>` : ''}
+    </li>`;
+  }
+  html += '</ol>';
+  return html;
+}
+
+function renderLockedOverview() {
+  return `
+    <div class="locked">
+      <div class="locked-icon">${ICONS.eyeOffLg}</div>
+      <h3 class="locked-title-zh">調解概覽表<span class="locked-title-en">Mediation Overview Table</span></h3>
+      <div class="locked-desc-zh">訓練員答案頁,於角色扮演後才揭開</div>
+      <div class="locked-desc-en">Trainer answer key; reveal only after role-play</div>
+      <button class="btn btn-secondary" onclick="revealOverview()">${ICONS.eye} 揭開 · Reveal</button>
+    </div>
+  `;
+}
+
+window.openCase = function(id) {
+  const c = CASES.find(x => x.id === id);
+  if (c) {
+    state.currentCase = c;
+    state.currentTab = 'joint';
+    state.revealOverview = false;
+    state.view = 'case';
+    render();
+    window.scrollTo(0, 0);
+  }
+};
+
+window.drawRandom = function() {
+  const pool = filteredCases();
+  if (pool.length === 0) return;
+  const pick = pool[Math.floor(Math.random() * pool.length)];
+  openCase(pick.id);
+};
+
+window.goLibrary = function() {
+  state.currentCase = null;
+  state.view = 'library';
+  render();
+  window.scrollTo(0, 0);
+};
+
+window.setTab = function(t) { state.currentTab = t; render(); };
+window.revealOverview = function() { state.revealOverview = true; render(); };
+window.setArchetypeFilter = function(id) { state.archetypeFilter = id; render(); };
+window.setDifficultyFilter = function(d) { state.difficultyFilter = d; render(); };
+window.toggleIgnoreFilters = function(v) { state.ignoreFilters = v; render(); };
+
+render();
+</script>
+</body>
+</html>
