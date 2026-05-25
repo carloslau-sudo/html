@@ -2,9 +2,10 @@
   "_meta": {
     "app": "hk-hiking-2026",
     "version": 2,
-    "exportedAt": "2026-05-24T10:02:57.143Z",
+    "exportedAt": "2026-05-25T09:10:46.447Z",
     "count": 17,
-    "peakOverrideCount": 0
+    "peakOverrideCount": 0,
+    "auto": true
   },
   "updates": {
     "2": {
