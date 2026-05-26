@@ -2,10 +2,9 @@
   "_meta": {
     "app": "hk-hiking-2026",
     "version": 2,
-    "exportedAt": "2026-05-26T01:44:13.411Z",
+    "exportedAt": "2026-05-26T06:10:50.803Z",
     "count": 17,
-    "peakOverrideCount": 0,
-    "auto": true
+    "peakOverrideCount": 0
   },
   "updates": {
     "2": {
@@ -26,6 +25,11 @@
       "doneNote": null
     },
     "4": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-09-20",
       "date": "9月20日(週日)",
       "sea": "summer"
@@ -43,11 +47,19 @@
     "6": {
       "done": "done",
       "doneDate": "2026-05-23",
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-06-21",
       "date": "6月21日(週日)",
       "sea": "summer"
     },
     "7": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-06-07",
       "date": "6月7日(週日)",
       "sea": "summer"
@@ -63,16 +75,31 @@
       "sea": "summer"
     },
     "9": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-06-21",
       "date": "6月21日(週日)",
       "sea": "summer"
     },
     "10": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-06-28",
       "date": "6月28日(週日)",
       "sea": "summer"
     },
     "11": {
+      "done": null,
+      "doneDate": null,
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-06-14",
       "date": "6月14日(週日)",
       "sea": "summer"
@@ -90,6 +117,9 @@
     "13": {
       "done": "done",
       "doneDate": "2026-05-10",
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-05-10",
       "date": "5月10日(週日)",
       "sea": "spring"
@@ -107,6 +137,9 @@
     "15": {
       "done": "done",
       "doneDate": "2026-05-24",
+      "partialNote": null,
+      "partialDonePeaks": 0,
+      "doneNote": null,
       "isoDate": "2026-05-24",
       "date": "5月24日(週日)",
       "sea": "spring"
