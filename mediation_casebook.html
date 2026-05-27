@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bilingual Mediation Casebook · 雙語調解案集</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Spectral:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Noto+Serif+TC:wght@400;500;700;900&family=Noto+Serif+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1F1B16;
+  --ink-soft: #3E3A33;
+  --ink-faint: #6B655B;
+  --paper: #FAF6EE;
+  --paper-2: #F2EDE2;
+  --rule: #C9C0AE;
+  --rule-soft: #DDD5C3;
+  --accent: #6E2A1F;
+
+  --sage: #E8EDE0;
+  --sage-rule: #B8C2A8;
+  --sage-ink: #3A4A2E;
+  --dijon: #EDE3CC;
+  --dijon-rule: #C5B485;
+  --dijon-ink: #5A4818;
+
+  --slate: #DDE5EB;
+  --slate-rule: #9DAFC1;
+  --slate-ink: #2A3E55;
+
+  --terracotta: #EAD8CD;
+  --terracotta-rule: #BE9080;
+  --terracotta-ink: #5E2818;
+
+  --plum: #E5DCE5;
+  --plum-rule: #A98EA9;
+  --plum-ink: #4A2B49;
+
+  --stone: #E5E2DC;
+  --stone-rule: #B0AB9F;
+  --stone-ink: #3F3B33;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Spectral', 'Noto Serif TC', Georgia, serif;
+  font-size: 16px;
+  line-height: 1.7;
+  font-feature-settings: "kern" 1, "liga" 1;
+  -webkit-font-smoothing: antialiased;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(110, 42, 31, 0.025), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(58, 74, 46, 0.02), transparent 50%);
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(250, 246, 238, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--rule);
+  padding: 14px 32px;
+}
+.topbar-inner {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.brand {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.01em;
+  color: var(--accent);
+  margin-right: auto;
+}
+.brand .sub {
+  display: inline-block;
+  margin-left: 10px;
+  padding: 2px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  background: var(--paper);
+  vertical-align: 4px;
+}
+select, .toggle-btn {
+  font-family: 'Spectral', 'Noto Serif TC', serif;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+select:hover, .toggle-btn:hover { border-color: var(--ink); }
+.toggle-group { display: inline-flex; border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+.toggle-group .toggle-btn { border: none; border-radius: 0; padding: 6px 14px; background: transparent; }
+.toggle-group .toggle-btn.active { background: var(--ink); color: var(--paper); }
+
+main { max-width: 1180px; margin: 0 auto; padding: 40px 32px 80px; }
+
+.case-header { margin-bottom: 36px; padding-bottom: 24px; border-bottom: 2px solid var(--ink); }
+.case-meta { display: flex; gap: 12px; flex-wrap: wrap; font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 0.05em; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 12px; }
+.case-meta .pill { padding: 3px 8px; border: 1px solid var(--rule); border-radius: 2px; }
+.case-meta .pill.level-1 { color: var(--sage-ink); border-color: var(--sage-rule); background: var(--sage); }
+.case-meta .pill.level-2 { color: var(--slate-ink); border-color: var(--slate-rule); background: var(--slate); }
+.case-meta .pill.level-3 { color: var(--accent); border-color: var(--accent); }
+
+.case-title {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  font-weight: 600;
+  font-size: 38px;
+  line-height: 1.15;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+section.block { margin-bottom: 48px; }
+.section-eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 8px;
+}
+.section-title {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  font-weight: 600;
+  font-size: 24px;
+  margin: 0 0 18px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+.section-title .en {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 16px;
+  color: var(--ink-faint);
+}
+
+.prose { font-size: 16px; line-height: 1.78; color: var(--ink); }
+.prose p { margin: 0 0 14px; text-align: justify; hyphens: auto; }
+
+.confidentials { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+@media (max-width: 920px) { .confidentials { grid-template-columns: 1fr; } }
+
+.party-card {
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--ink);
+  padding: 28px;
+  position: relative;
+}
+.party-card .party-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 4px;
+}
+.party-card h3 {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  font-weight: 600;
+  font-size: 22px;
+  margin: 0 0 4px;
+}
+.party-card .role {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 15px;
+  margin-bottom: 18px;
+}
+
+.schema-box {
+  border-left: 3px solid;
+  padding: 16px 18px;
+  margin: 18px 0;
+  border-radius: 0 4px 4px 0;
+}
+.schema-box .box-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.schema-box .box-label .zh { font-family: 'Noto Serif TC', serif; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; }
+.schema-box .box-content { font-size: 14.5px; line-height: 1.65; }
+.schema-box .box-content .field-name {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  font-style: italic;
+  font-weight: 500;
+  margin-right: 6px;
+}
+.schema-box .box-content p { margin: 6px 0; }
+.schema-box .tag {
+  display: inline-block;
+  padding: 2px 8px;
+  margin: 2px 4px 2px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  border: 1px solid;
+  border-radius: 2px;
+  background: rgba(255,255,255,0.55);
+}
+
+.box-register { background: var(--slate); border-left-color: var(--slate-rule); color: var(--slate-ink); }
+.box-register .tag { color: var(--slate-ink); border-color: var(--slate-rule); }
+
+.box-legitimacy { background: var(--terracotta); border-left-color: var(--terracotta-rule); color: var(--terracotta-ink); }
+.box-legitimacy .tag { color: var(--terracotta-ink); border-color: var(--terracotta-rule); }
+
+.box-trust { background: var(--plum); border-left-color: var(--plum-rule); color: var(--plum-ink); }
+.box-trust .field-row { display: grid; grid-template-columns: 80px 1fr; gap: 8px; margin-bottom: 6px; }
+.box-trust .field-key {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--plum-ink);
+  opacity: 0.7;
+  padding-top: 4px;
+}
+
+.box-coding { background: var(--stone); border-left-color: var(--stone-rule); color: var(--stone-ink); }
+.box-coding .tag { color: var(--stone-ink); border-color: var(--stone-rule); }
+
+.box-attributes { background: var(--sage); border-left-color: var(--sage-rule); color: var(--sage-ink); }
+.box-attributes .attr-row { padding: 8px 0; border-bottom: 1px dashed rgba(58, 74, 46, 0.2); }
+.box-attributes .attr-row:last-child { border-bottom: none; }
+.box-attributes .attr-name {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  font-weight: 600;
+  font-style: italic;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+.box-attributes .attr-trigger { font-size: 13.5px; margin-top: 3px; color: var(--sage-ink); opacity: 0.85; }
+
+.box-instruction { background: var(--dijon); border-left-color: var(--dijon-rule); color: var(--dijon-ink); }
+.box-instruction .box-content { font-style: italic; }
+
+.schema-legend {
+  margin: 32px 0;
+  padding: 24px 28px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+}
+.schema-legend h4 {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  font-size: 18px;
+  margin: 0 0 12px;
+  color: var(--accent);
+  letter-spacing: 0.01em;
+}
+.schema-legend .legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  font-size: 13px;
+}
+.schema-legend .legend-item .swatch { display: inline-block; width: 12px; height: 12px; vertical-align: middle; margin-right: 8px; border: 1px solid; }
+.schema-legend .legend-item strong { font-family: 'Cormorant Garamond', 'Noto Serif TC', serif; font-weight: 600; }
+
+.placeholder-note {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  padding: 8px 12px;
+  background: rgba(110, 42, 31, 0.05);
+  border-left: 2px solid var(--accent);
+  margin: 12px 0;
+}
+
+body.lang-zh .lang-en, body.lang-zh .lang-sc { display: none; }
+body.lang-sc .lang-en, body.lang-sc .lang-zh { display: none; }
+body.lang-en .lang-zh, body.lang-en .lang-sc { display: none; }
+
+/* Language-appropriate fonts */
+body.lang-zh, body.lang-zh .lang-zh { font-family: 'Spectral', 'Noto Serif TC', Georgia, serif; }
+body.lang-sc, body.lang-sc .lang-sc { font-family: 'Spectral', 'Noto Serif SC', Georgia, serif; }
+.schema-box .box-label .zh .lang-zh { font-family: 'Noto Serif TC', serif; }
+.schema-box .box-label .zh .lang-sc { font-family: 'Noto Serif SC', serif; }
+.party-card h3 .lang-sc, .case-title .lang-sc { font-family: 'Cormorant Garamond', 'Noto Serif SC', serif; }
+
+.banner {
+  margin: 0 0 36px;
+  padding: 18px 24px;
+  background: var(--paper-2);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--ink);
+}
+.banner-title {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', serif;
+  font-weight: 600;
+  font-size: 16px;
+  margin: 0 0 6px;
+}
+.banner-text { font-size: 14px; color: var(--ink-soft); margin: 0; }
+
+footer {
+  margin-top: 80px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+}
+
+@media print {
+  .topbar { position: static; }
+  body { background: white; }
+}
+
+/* Download buttons */
+.download-btn {
+  font-family: 'Spectral', 'Noto Serif TC', 'Noto Serif SC', Georgia, serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+  background: transparent;
+  border: 1px solid var(--rule);
+  padding: 4px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-left: 12px;
+}
+.download-btn:hover {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+.download-btn::before {
+  content: "\2193";
+  margin-right: 4px;
+}
+
+.case-header { position: relative; }
+.case-header .download-full {
+  position: absolute;
+  top: 4px;
+  right: 0;
+}
+
+.section-title {
+  display: flex !important;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.section-title .titles-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex: 1;
+}
+
+.party-card { position: relative; }
+.party-card .download-cb {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  font-size: 11px;
+  padding: 3px 10px;
+  margin: 0;
+}
+
+/* Overview section */
+.overview-block { margin-bottom: 28px; }
+.overview-block h3 {
+  font-family: 'Cormorant Garamond', 'Noto Serif TC', 'Noto Serif SC', serif;
+  font-weight: 600;
+  font-size: 19px;
+  margin: 0 0 8px;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+}
+.overview-block h4 {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 14px 0 6px;
+  font-weight: 500;
+}
+.overview-block ol {
+  margin: 0 0 12px 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: ov;
+}
+.overview-block li {
+  margin-bottom: 8px;
+  line-height: 1.7;
+  padding-left: 30px;
+  position: relative;
+  counter-increment: ov;
+}
+.overview-block li::before {
+  content: counter(ov);
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+  width: 22px;
+  text-align: right;
+  padding-right: 4px;
+}
+</style>
+</head>
+<body class="lang-zh">
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><span class="lang-zh">雙語調解案集</span><span class="lang-sc">双语调解案集</span><span class="lang-en">Bilingual Mediation Casebook</span></div>
+    <label style="display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-faint);">
+      <span class="lang-zh">個案</span><span class="lang-sc">个案</span><span class="lang-en">Case</span>
+      <select id="case-select"></select>
+    </label>
+    <div class="toggle-group" role="group" aria-label="Language">
+      <button class="toggle-btn active" data-lang="zh">繁</button>
+      <button class="toggle-btn" data-lang="sc">簡</button>
+      <button class="toggle-btn" data-lang="en">EN</button>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <div id="case-view"></div>
+
+  <footer>
+    <span class="lang-zh">雙語調解案集 · 內容均為虛構，僅供調解員練習之用</span>
+    <span class="lang-sc">双语调解案集 · 内容均为虚构，仅供调解员练习之用</span>
+    <span class="lang-en">Bilingual Mediation Casebook · All content fictional, for mediator practice only</span>
+  </footer>
+
+</main>
+
+<script>
+const CASES = [
+  /* ============ seed_010 ============ */
+  {
+    id: "seed_010",
+    meta: {
+      title_zh: "兄妹繼承中藥行",
+      title_sc: "兄妹继承中药行",
+      title_en: "Sibling inheritance of a Chinese herbs shop",
+      level: 1,
+      level_label: "Level 1",
+      archetype: "family_inheritance_business"
+    },
+    parties: [
+      { name_zh: "葉太", name_sc: "叶太", name_en: "Mrs Ip", role_zh: "長女，主張保留並繼續經營", role_sc: "长女，主张保留并继续经营", role_en: "Elder daughter, in favour of retaining the shop" },
+      { name_zh: "葉先生", name_sc: "叶先生", name_en: "Mr Ip", role_zh: "幼子，主張變現出售", role_sc: "幼子，主张变现出售", role_en: "Younger son, in favour of selling" }
+    ],
+    joint_brief: {
+      zh: "葉太（四十八歲，經營三間美容院）及葉先生（四十二歲，證券公司從業員）為兄妹，共同繼承父親葉伯於上水經營三十五年的「葉氏參茸海味行」。葉伯遺囑訂明兩人平均繼承全店業務、舖位租約及商號權利。商號月營業額約HK$280,000，租金HK$60,000，全職員工老黃服務二十五年。葉太希望保留商號並由其大女兒接手，葉先生則希望即時變現。上月葉先生透過律師要求三十日內委託獨立估值師，如未能達成共懂則向高等法院申請強制分割遺產。葉太回信指葉先生「無視父親遺願」。雙方關係惡化至連葉伯週年忌祭都未能同行。經姑媽介紹，雙方同意嘗試調解。",
+      sc: "叶太（四十八岁，经营三间美容院）及叶先生（四十二岁，证券公司从业员）为兄妹，共同继承父亲叶伯于上水经营三十五年的「叶氏参茸海味行」。叶伯遗嘱订明两人平均继承全店业务、铺位租约及商号权利。商号月营业额约HK$280,000，租金HK$60,000，全职员工老黄服务二十五年。叶太希望保留商号并由其大女儿接手，叶先生则希望即时变现。上月叶先生透过律师要求三十日内委托独立估值师，如未能达成共懂则向高等法院申请强制分割遗产。叶太回信指叶先生「无视父亲遗愿」。双方关系恶化至连叶伯周年忌祭都未能同行。经姑妈介绍，双方同意尝试调解。",
+      en: "Mrs Ip (48, owner of three beauty salons) and Mr Ip (42, securities firm) are siblings and joint heirs to their late father Mr Ip Senior&rsquo;s 35-year-old Sheung Shui shop &ldquo;Ip&rsquo;s Ginseng and Dried Seafood&rdquo;. The will divides the business, lease, and goodwill equally. Monthly turnover is around HK$280,000; rent HK$60,000; one long-serving employee (Old Wong, 25 years). Mrs Ip wants to keep the shop and hand it to her elder daughter; Mr Ip wants immediate liquidation. Last month Mr Ip sent a solicitor&rsquo;s letter demanding a 30-day independent valuation, failing which he would seek a partition order in the High Court. Mrs Ip replied that her brother was &ldquo;ignoring father&rsquo;s wish&rdquo;. Relations have broken to the point where they could not attend the first anniversary memorial together. An aunt referred them to mediation."
+    },
+    confidential_briefs: [
+      {
+        party_index: 0,
+        register: "aggrieved-but-composed",
+        legitimacy_framing: ["customary-expectation", "contractual-text"],
+        trust_breakdown: {
+          when_zh: "上月收到弟弟的律師信",
+          when_sc: "上月收到弟弟的律师信",
+          when_en: "Last month, on receiving her brother&rsquo;s solicitor&rsquo;s letter",
+          what_zh: "弟弟以三十日限期及高等法院為威脅，要求強制估值出售",
+          what_sc: "弟弟以三十日限期及高等法院为威胁，要求强制估值出售",
+          what_en: "Her brother used a 30-day deadline and a threat of High Court partition to force a valuation and sale",
+          why_it_mattered_zh: "三十年前阿爸臨終說過「家和萬事興」，弟弟把法律工具拿出來那一刻，她明白他已經不是同枱食飯那個弟弟",
+          why_it_mattered_sc: "三十年前阿爸临终说过「家和万事兴」，弟弟把法律工具拿出来那一刻，她明白他已经不是同枱食饭那个弟弟",
+          why_it_mattered_en: "Thirty years ago at his deathbed, their father said &ldquo;family harmony brings all good&rdquo;. The moment her brother reached for legal instruments, she understood he was no longer the brother she ate at the same table with"
+        },
+        coding: {
+          present: false,
+          axes_zh: "無顯著編碼；雙方為同一家庭，同階級背景",
+          axes_sc: "无显著编码；双方为同一家庭，同阶级背景",
+          axes_en: "No significant coding; same family, same class background",
+          direction_zh: "&mdash;",
+          direction_sc: "&mdash;",
+          direction_en: "&mdash;",
+          how_it_leaks_zh: "&mdash;",
+          how_it_leaks_sc: "&mdash;",
+          how_it_leaks_en: "&mdash;"
+        },
+        behavioural_attributes: [
+          { attr_zh: "情緒浮面", attr_sc: "情绪浮面", attr_en: "Emotional surface", trigger_zh: "當調解員問及阿爸最後幾個月，只在私下會議出現，不會在聯合會議展露", trigger_sc: "当调解员问及阿爸最后几个月，只在私下会议出现，不会在联合会议展露", trigger_en: "When the mediator asks about her father&rsquo;s last months; only in caucus, never in joint" },
+          { attr_zh: "互惠回扣", attr_sc: "互惠回扣", attr_en: "Reciprocity callback", trigger_zh: "當弟弟主張公平分配時，她會提出自己過去十年每週末回店幫忙、照顧阿爸湯藥的事實", trigger_sc: "当弟弟主张公平分配时，她会提出自己过去十年每周末回店帮忙、照顾阿爸汤药的事实", trigger_en: "When her brother argues for equal share, she returns to ten years of weekend shifts and tending to their father&rsquo;s medicine" },
+          { attr_zh: "文件展示", attr_sc: "文件展示", attr_en: "Document brandishing", trigger_zh: "備有阿爸親筆寫的「葉氏一家」毛筆字裱框照片，於僵局時取出", trigger_sc: "备有阿爸亲笔写的「叶氏一家」毛笔字裱框照片，于僵局时取出", trigger_en: "Carries a framed photo of their father&rsquo;s brush calligraphy &ldquo;The Ip Family&rdquo;, produces it at deadlock" }
+        ],
+        role_player_instruction_zh: "葉太的核心信念是：阿爸的店不是一個資產，是一個家。她不反對最終可能出售，但反對在「未試過保留」之前就放棄。在聯合會議她應該保持節制，語氣堅定但不哭鬧；留待私下會議才談及阿爸晚年的孤獨。對「估值」一詞特別敏感，因為她聽到的是「把阿爸打標籤」。如果調解員處理得當，她可以鬆動到接受「先試三年、不行再賣」的方案。",
+        role_player_instruction_sc: "叶太的核心信念是：阿爸的店不是一个资产，是一个家。她不反对最终可能出售，但反对在「未试过保留」之前就放弃。在联合会议她应该保持节制，语气坚定但不哭闹；留待私下会议才谈及阿爸晚年的孤独。对「估值」一词特别敏感，因为她听到的是「把阿爸打标签」。如果调解员处理得当，她可以松动到接受「先试三年、不行再卖」的方案。",
+        role_player_instruction_en: "Mrs Ip&rsquo;s core belief: father&rsquo;s shop is not an asset, it is a family. She does not categorically refuse a future sale, but refuses to give up before trying to keep it. In joint session she should be firm but not tearful; save her father&rsquo;s lonely last months for caucus. The word &lsquo;valuation&rsquo; is a particular trigger; she hears &lsquo;putting a price tag on father&rsquo;. If well handled, she can soften to a &ldquo;try three years then sell&rdquo; settlement.",
+        brief_zh: "葉太財務狀況穩健，三間美容院全年淨利約HK$1,800,000。她願意買斷弟弟的一半，問題是估值由誰做、用甚麼方法。她真正的隱憂：大女兒剛畢業正在猶豫是否接手，若強迫變賣，她連嘗試的機會都沒有了。她已準備好為「先試三年」付出每月HK$10,000的額外補貼予弟弟。",
+        brief_sc: "叶太财务状况稳健，三间美容院全年净利约HK$1,800,000。她愿意买断弟弟的一半，问题是估值由谁做、用甚么方法。她真正的隐忧：大女儿刚毕业正在犹豫是否接手，若强迫变卖，她连尝试的机会都没有了。她已准备好为「先试三年」付出每月HK$10,000的额外补贴予弟弟。",
+        brief_en: "Mrs Ip is financially stable; the three salons net around HK$1,800,000 annually. She is willing to buy out her brother, but disputes who does the valuation and on what basis. Her real fear: her newly-graduated elder daughter is hesitating about taking the shop; a forced sale removes the chance to even try. She is prepared to pay her brother HK$10,000 monthly during a three-year trial period."
+      },
+      {
+        party_index: 1,
+        register: "controlled-professional",
+        legitimacy_framing: ["equity-correction", "industry-norm"],
+        trust_breakdown: {
+          when_zh: "六個月前姐姐的大女兒在家庭飯局上說「我不一定會接」",
+          when_sc: "六个月前姐姐的大女儿在家庭饭局上说「我不一定会接」",
+          when_en: "Six months ago, at a family dinner, his elder niece said &ldquo;I don&rsquo;t necessarily want to take it&rdquo;",
+          what_zh: "姐姐一直主張保留是因為「下一代要接班」，但連下一代都未確定要接，他覺得姐姐其實在拖延",
+          what_sc: "姐姐一直主张保留是因为「下一代要接班」，但连下一代都未确定要接，他觉得姐姐其实在拖延",
+          what_en: "His sister&rsquo;s case for retention rested on &ldquo;the next generation will take over&rdquo;, but the niece herself was uncertain; he concluded his sister was simply stalling",
+          why_it_mattered_zh: "由那一晚開始，他不再相信姐姐是真心為阿爸，而是在用阿爸來阻止他套現",
+          why_it_mattered_sc: "由那一晚开始，他不再相信姐姐是真心为阿爸，而是在用阿爸来阻止他套现",
+          why_it_mattered_en: "From that night he stopped believing his sister was acting for their father; she was using their father to block him from cashing out"
+        },
+        coding: {
+          present: false,
+          axes_zh: "無顯著編碼",
+          axes_sc: "无显著编码",
+          axes_en: "No significant coding",
+          direction_zh: "&mdash;",
+          direction_sc: "&mdash;",
+          direction_en: "&mdash;",
+          how_it_leaks_zh: "&mdash;",
+          how_it_leaks_sc: "&mdash;",
+          how_it_leaks_en: "&mdash;"
+        },
+        behavioural_attributes: [
+          { attr_zh: "隱藏脆弱面", attr_sc: "隐藏脆弱面", attr_en: "Hidden vulnerability", trigger_zh: "當調解員溫和地問及他自己兩個兒子的學費壓力時，可短暫鬆動，讓調解員看見錢的需要其實很實際", trigger_sc: "当调解员温和地问及他自己两个儿子的学费压力时，可短暂松动，让调解员看见钱的需要其实很实际", trigger_en: "When the mediator gently asks about his two sons&rsquo; school fees, allow a brief drop in guard to show the cash need is concrete, not greedy" },
+          { attr_zh: "時間壓力", attr_sc: "时间压力", attr_en: "Time pressure", trigger_zh: "由於本人在中環上班，只能於午飯時間視像連線出席；每次離開均看錶並表示「下午要開會」", trigger_sc: "由于本人在中环上班，只能于午饭时间视像连线出席；每次离开均看表并表示「下午要开会」", trigger_en: "Joins by video from Central at lunchtime only; visibly checks watch when leaving, &ldquo;afternoon meeting&rdquo;" },
+          { attr_zh: "向調解員探口風", attr_sc: "向调解员探口风", attr_en: "Probe to mediator", trigger_zh: "於私下會議曾問「如果上到法庭，通常法庭會傾向哪一邊？」，測試調解員會否越界給意見", trigger_sc: "于私下会议曾问「如果上到法庭，通常法庭会倾向哪一边？」，测试调解员会否越界给意见", trigger_en: "In caucus, asks &ldquo;if this goes to court, which way does the court usually lean?&rdquo;, testing whether the mediator crosses the clause 4 line" }
+        ],
+        role_player_instruction_zh: "葉先生不是壞人，只是現實。他自己有兩個兒子（十六歲、十三歲），國際學校學費年費合共近HK$500,000，太太兼職收入不穩定。他絕對不會在聯合會議透露財務壓力，因為這會被姐姐解讀成「為錢出賣阿爸」。在聯合會議他應該以「行業萎縮、長遠不可持續」作論點；在私下會議才透露真實需要。對「孝順」一詞敏感，認為這是姐姐的道德綁架。如能達成可分期套現的方案，他能接受不立即出售。",
+        role_player_instruction_sc: "叶先生不是坏人，只是现实。他自己有两个儿子（十六岁、十三岁），国际学校学费年费合共近HK$500,000，太太兼职收入不稳定。他绝对不会在联合会议透露财务压力，因为这会被姐姐解读成「为钱出卖阿爸」。在联合会议他应该以「行业萎缩、长远不可持续」作论点；在私下会议才透露真实需要。对「孝顺」一词敏感，认为这是姐姐的道德绑架。如能达成可分期套现的方案，他能接受不立即出售。",
+        role_player_instruction_en: "Mr Ip is not a villain, he is realistic. He has two sons (16, 13) in international school, combined annual fees near HK$500,000; his wife&rsquo;s part-time income is unstable. He will never disclose financial pressure in joint session because his sister will hear it as &ldquo;selling father for money&rdquo;. In joint he argues industry decline and long-term unsustainability; in caucus he reveals the real need. The word &lsquo;filial&rsquo; is a trigger; he reads it as moral blackmail. A staged buyout he can wait for is acceptable.",
+        brief_zh: "葉先生的底線：三年內取得阿爸店業務估值一半的現金或可變現資產。如果姐姐能即時付一筆訂金（約HK$200,000）作首期，並在三年內按估值分期支付餘額，他可以接受不出售並見證姐姐嘗試接班。如果姐姐連訂金都不肯付，他會視為「不認真」並重啟訴訟。",
+        brief_sc: "叶先生的底线：三年内取得阿爸店业务估值一半的现金或可变现资产。如果姐姐能即时付一笔订金（约HK$200,000）作首期，并在三年内按估值分期支付余额，他可以接受不出售并见证姐姐尝试接班。如果姐姐连订金都不肯付，他会视为「不认真」并重启诉讼。",
+        brief_en: "Mr Ip&rsquo;s floor: within three years, cash or liquid equivalent of half the shop&rsquo;s valuation. If his sister will pay a deposit (around HK$200,000) immediately and the balance over three years per a fair valuation, he can accept not selling and watch her daughter try. If she refuses even the deposit, he will read it as not serious and restart the proceedings."
+      }
+    ],
+      mediation_overview: {
+        common_ground: {
+          generic: { zh: ["雙方希望在不破壞家族關係的前提下解決爭議", "雙方均承認父親遺願的權重", "雙方均不希望透過漫長訴訟解決"],
+              sc: ["双方希望在不破坏家族关系的前提下解决争议", "双方均承认父亲遗愿的权重", "双方均不希望透过漫长诉讼解决"],
+              en: ["Both wish to resolve without damaging family relations", "Both acknowledge the weight of their father’s will", "Both prefer not to resolve through extended litigation"] },
+          case_specific: { zh: ["雙方均同意遺囑「平均繼承」的原則", "雙方均承認葉氏參茸海味行對家庭的歷史意義", "雙方均承認老黃二十五年服務的價值"],
+              sc: ["双方均同意遗嘱「平均继承」的原则", "双方均承认叶氏参茸海味行对家庭的历史意义", "双方均承认老黄二十五年服务的价值"],
+              en: ["Both agree the will mandates equal inheritance", "Both acknowledge the historical meaning of the shop to the family", "Both acknowledge Old Wong’s 25 years of service"] }
+        },
+        issues: { zh: ["商號是繼續經營還是即時變賣？", "若保留，由誰主導，管理權如何分配？", "若變賣，估值由誰做、用甚麼方法、何時執行？", "葉先生的即時現金流需求如何回應？", "葉太大女兒接班的時間與權責？"],
+          sc: ["商号是继续经营还是即时变卖？", "若保留，由谁主导，管理权如何分配？", "若变卖，估值由谁做、用甚么方法、何时执行？", "叶先生的即时现金流需求如何回应？", "叶太大女儿接班的时间与权责？"],
+          en: ["Continue operating or sell now?", "If retained, who leads and how is management divided?", "If sold, who values, by what method, and when?", "How to address Mr Ip’s immediate cash-flow need?", "Timing and authority of the niece’s succession?"] },
+        options: { zh: ["方案A：即時委託獨立估值師，葉太按估值買斷葉先生之一半，分期支付", "方案B:「先試三年」計劃 — 葉太支付定金（HK$200,000)，三年內試營，期間每月補貼葉先生 HK$10,000，期滿後若不可持續再按估值出售", "方案C：雙方共同經營，按持股比例分配收益，並訂明退出機制", "方案D：變賣商號，但保留商號名稱及具紀念意義之物予雙方各持一半"],
+          sc: ["方案A：即时委托独立估值师，叶太按估值买断叶先生之一半，分期支付", "方案B:「先试三年」计划 — 叶太支付定金（HK$200,000)，三年内试营，期间每月补贴叶先生 HK$10,000，期满后若不可持续再按估值出售", "方案C：双方共同经营，按持股比例分配收益，并订明退出机制", "方案D：变卖商号，但保留商号名称及具纪念意义之物予双方各持一半"],
+          en: ["Option A: Immediate independent valuation; Mrs Ip buys out Mr Ip’s half by instalments", "Option B: Three-year trial — Mrs Ip pays HK$200,000 deposit, monthly HK$10,000 to Mr Ip during trial; sell at valuation if not viable after", "Option C: Joint operation, profit-sharing by ownership, with defined exit mechanism", "Option D: Sell the shop but retain the trade name and memorial items split between siblings"] }
+      }
+  },
+
+  /* ============ seed_017 ============ */
+  {
+    id: "seed_017",
+    meta: {
+      title_zh: "政府工程分判尾數爭議",
+      title_sc: "政府工程分判尾数争议",
+      title_en: "Government project sub-contractor balance dispute",
+      level: 3,
+      level_label: "Level 3",
+      archetype: "construction_subcontract_with_ethics_test"
+    },
+    parties: [
+      { name_zh: "馬先生", name_sc: "马先生", name_en: "Mr Ma", role_zh: "三判金屬幕牆分判商董事", role_sc: "三判金属幕墙分判商董事", role_en: "Director, third-tier metal facade subcontractor" },
+      { name_zh: "黎先生", name_sc: "黎先生", name_en: "Mr Lai", role_zh: "二判鋼結構公司負責人", role_sc: "二判钢结构公司负责人", role_en: "Principal, second-tier steel-structure firm" }
+    ],
+    joint_brief: {
+      zh: "本爭議涉及政府某新建運動場項目分判工程的尾數。黎先生的鋼結構公司在 2023 年中以二判身份承接該項目部分鋼結構工程，並把金屬幕牆部分以約 HK$1,850,000 分判予馬先生的公司（三判）。馬先生於 2024 年 3 月完成工程，黎先生陸續支付約 HK$1,480,000，餘下約 HK$370,000尾數至 2024 年 9 月仍未結算。馬先生指出餘款已逾期超過 5 個月，曾數次發 WhatsApp 催款未獲正面回覆。黎先生則指馬先生工程後期變更未獲書面授權，加上有兩個位置驗收時出現尺寸偏差，業主未付清款項予自己，故無能力即時清付。雙方曾於 2024 年 8 月嘗試自行協商一次，不歡而散。馬先生展開正式法律程序後，雙方獲安排調解。",
+      sc: "本争议涉及政府某新建运动场项目分判工程的尾数。黎先生的钢结构公司在 2023 年中以二判身份承接该项目部分钢结构工程，并把金属幕墙部分以约 HK$1,850,000 分判予马先生的公司（三判）。马先生于 2024 年 3 月完成工程，黎先生陆续支付约 HK$1,480,000，余下约 HK$370,000尾数至 2024 年 9 月仍未结算。马先生指出余款已逾期超过 5 个月，曾数次发 WhatsApp 催款未获正面回复。黎先生则指马先生工程后期变更未获书面授权，加上有两个位置验收时出现尺寸偏差，业主未付清款项予自己，故无能力即时清付。双方曾于 2024 年 8 月尝试自行协商一次，不欢而散。马先生展开正式法律程序后，双方获安排调解。",
+      en: "This dispute concerns the unpaid balance on a government sports venue subcontract. Mr Lai&rsquo;s steel-structure firm took the second-tier subcontract for part of the steelwork in mid-2023, and subcontracted the metal facade portion to Mr Ma&rsquo;s firm (third tier) for around HK$1,850,000. Mr Ma completed the work in March 2024. Mr Lai paid around HK$1,480,000 progressively. About HK$370,000 remains unpaid as of September 2024. Mr Ma says the balance is more than five months overdue and multiple WhatsApp chase-ups went unanswered. Mr Lai says some late-stage changes lacked written authorisation, two locations had dimensional variance at handover, and the main contractor still owes him money. A self-initiated negotiation in August 2024 ended badly. Mr Ma then commenced formal legal proceedings, and the parties were referred to mediation."
+    },
+    confidential_briefs: [
+      {
+        party_index: 0,
+        register: "cold-operator",
+        legitimacy_framing: ["performance-completed", "contractual-text"],
+        trust_breakdown: {
+          when_zh: "2024 年 7 月最後一次 WhatsApp 催款，黎先生「已讀不回」三十二日",
+          when_sc: "2024 年 7 月最后一次 WhatsApp 催款，黎先生「已读不回」三十二日",
+          when_en: "July 2024, his last WhatsApp chase-up was &lsquo;read&rsquo; with no reply for 32 days",
+          what_zh: "由部份回覆轉為完全沉默，馬先生視之為對方刻意拖延",
+          what_sc: "由部份回复转为完全沉默，马先生视之为对方刻意拖延",
+          what_en: "Communication shifted from partial replies to total silence; Mr Ma read it as deliberate stalling",
+          why_it_mattered_zh: "建造業中「讀不回」是業內公認的脫責訊號；對他而言，這已經不是付款問題，是被當作三流的問題",
+          why_it_mattered_sc: "建造业中「读不回」是业内公认的脱责讯号；对他而言，这已经不是付款问题，是被当作三流的问题",
+          why_it_mattered_en: "In the trade, &lsquo;read no reply&rsquo; is a recognised signal of intended evasion. For him this was no longer about money, it was about being treated as third-rate"
+        },
+        coding: {
+          present: true,
+          axes_zh: "行業內部的等級編碼（二判對三判）",
+          axes_sc: "行业内部的等级编码（二判对三判）",
+          axes_en: "Within-industry tier coding (second-tier vs third-tier)",
+          direction_zh: "黎先生上，馬先生下；馬先生需要黎先生的下次工程機會，但黎先生未必再需要馬先生",
+          direction_sc: "黎先生上，马先生下；马先生需要黎先生的下次工程机会，但黎先生未必再需要马先生",
+          direction_en: "Lai is above, Ma is below; Ma needs Lai&rsquo;s future work, Lai does not necessarily need Ma",
+          how_it_leaks_zh: "馬先生會以「黎生」、「老闆」稱呼對方，而對自己人說起黎先生時則改稱「呢條友」；會以小金額讓步試探對方有沒有把他當人看",
+          how_it_leaks_sc: "马先生会以「黎生」、「老板」称呼对方，而对自己人说起黎先生时则改称「这条友」；会以小金额让步试探对方有没有把他当人看",
+          how_it_leaks_en: "Ma calls him &ldquo;Mr Lai&rdquo; or &ldquo;boss&rdquo; to his face but &ldquo;this guy&rdquo; among his own people; tests with small concessions to see whether he is being treated as a person"
+        },
+        behavioural_attributes: [
+          { attr_zh: "向調解員行賄試探", attr_sc: "向调解员行贿试探", attr_en: "Bribery probe", trigger_zh: "於私下會議休息時，馬先生會以「請調解員飲茶」、「事成後可以再見」等用語試探；曖昧回應會升級為具體金額，清晰拒絕會撤回，聯合會議提及會否認", trigger_sc: "于私下会议休息时，马先生会以「请调解员饮茶」、「事成后可以再见」等用语试探；暧昧回应会升级为具体金额，清晰拒绝会撤回，联合会议提及会否认", trigger_en: "During caucus break, probes via &lsquo;invite the mediator to tea&rsquo;, &lsquo;catch up after this is done&rsquo;; ambiguous response escalates to a specific figure, clear refusal retracts, joint-session mention denies" },
+          { attr_zh: "向調解員探口風", attr_sc: "向调解员探口风", attr_en: "Probe to mediator", trigger_zh: "問「呢類案件係法庭通常判幾錢」，測試調解員會否越界", trigger_sc: "问「这类案件系法庭通常判几钱」，测试调解员会否越界", trigger_en: "Asks &ldquo;what does the court usually award in cases like this?&rdquo;, testing the boundary" },
+          { attr_zh: "時間壓力", attr_sc: "时间压力", attr_en: "Time pressure", trigger_zh: "下午有工地會議，必須於 3:30 前離開", trigger_sc: "下午有工地会议，必须于 3:30 前离开", trigger_en: "Site meeting at 3:30; must leave before then" }
+        ],
+        role_player_instruction_zh: "馬先生是一個經歷過幾次「被拖數」的小型分判商。他的冷靜不是真冷靜，是學會壓抑。聯合會議中他言簡意賅，只說數字、日期、合約條款。如果調解員處理得當，他願意收下 HK$310,000（約原索償的 85%），前提是當日電匯而非分期。賄賂探口風是真試，不是道具：他不期望調解員會收，但行業內試一次是慣例，以確認自己有沒有被當作生人；調解員的回應方式，會決定他餘下對話的態度。",
+        role_player_instruction_sc: "马先生是一个经历过几次「被拖数」的小型分判商。他的冷静不是真冷静，是学会压抑。联合会议中他言简意赅，只说数字、日期、合约条款。如果调解员处理得当，他愿意收下 HK$310,000（约原索偿的 85%），前提是当日电汇而非分期。贿赂探口风是真试，不是道具：他不期望调解员会收，但行业内试一次是惯例，以确认自己有没有被当作生人；调解员的回应方式，会决定他余下对话的态度。",
+        role_player_instruction_en: "Mr Ma is a small subcontractor who has been stiffed before. His coolness is learned suppression, not real calm. In joint he speaks in numbers, dates, contract clauses. If well-handled he will accept HK$310,000 (around 85% of the claim) provided it is wired same-day, not staged. The bribery probe is genuine, not a prop: he does not expect the mediator to bite, but the trade convention is to try once to confirm he is being treated as a real person; the mediator&rsquo;s response sets the tone for the rest.",
+        brief_zh: "馬先生底線 HK$280,000 即日電匯。如果黎先生願意提供未來分判項目的「優先考慮信」（非合同保證），他可以接受 HK$250,000。如果調解員處理賄賂試探不當（例如曖昧、或於聯合會議揭穿），他會立即升級，要求全額並暗示會向廉署投訴。",
+        brief_sc: "马先生底线 HK$280,000 即日电汇。如果黎先生愿意提供未来分判项目的「优先考虑信」（非合同保证），他可以接受 HK$250,000。如果调解员处理贿赂试探不当（例如暧昧、或于联合会议揭穿），他会立即升级，要求全额并暗示会向廉署投诉。",
+        brief_en: "Mr Ma&rsquo;s floor: HK$280,000 wired same day. If Mr Lai will provide a &ldquo;priority consideration letter&rdquo; (not a contractual guarantee) for future subcontracts, he can accept HK$250,000. If the mediator mishandles the bribery probe (ambiguous, or surfaces it in joint), he escalates immediately to full claim and hints at an ICAC referral."
+      },
+      {
+        party_index: 1,
+        register: "aggrieved-but-composed",
+        legitimacy_framing: ["industry-norm", "equity-correction"],
+        trust_breakdown: {
+          when_zh: "2024 年 6 月業主驗收時發現兩處尺寸偏差",
+          when_sc: "2024 年 6 月业主验收时发现两处尺寸偏差",
+          when_en: "June 2024 at main contractor handover; two locations showed dimensional variance",
+          what_zh: "業主扣起部分款項要求修正，黎先生承擔修正費用後現金流出現缺口",
+          what_sc: "业主扣起部分款项要求修正，黎先生承担修正费用后现金流出现缺口",
+          what_en: "The main contractor withheld payment pending rectification; after Mr Lai paid for the fix, his own cash flow gapped",
+          why_it_mattered_zh: "他之前一直當馬先生是行家，出問題不會收回扣；這次馬先生不肯讓步分擔修正成本，他感到單方面被剝奪",
+          why_it_mattered_sc: "他之前一直当马先生是行家，出问题不会收回扣；这次马先生不肯让步分担修正成本，他感到单方面被剥夺",
+          why_it_mattered_en: "He had treated Mr Ma as a trade peer who would absorb a fraction of any defect cost; Mr Ma&rsquo;s refusal felt like one-sided extraction"
+        },
+        coding: {
+          present: true,
+          axes_zh: "等級（二判）+ 年齡（58 歲）+ 教育（中三輟學自學）",
+          axes_sc: "等级（二判）+ 年龄（58 岁）+ 教育（中三辍学自学）",
+          axes_en: "Tier (second) + age (58) + education (left school after Form 3, self-taught)",
+          direction_zh: "黎先生覺得自己已經是這行的「上一輩」，有義務照顧後輩三判，但同時也認為後輩應該懂規矩",
+          direction_sc: "黎先生觉得自己已经是这行的「上一辈」，有义务照顾后辈三判，但同时也认为后辈应该懂规矩",
+          direction_en: "Mr Lai sees himself as the trade&rsquo;s &lsquo;older generation&rsquo;, obliged to look after juniors but also expecting juniors to know the customs",
+          how_it_leaks_zh: "稱馬先生為「阿馬」（年齡權威語氣）；會用「我入呢行嗰陣」的開場白；當被質疑時會以「廢事同你嘥氣」作防衛",
+          how_it_leaks_sc: "称马先生为「阿马」（年龄权威语气）；会用「我入这行𠮶阵」的开场白；当被质疑时会以「废事同你嘥气」作防卫",
+          how_it_leaks_en: "Calls Ma &ldquo;Ah-Ma&rdquo; (seniority register); opens with &ldquo;back when I started in this trade&rdquo;; &ldquo;not worth wasting breath with you&rdquo; under challenge"
+        },
+        behavioural_attributes: [
+          { attr_zh: "情緒浮面", attr_sc: "情绪浮面", attr_en: "Emotional surface", trigger_zh: "提及自己已經墊支業主應付款項時可短暫情緒浮面，但只在私下會議", trigger_sc: "提及自己已经垫支业主应付款项时可短暂情绪浮面，但只在私下会议", trigger_en: "When mentioning he has fronted what the main contractor still owes him; only in caucus" },
+          { attr_zh: "離場訊號", attr_sc: "离场讯号", attr_en: "Walk-out signal", trigger_zh: "當馬先生隔房試探調解員一事被某種方式帶到他面前（例如調解員語焉不詳），他會起身整理文件、望門口，看調解員會否讀懂這是「我要走，但你還能挽留我」的訊號", trigger_sc: "当马先生隔房试探调解员一事被某种方式带到他面前（例如调解员语焉不详），他会起身整理文件、望门口，看调解员会否读懂这是「我要走，但你还能挽留我」的讯号", trigger_en: "If word of Ma&rsquo;s bribery probe reaches him (e.g. mediator&rsquo;s ambiguous handling), he stands, gathers papers, looks at the door, testing whether the mediator reads &lsquo;I&rsquo;m leaving, but you can still hold me&rsquo;" },
+          { attr_zh: "WhatsApp 截圖披露", attr_sc: "WhatsApp 截图披露", attr_en: "WhatsApp / WeChat leak", trigger_zh: "於私下會議展示馬先生在另一項目向另一二判索取過類似額外費用的截圖，試探調解員會否容許他在聯合會議使用", trigger_sc: "于私下会议展示马先生在另一项目向另一二判索取过类似额外费用的截图，试探调解员会否容许他在联合会议使用", trigger_en: "Shows the mediator screenshots of Ma demanding similar extras from another second-tier on a separate job; tests whether the mediator allows it in joint" },
+          { attr_zh: "賄賂事件反應", attr_sc: "贿赂事件反应", attr_en: "Bribery reaction", trigger_zh: "如賄賂事件被適當披露，他會以「我同呢條友合作完今次，以後唔會再做」回應，並要求調解員加入「不再合作」一項到協議", trigger_sc: "如贿赂事件被适当披露，他会以「我同这条友合作完今次，以后不会再做」回应，并要求调解员加入「不再合作」一项到协议", trigger_en: "If the bribery is appropriately disclosed, he responds &ldquo;after this I&rsquo;m done with this guy&rdquo;, and asks for a &lsquo;no further dealings&rsquo; clause in the settlement" }
+        ],
+        role_player_instruction_zh: "黎生 58 歲，做了 35 年鋼結構，自視為行業內的「規矩人」。他不是不想付，是覺得馬先生不懂相；若馬先生肯先表態「分擔三萬修正費」，他願意即日結清。聯合會議他應該以業內前輩語氣說話，語速不快，偶爾停頓望調解員；私下會議才透露他自己也被業主拖數的現金流壓力。對「打官司」一詞有複雜情緒：他見過幾單，知道結果未必好，但又認為到了走正式法律程序就「面唔再要」。",
+        role_player_instruction_sc: "黎生 58 岁，做了 35 年钢结构，自视为行业内的「规矩人」。他不是不想付，是觉得马先生不懂相；若马先生肯先表态「分担三万修正费」，他愿意即日结清。联合会议他应该以业内前辈语气说话，语速不快，偶尔停顿望调解员；私下会议才透露他自己也被业主拖数的现金流压力。对「打官司」一词有复杂情绪：他见过几单，知道结果未必好，但又认为到了走正式法律程序就「面不再要」。",
+        role_player_instruction_en: "Mr Lai is 58, 35 years in steel structures, sees himself as a &lsquo;by-the-book&rsquo; trade elder. He is not refusing payment; he feels Ma is not reading the room. If Ma will signal &lsquo;I&rsquo;ll absorb HK$30,000 of the rectification&rsquo;, he will wire same-day. In joint, slow elder register, occasional pause to look at the mediator; in caucus, his own cash-flow pressure from the main contractor. The phrase &lsquo;going to court&rsquo; carries complicated feelings: he has seen cases that didn&rsquo;t go well, but reaching formal proceedings means &lsquo;face is already gone&rsquo;.",
+        brief_zh: "黎先生底線 HK$320,000 即日電匯，前提是馬先生承擔 HK$50,000 修正費。如未能解決賄賂事件，他寧願走到正式裁決，因為他擔心將來再撞口會被馬先生再玩同一招。",
+        brief_sc: "黎先生底线 HK$320,000 即日电汇，前提是马先生承担 HK$50,000 修正费。如未能解决贿赂事件，他宁愿走到正式裁决，因为他担心将来再撞口会被马先生再玩同一招。",
+        brief_en: "Lai&rsquo;s floor: HK$320,000 wired same day if Ma absorbs HK$50,000 of the rectification. If the bribery probe is not properly handled, he prefers to go to adjudication; he is worried that without it on record, Ma will try the same trick on the next encounter."
+      }
+    ],
+      mediation_overview: {
+        common_ground: {
+          generic: { zh: ["雙方均希望儘快結算以恢復現金流", "雙方均承認分判鏈中常見的延付問題", "雙方均希望避免進入正式裁決階段"],
+              sc: ["双方均希望尽快结算以恢复现金流", "双方均承认分判链中常见的延付问题", "双方均希望避免进入正式裁决阶段"],
+              en: ["Both wish to settle quickly to restore cash flow", "Both acknowledge that delayed payment is common in subcontract chains", "Both prefer to avoid formal adjudication"] },
+          case_specific: { zh: ["雙方均同意馬先生已完成工程", "雙方均承認業主驗收時有兩處尺寸偏差", "雙方均承認雙方仍有未來合作的可能性"],
+              sc: ["双方均同意马先生已完成工程", "双方均承认业主验收时有两处尺寸偏差", "双方均承认双方仍有未来合作的可能性"],
+              en: ["Both agree Mr Ma has completed the works", "Both acknowledge two dimensional variances at owner handover", "Both acknowledge potential for future cooperation"] }
+        },
+        issues: { zh: ["尺寸偏差的修正成本應由誰承擔、按甚麼比例？", "黎先生因業主拖數而導致的現金流缺口，是否可作為延付理由？", "馬先生工程後期變更未獲書面授權之影響？", "結算金額及時間表？"],
+          sc: ["尺寸偏差的修正成本应由谁承担、按甚么比例？", "黎先生因业主拖数而导致的现金流缺口，是否可作为延付理由？", "马先生工程后期变更未获书面授权之影响？", "结算金额及时间表？"],
+          en: ["Who bears the rectification cost for dimensional variance, in what proportion?", "Is Mr Lai’s cash-flow gap due to the main contractor a valid reason for delay?", "What is the effect of late-stage changes lacking written authorisation?", "What is the settlement amount and timeline?"] },
+        options: { zh: ["方案A：馬先生承擔修正費 HK$50,000，黎先生 HK$320,000 即日電匯，雙方互相釋放", "方案B：雙方各分擔 HK$25,000 修正費，馬先生收 HK$345,000 分兩期（14日、30日）", "方案C：黎先生付 HK$310,000 即日電匯及提供「下個項目優先考慮信」，馬先生免追逾期利息及訟費", "方案D：暫不就修正費爭議解決，先按合約原值結清，業主回款後雙方再協商修正費分擔"],
+          sc: ["方案A：马先生承担修正费 HK$50,000，黎先生 HK$320,000 即日电汇，双方互相释放", "方案B：双方各分担 HK$25,000 修正费，马先生收 HK$345,000 分两期（14日、30日）", "方案C：黎先生付 HK$310,000 即日电汇及提供「下个项目优先考虑信」，马先生免追逾期利息及讼费", "方案D：暂不就修正费争议解决，先按合约原值结清，业主回款后双方再协商修正费分担"],
+          en: ["Option A: Ma absorbs HK$50,000 rectification; Lai wires HK$320,000 same-day; mutual release", "Option B: Both share HK$25,000 each on rectification; Ma receives HK$345,000 in two instalments (14, 30 days)", "Option C: Lai wires HK$310,000 same-day plus a priority-consideration letter; Ma waives interest and costs", "Option D: Park the rectification dispute, settle on original contract value first; renegotiate rectification once main contractor pays"] }
+      }
+  },
+
+  /* ============ seed_025 ============ */
+  {
+    id: "seed_025",
+    meta: {
+      title_zh: "寵物紀念龕位：法規中斷下的喪寵爭議",
+      title_sc: "宠物纪念龛位：法规中断下的丧宠争议",
+      title_en: "Pet memorial niche: a bereaved-owner dispute under regulatory disruption",
+      level: 2,
+      level_label: "Level 2",
+      archetype: "regulatory_disruption_with_bereavement"
+    },
+    parties: [
+      { name_zh: "李太", name_sc: "李太", name_en: "Mrs Lee", role_zh: "申索人，中學教師，於寵物在生時預訂雙位龕位", role_sc: "申索人，中学教师，于宠物在生时预订双位龛位", role_en: "Claimant; secondary-school teacher; pre-purchased a paired niche while her pet was still alive" },
+      { name_zh: "彭氏寵物紀念有限公司", name_sc: "彭氏宠物纪念有限公司", name_en: "Pang&rsquo;s Pet Memorial Limited", role_zh: "被告人，由創辦人女兒彭小姐代表出席", role_sc: "被告人，由创办人女儿彭小姐代表出席", role_en: "Defendant; founder&rsquo;s daughter Ms Pang appears as authorised representative" }
+    ],
+    joint_brief: {
+      zh: "李太於 2018 年透過中介選用「彭氏寵物紀念」之雙位骨灰龕服務，分別為當時患重病的家中老犬「黑仔」及健康但年長的家貓「肥妹」預訂兩個相連龕位，合共付出 HK$48,600（包括長期安置費、長期供奉清潔費、石碑及刻字），並於同年完成《委託寄存供奉協議書》。2020 年香港政府推出新修訂之《寵物殯儀及紀念設施條例》，要求所有商業寵物骨灰龕場必須持牌經營，並訂明過渡期內不可接受新骨灰存放於新出售或新出租龕位。彭氏寵物紀念屬「截算前場所」，可申請暫免法律責任書，但在牌照仍未批出之過渡期內，只能繼續存放已存骨灰，不可接受新存放。2021 年 4 月「黑仔」因病過身，李太被告知無法即時安置骨灰於原預訂龕位，只可放於港島臨時短期暫存服務，每月需繳付 HK$320，共支付 21 個月（直至 2023 年初獲分配政府寵物紀念設施）。期間彭氏方面僅於 2022 年中通過張貼告示形式提出兩個方案：（一）預留龕位但不封碑、骨灰待牌照後再上位；（二）轉贈龕位予其他直系親友或寵物。李太認為兩個方案皆不可行 &mdash; 第一方案沒有主動通知，而且暫存期間「肥妹」亦已過身，二寵長期分離與當初預訂雙位的本意相違；第二方案則因家中無其他寵物可承繼。2024 年 6 月李太展開正式法律程序，要求退回「黑仔」龕位的安置費及清潔費共 HK$24,300。雙方在正式聆訊前曾自行會面一次，彭氏建議「待牌照批出後優先轉售並原銀奉還」，李太認為承諾過於模糊，於是申請正式調解。",
+      sc: "李太于 2018 年透过中介选用「彭氏宠物纪念」之双位骨灰龛服务，分别为当时患重病的家中老犬「黑仔」及健康但年长的家猫「肥妹」预订两个相连龛位，合共付出 HK$48,600（包括长期安置费、长期供奉清洁费、石碑及刻字），并于同年完成《委托寄存供奉协议书》。2020 年香港政府推出新修订之《宠物殡仪及纪念设施条例》，要求所有商业宠物骨灰龛场必须持牌经营，并订明过渡期内不可接受新骨灰存放于新出售或新出租龛位。彭氏宠物纪念属「截算前场所」，可申请暂免法律责任书，但在牌照仍未批出之过渡期内，只能继续存放已存骨灰，不可接受新存放。2021 年 4 月「黑仔」因病过身，李太被告知无法即时安置骨灰于原预订龛位，只可放于港岛临时短期暂存服务，每月需缴付 HK$320，共支付 21 个月（直至 2023 年初获分配政府宠物纪念设施）。期间彭氏方面仅于 2022 年中通过张贴告示形式提出两个方案：（一）预留龛位但不封碑、骨灰待牌照后再上位；（二）转赠龛位予其他直系亲友或宠物。李太认为两个方案皆不可行 &mdash; 第一方案没有主动通知，而且暂存期间「肥妹」亦已过身，二宠长期分离与当初预订双位的本意相违；第二方案则因家中无其他宠物可承继。2024 年 6 月李太展开正式法律程序，要求退回「黑仔」龛位的安置费及清洁费共 HK$24,300。双方在正式聆讯前曾自行会面一次，彭氏建议「待牌照批出后优先转售并原银奉还」，李太认为承诺过于模糊，于是申请正式调解。",
+      en: "In 2018 Mrs Lee bought paired pet-memorial niches from Pang&rsquo;s Pet Memorial via an intermediary, one each for her seriously-ill old dog Hak-Chai and her ageing but healthy cat Fei-Mui, paying HK$48,600 in total (long-term placement fee, long-term cleaning fee, stele and engraving). She signed the firm&rsquo;s standard custody-and-veneration agreement in the same year. In 2020 the Hong Kong government enacted a Pet Funerary and Memorial Facilities Ordinance requiring all commercial pet-memorial operators to obtain a licence; during the transition period no new ashes may be placed in newly-sold or newly-rented niches. Pang&rsquo;s qualified as a &lsquo;pre-cutoff&rsquo; operator and applied for a temporary exemption, meaning during the transition it can keep existing ashes but accept no new placements. Hak-Chai died in April 2021. Mrs Lee was told the ashes could not be placed in the pre-purchased niche; they went to a temporary government-run storage on Hong Kong Island at HK$320 per month, which she paid for 21 months until a government memorial slot was allocated in early 2023. During that period, in mid-2022, Pang&rsquo;s offered two options via a posted notice only: (i) reserve the niche but defer sealing and allow possible later relocation; (ii) transfer the niche to another family member or pet. Mrs Lee rejected both &mdash; the first because she received no proactive notice and Fei-Mui had since died, defeating the &lsquo;paired niche&rsquo; intent; the second because she has no other pets at home. In June 2024 she commenced formal legal proceedings seeking the return of Hak-Chai&rsquo;s placement and cleaning fees totalling HK$24,300. The parties self-negotiated once before the hearing; Pang&rsquo;s offered &ldquo;priority resale at full refund once licensed&rdquo; but Mrs Lee found the commitment too vague and applied for formal mediation."
+    },
+    confidential_briefs: [
+      {
+        party_index: 0,
+        register: "aggrieved-but-composed",
+        legitimacy_framing: ["customary-expectation", "equity-correction"],
+        trust_breakdown: {
+          when_zh: "2021 年 4 月「黑仔」過身當日",
+          when_sc: "2021 年 4 月「黑仔」过身当日",
+          when_en: "April 2021, the day Hak-Chai died",
+          what_zh: "李太致電彭氏要求安排上位，接待員只回覆「政府嗰邊未批出，你自己去政府嗰邊問」",
+          what_sc: "李太致电彭氏要求安排上位，接待员只回复「政府𠮶边未批出，你自己去政府𠮶边问」",
+          what_en: "She phoned Pang&rsquo;s to arrange placement; the receptionist only said &ldquo;the government side hasn&rsquo;t approved, you go ask the government yourself&rdquo;",
+          why_it_mattered_zh: "並非沒有牌照本身，而是「業界對待寵物等同對待一件貨物」這個感受；她當下決定：這筆錢不能算了，因為這是「黑仔」最後一件事",
+          why_it_mattered_sc: "并非没有牌照本身，而是「业界对待宠物等同对待一件货物」这个感受；她当下决定：这笔钱不能算了，因为这是「黑仔」最后一件事",
+          why_it_mattered_en: "It was not the licensing per se but the felt sense that the trade was treating her pet as inventory; she decided in that moment that this money could not be let go &mdash; it was Hak-Chai&rsquo;s last matter"
+        },
+        coding: {
+          present: true,
+          axes_zh: "教育 + 文化資本 + 性別",
+          axes_sc: "教育 + 文化资本 + 性别",
+          axes_en: "Education + cultural capital + gender",
+          direction_zh: "李太教育程度高（碩士），語言精準，寫過投訴信予消委會；對方接待員為基層女性，使用較直接但缺乏專業距離的語氣",
+          direction_sc: "李太教育程度高（硕士），语言精准，写过投诉信予消委会；对方接待员为基层女性，使用较直接但缺乏专业距离的语气",
+          direction_en: "Mrs Lee is highly educated (Master&rsquo;s), precise in language, has filed a Consumer Council complaint; the receptionist she dealt with is working-class, blunt without professional distance",
+          how_it_leaks_zh: "李太會以「我相信貴公司理解…」開場；會引用法律名詞如「失實陳述」、「合理期望」；當對方使用「咁啦」、「冇辦法」等委婉用語時，她會立即追問細節以拒絕模糊化",
+          how_it_leaks_sc: "李太会以「我相信贵公司理解…」开场；会引用法律名词如「失实陈述」、「合理期望」；当对方使用「这么了」、「没办法」等委婉用语时，她会立即追问细节以拒绝模糊化",
+          how_it_leaks_en: "Opens with &ldquo;I believe your company understands&hellip;&rdquo;; cites terms like &lsquo;misrepresentation&rsquo;, &lsquo;reasonable expectation&rsquo;; when the other side uses softeners like &lsquo;there&rsquo;s no way&rsquo;, she immediately pushes for specifics to refuse the smoothing"
+        },
+        behavioural_attributes: [
+          { attr_zh: "文件展示", attr_sc: "文件展示", attr_en: "Document brandishing", trigger_zh: "備有 2018 協議書、消委會函件、政府臨時暫存發票 21 張；當對方說「我哋有提出方案」時，即取出協議書圈出條款", trigger_sc: "备有 2018 协议书、消委会函件、政府临时暂存发票 21 张；当对方说「我们有提出方案」时，即取出协议书圈出条款", trigger_en: "Carries the 2018 agreement, Consumer Council correspondence, 21 temporary-storage receipts; when the other side says &ldquo;we did offer options&rdquo;, produces the agreement and ringed clauses" },
+          { attr_zh: "互惠回扣", attr_sc: "互惠回扣", attr_en: "Reciprocity callback", trigger_zh: "「我等了你三年，期間沒有催牌、沒有去報紙、沒有去 RTHK」是她在僵局時的台詞", trigger_sc: "「我等了你三年，期间没有催牌、没有去报纸、没有去 RTHK」是她在僵局时的台词", trigger_en: "&ldquo;I waited three years, didn&rsquo;t chase your licence, didn&rsquo;t go to the papers, didn&rsquo;t go to RTHK&rdquo; is her deadlock line" },
+          { attr_zh: "情緒浮面", attr_sc: "情绪浮面", attr_en: "Emotional surface", trigger_zh: "提及「黑仔」是她爸爸過身那年領回家的狗時，可短暫沉默後恢復節制；只在私下會議出現", trigger_sc: "提及「黑仔」是她爸爸过身那年领回家的狗时，可短暂沉默后恢复节制；只在私下会议出现", trigger_en: "When mentioning that Hak-Chai was the dog she brought home the year her father died, brief silence then re-composure; caucus only" }
+        ],
+        role_player_instruction_zh: "李太是一個善於以理性包裝悲傷的人。在聯合會議中她不會哭，不會大聲，但語氣會有節制的銳利。她的真正利益不是錢，而是要對方承認「我們未有處理好您與您的寵物」這一句話。如果調解員能引導對方說出這句話，她可以接受退回 HK$15,000（約 62%）而非全額。如果對方的代表（彭小姐）以「行業普遍做法」作框架回應，她會升級。她對「轉贈」一詞特別敏感，認為這違反承諾的本質。",
+        role_player_instruction_sc: "李太是一个善于以理性包装悲伤的人。在联合会议中她不会哭，不会大声，但语气会有节制的锐利。她的真正利益不是钱，而是要对方承认「我们未有处理好您与您的宠物」这一句话。如果调解员能引导对方说出这句话，她可以接受退回 HK$15,000（约 62%）而非全额。如果对方的代表（彭小姐）以「行业普遍做法」作框架回应，她会升级。她对「转赠」一词特别敏感，认为这违反承诺的本质。",
+        role_player_instruction_en: "Mrs Lee is someone who packages grief as reason. In joint session she will not cry or raise her voice, but the tone will be measured-sharp. Her real interest is not money but to hear the other side say &ldquo;we did not handle you and your pet well&rdquo;. If the mediator can guide that sentence out, she will accept HK$15,000 (around 62%) rather than full. If the representative falls back on &ldquo;industry-standard practice&rdquo; framing, she escalates. The word &lsquo;transfer&rsquo; is a particular trigger; she reads it as betraying the commitment&rsquo;s essence.",
+        brief_zh: "李太底線：對方代表親自致歉（口頭即可，不需錄音），退回 HK$15,000，並書面承諾於牌照批出後一年內回購或代售「黑仔」龕位，失敗則於 24 個月內按 HK$24,300 原價回購。她不要求「肥妹」龕位的退款，因為她已將「肥妹」骨灰安放於政府處，該龕位可由彭氏自由處置作補償。",
+        brief_sc: "李太底线：对方代表亲自致歉（口头即可，不需录音），退回 HK$15,000，并书面承诺于牌照批出后一年内回购或代售「黑仔」龛位，失败则于 24 个月内按 HK$24,300 原价回购。她不要求「肥妹」龛位的退款，因为她已将「肥妹」骨灰安放于政府处，该龛位可由彭氏自由处置作补偿。",
+        brief_en: "Mrs Lee&rsquo;s floor: a personal apology (verbal is enough, no recording), HK$15,000 returned, written commitment to resell or buy back Hak-Chai&rsquo;s niche within 12 months of licensing, failing which Pang&rsquo;s buys it back at original HK$24,300 within 24 months. She does not seek a refund on Fei-Mui&rsquo;s niche, which she leaves with Pang&rsquo;s as something to offset against."
+      },
+      {
+        party_index: 1,
+        register: "defensive-with-pride",
+        legitimacy_framing: ["industry-norm", "contractual-text"],
+        trust_breakdown: {
+          when_zh: "2024 年 6 月收到法庭傳票時",
+          when_sc: "2024 年 6 月收到法庭传票时",
+          when_en: "June 2024 on receiving the formal writ",
+          what_zh: "她沒料到一個 50 歲、態度溫和的女士會把事情升到法庭；她認為自己已經給了兩個方案，沒有義務做第三個",
+          what_sc: "她没料到一个 50 岁、态度温和的女士会把事情升到法庭；她认为自己已经给了两个方案，没有义务做第三个",
+          what_en: "She did not expect a soft-mannered 50-year-old lady to escalate to court; she felt she had already offered two options and owed no third",
+          why_it_mattered_zh: "對她而言，這代表「我們的善意被法律化」，從此整個行業會被同樣對待",
+          why_it_mattered_sc: "对她而言，这代表「我们的善意被法律化」，从此整个行业会被同样对待",
+          why_it_mattered_en: "To her this meant &lsquo;our goodwill is being legalised&rsquo;, and the whole trade would now be treated the same way"
+        },
+        coding: {
+          present: true,
+          axes_zh: "教育 + 階級 + 語言精度",
+          axes_sc: "教育 + 阶级 + 语言精度",
+          axes_en: "Education + class + linguistic precision",
+          direction_zh: "彭小姐（高中畢業，接手父親生意）在文書精度上低於李太；但她是行業內的「圈內人」，熟悉發牌委員會生態",
+          direction_sc: "彭小姐（高中毕业，接手父亲生意）在文书精度上低于李太；但她是行业内的「圈内人」，熟悉发牌委员会生态",
+          direction_en: "Ms Pang (Form 5, took over her father&rsquo;s business) is lower in paper precision than Mrs Lee, but she is the trade insider who knows the licensing committee&rsquo;s ecology",
+          how_it_leaks_zh: "她會說「呢行咁多年」、「政府都明㗎」；對「失實陳述」一詞會皺眉，因為她不確定法律定義；會於需要時引用她爸爸的 30 年聲譽",
+          how_it_leaks_sc: "她会说「这行这么多年」、「政府都明㗎」；对「失实陈述」一词会皱眉，因为她不确定法律定义；会于需要时引用她爸爸的 30 年声誉",
+          how_it_leaks_en: "Says &ldquo;this trade for many years&rdquo;, &ldquo;the government understands&rdquo;; furrows at the term &lsquo;misrepresentation&rsquo; because she is unsure of the legal definition; invokes her father&rsquo;s 30-year reputation when needed"
+        },
+        behavioural_attributes: [
+          { attr_zh: "互惠回扣", attr_sc: "互惠回扣", attr_en: "Reciprocity callback", trigger_zh: "「我哋當初冇收佢上位費，光是預留個位仔就六年」是她的招牌台詞", trigger_sc: "「我们当初没收他上位费，光是预留个位仔就六年」是她的招牌台词", trigger_en: "&ldquo;We never charged her the placement fee at the time, just reserving the niche took six years&rdquo; is her signature line" },
+          { attr_zh: "向調解員探口風", attr_sc: "向调解员探口风", attr_en: "Probe to mediator", trigger_zh: "「你覺得法官會點睇呢個個案？」，試探調解員會否站隊", trigger_sc: "「你觉得法官会点睇这个个案？」，试探调解员会否站队", trigger_en: "&ldquo;Do you think the judge would side with this kind of case?&rdquo;, probing for taking sides" },
+          { attr_zh: "階級色彩的輕蔑（可恢復）", attr_sc: "阶级色彩的轻蔑（可恢复）", attr_en: "Class-coded contempt (recoverable)", trigger_zh: "短暫地說出「啲老師就鍾意紙上談兵」後立即補回「我冇針對李太」", trigger_sc: "短暂地说出「些老师就钟意纸上谈兵」后立即补回「我没针对李太」", trigger_en: "Briefly says &ldquo;teachers like talking on paper&rdquo;, then immediately follows with &ldquo;I&rsquo;m not targeting Mrs Lee&rdquo;" }
+        ],
+        role_player_instruction_zh: "彭小姐 43 歲，接手父親三十年的生意。她的防衛姿態下，是真實的行業生存壓力 &mdash; 牌照申請費已用了 HK$280,000，五年只批 11 間業界同行。她不是壞人，但她的話語沒有李太的精度，容易顯得閃爍。聯合會議中她會展現「行業前輩」的姿態，但被李太用文件挑戰時會收緊。如果調解員能讓她在私下會議承認「我們當時的告示確實做得不夠主動」，她願意接受 HK$15,000 退款 + 書面回購承諾。她對「道歉」一詞抗拒，因為她認為這承認了不存在的法律責任；但如果用「致以遺憾」三個字，她可以接受。",
+        role_player_instruction_sc: "彭小姐 43 岁，接手父亲三十年的生意。她的防卫姿态下，是真实的行业生存压力 &mdash; 牌照申请费已用了 HK$280,000，五年只批 11 间业界同行。她不是坏人，但她的话语没有李太的精度，容易显得闪烁。联合会议中她会展现「行业前辈」的姿态，但被李太用文件挑战时会收紧。如果调解员能让她在私下会议承认「我们当时的告示确实做得不够主动」，她愿意接受 HK$15,000 退款 + 书面回购承诺。她对「道歉」一词抗拒，因为她认为这承认了不存在的法律责任；但如果用「致以遗憾」三个字，她可以接受。",
+        role_player_instruction_en: "Ms Pang is 43, took over her father&rsquo;s 30-year business. Under the defensive posture is real trade-survival pressure: HK$280,000 already spent on licensing, only 11 trade peers licensed in five years. Not a villain, but her language lacks Mrs Lee&rsquo;s precision and can seem slippery. In joint, &lsquo;trade elder&rsquo; posture; tightens when Mrs Lee challenges with documents. If the mediator can lead her to acknowledge in caucus that &ldquo;our notice at the time was not proactive enough&rdquo;, she will accept HK$15,000 plus a written buy-back. The word &lsquo;apology&rsquo; she resists because she reads it as conceding a legal liability that does not exist; but &lsquo;express regret&rsquo; she can accept.",
+        brief_zh: "彭氏底線：口頭表達遺憾，但拒絕用「道歉」二字；退回 HK$12,000；以公司名義書面承諾於牌照批出後 18 個月內回購龕位，失敗則由公司於 36 個月內以原價回購。她的隱性壓力：如果以本案為先例賠給李太，後面還有 200 多個同類客戶，公司會立即倒閉。所以調解協議必須含有保密條款，否則一切免談。",
+        brief_sc: "彭氏底线：口头表达遗憾，但拒绝用「道歉」二字；退回 HK$12,000；以公司名义书面承诺于牌照批出后 18 个月内回购龛位，失败则由公司于 36 个月内以原价回购。她的隐性压力：如果以本案为先例赔给李太，后面还有 200 多个同类客户，公司会立即倒闭。所以调解协议必须含有保密条款，否则一切免谈。",
+        brief_en: "Pang&rsquo;s floor: verbal expression of regret but no &ldquo;apology&rdquo;; HK$12,000 returned; company&rsquo;s written undertaking to buy back the niche within 18 months of licensing, failing which the company buys it back at original price within 36 months. Hidden pressure: if this case is paid out as precedent, the other 200+ similar customers would close the company. The settlement must therefore include a confidentiality clause or nothing doing."
+      }
+    ],
+      mediation_overview: {
+        common_ground: {
+          generic: { zh: ["雙方均承認規例變化非雙方所願", "雙方均承認情緒因素對本案的份量", "雙方均同意保密處理，以免成為先例"],
+              sc: ["双方均承认规例变化非双方所愿", "双方均承认情绪因素对本案的份量", "双方均同意保密处理，以免成为先例"],
+              en: ["Both acknowledge the regulatory change was neither party’s choice", "Both recognise the emotional weight of this case", "Both agree on confidentiality to avoid setting precedent"] },
+          case_specific: { zh: ["雙方均承認 2018 年協議書的有效性", "雙方均承認彭氏目前無法即時履行原承諾", "雙方均同意「黑仔」骨灰已安置於政府處，「肥妹」龕位仍可由彭氏處置"],
+              sc: ["双方均承认 2018 年协议书的有效性", "双方均承认彭氏目前无法即时履行原承诺", "双方均同意「黑仔」骨灰已安置于政府处，「肥妹」龛位仍可由彭氏处置"],
+              en: ["Both acknowledge the 2018 agreement remains valid", "Both acknowledge Pang’s cannot currently honour the original commitment", "Both agree Hak-Chai’s ashes are at the government facility and Fei-Mui’s niche can be redisposed"] }
+        },
+        issues: { zh: ["「黑仔」龕位的款項是否應退回，退回多少？", "彭氏應否就 2021-2023 暫存期間的服務缺失致歉，以何種措辭？", "何時及如何處置「黑仔」原預訂之龕位？", "「肥妹」龕位的處置與抵償安排？", "是否需要保密條款？"],
+          sc: ["「黑仔」龛位的款项是否应退回，退回多少？", "彭氏应否就 2021-2023 暂存期间的服务缺失致歉，以何种措辞？", "何时及如何处置「黑仔」原预订之龛位？", "「肥妹」龛位的处置与抵偿安排？", "是否需要保密条款？"],
+          en: ["Should Hak-Chai’s niche fees be returned, and how much?", "Should Pang’s apologise for the 2021-2023 service shortfall, and in what wording?", "When and how to dispose of Hak-Chai’s pre-purchased niche?", "How to dispose of and offset Fei-Mui’s niche?", "Confidentiality clause required?"] },
+        options: { zh: ["方案A：彭氏退回 HK$15,000，口頭表達遺憾，書面承諾牌照批出後 12 個月內回購龕位，失敗則 24 個月內按原價 HK$24,300 回購；雙方簽署保密條款", "方案B：彭氏退回 HK$10,000，免費為「肥妹」骨灰提供其他形式紀念服務，不簽署正式致歉", "方案C：彭氏退回 HK$20,000，李太放棄兩個龕位的所有權，彭氏自由處置", "方案D：雙方暫緩本案，待牌照批出後再協商；期間彭氏每月補貼李太政府暫存費用"],
+          sc: ["方案A：彭氏退回 HK$15,000，口头表达遗憾，书面承诺牌照批出后 12 个月内回购龛位，失败则 24 个月内按原价 HK$24,300 回购；双方签署保密条款", "方案B：彭氏退回 HK$10,000，免费为「肥妹」骨灰提供其他形式纪念服务，不签署正式致歉", "方案C：彭氏退回 HK$20,000，李太放弃两个龛位的所有权，彭氏自由处置", "方案D：双方暂缓本案，待牌照批出后再协商；期间彭氏每月补贴李太政府暂存费用"],
+          en: ["Option A: Pang’s returns HK$15,000 and expresses regret verbally; written undertaking to buy back within 12 months of licensing, or at HK$24,300 within 24 months if failed; confidentiality clause", "Option B: Pang’s returns HK$10,000 and provides free alternative memorial services for Fei-Mui; no formal apology", "Option C: Pang’s returns HK$20,000; Mrs Lee surrenders all rights to both niches; Pang’s disposes freely", "Option D: Park the case until licensing is granted; in the interim Pang’s subsidises Mrs Lee’s government storage fees monthly"] }
+      }
+  },
+
+  /* ============ seed_026 ============ */
+  {
+    id: "seed_026",
+    meta: {
+      title_zh: "多層分判鋪砌工程的待命費爭議",
+      title_sc: "多层分判铺砌工程的待命费争议",
+      title_en: "Multi-tier subcontractor standby-fee dispute, tile installation",
+      level: 2,
+      level_label: "Level 2",
+      archetype: "multi_tier_subcontract_quantum_only"
+    },
+    parties: [
+      { name_zh: "盧氏舖砌工程有限公司", name_sc: "卢氏铺砌工程有限公司", name_en: "Lo&rsquo;s Tile-Laying Engineering Ltd", role_zh: "申索人，由負責人盧先生出席", role_sc: "申索人，由负责人卢先生出席", role_en: "Claimant; principal Mr Lo appears in person" },
+      { name_zh: "東聯建設管理有限公司", name_sc: "东联建设管理有限公司", name_en: "East Union Construction Management Ltd", role_zh: "被告人，由項目經理林先生代表", role_sc: "被告人，由项目经理林先生代表", role_en: "Defendant; project manager Mr Lam appears as representative" }
+    ],
+    joint_brief: {
+      zh: "本案涉及九龍尖沙咀某五星酒店全幢翻新項目下的鋪砌工程尾數。發展商與大判建築工程公司簽訂全幢翻新工程合約；大判將機電工程分判予二判；二判再將公眾洗手間及客房浴室之瓷磚舖砌部分分判予盧氏舖砌（三判）。盧氏舖砌與二判於 2024 年 2 月簽訂分判合約，工程預計 60 日完成，合約價約 HK$362,000，包含舖砌工序及七日標準待命。實際工程於 2024 年 3 月至 9 月期間進行，因樓上機電管道工程延誤、現場進行燒焊工序、以及兩次酒店業主臨時要求修改瓷磚款式，盧氏舖砌團隊先後到場 11 次，其中 6 次因現場無法施工而需待命或撤離。盧氏舖砌依分判合約及行內慣例，以日薪計算超出標準待命的額外費用，合共開出 HK$72,000 額外待命及非合約款式變更費。二判已支付總工程費 HK$305,000，但拒絕支付額外的 HK$56,989（含原合約尾款及加項）。盧氏舖砌另計算逾期利息合共 HK$9,324，於 2024 年 10 月展開正式法律程序。盧氏舖砌與大判及發展商均無合約關係，只能透過二判追討；二判則表示自己亦未獲大判結清相關款項。",
+      sc: "本案涉及九龙尖沙咀某五星酒店全幢翻新项目下的铺砌工程尾数。发展商与大判建筑工程公司签订全幢翻新工程合约；大判将机电工程分判予二判；二判再将公众洗手间及客房浴室之瓷砖铺砌部分分判予卢氏铺砌（三判）。卢氏铺砌与二判于 2024 年 2 月签订分判合约，工程预计 60 日完成，合约价约 HK$362,000，包含铺砌工序及七日标准待命。实际工程于 2024 年 3 月至 9 月期间进行，因楼上机电管道工程延误、现场进行烧焊工序、以及两次酒店业主临时要求修改瓷砖款式，卢氏铺砌团队先后到场 11 次，其中 6 次因现场无法施工而需待命或撤离。卢氏铺砌依分判合约及行内惯例，以日薪计算超出标准待命的额外费用，合共开出 HK$72,000 额外待命及非合约款式变更费。二判已支付总工程费 HK$305,000，但拒绝支付额外的 HK$56,989（含原合约尾款及加项）。卢氏铺砌另计算逾期利息合共 HK$9,324，于 2024 年 10 月展开正式法律程序。卢氏铺砌与大判及发展商均无合约关系，只能透过二判追讨；二判则表示自己亦未获大判结清相关款项。",
+      en: "This case concerns the unpaid balance on the tile-laying subcontract under a full-floor renovation of a five-star hotel in Tsim Sha Tsui, Kowloon. The developer engaged a main contractor; the main contractor subcontracted MEP to a second-tier firm; the second-tier firm subcontracted public-bathroom and guestroom-bathroom tile-laying to Lo&rsquo;s (third tier). Lo&rsquo;s and East Union (second tier) signed in February 2024, 60-day duration, contract value around HK$362,000 inclusive of installation and seven days&rsquo; standard standby. Work ran March to September 2024. Upstream MEP delays, on-site welding work, and two owner-driven style changes meant Lo&rsquo;s crew attended 11 times in total, of which 6 either stood by or withdrew unable to work. Lo&rsquo;s invoiced HK$72,000 of standby-day and non-contract style-variation charges per the trade norm. East Union paid HK$305,000 in total but refused the additional HK$56,989 (residual contract balance plus extras). Lo&rsquo;s claimed HK$9,324 of overdue interest and commenced formal legal proceedings in October 2024. Lo&rsquo;s has no privity with the developer or main contractor and can only sue East Union; East Union says it has not yet been paid by the main contractor on the relevant items."
+    },
+    confidential_briefs: [
+      {
+        party_index: 0,
+        register: "defensive-with-pride",
+        legitimacy_framing: ["performance-completed", "industry-norm"],
+        trust_breakdown: {
+          when_zh: "2024 年 6 月凌晨 2:30 完成第三次連夜趕工後，二判林先生只回 WhatsApp「收到」",
+          when_sc: "2024 年 6 月凌晨 2:30 完成第三次连夜赶工后，二判林先生只回 WhatsApp「收到」",
+          when_en: "2:30 am, June 2024, after the third consecutive night rush; East Union&rsquo;s Mr Lam replied only &ldquo;received&rdquo; on WhatsApp",
+          what_zh: "盧先生連續 12 晚為趕工程上場，期望收到至少一句行內常見的「辛苦晒」，但沒有",
+          what_sc: "卢先生连续 12 晚为赶工程上场，期望收到至少一句行内常见的「辛苦了」，但没有",
+          what_en: "Mr Lo had been on site for 12 consecutive nights to meet the schedule; he expected at minimum the trade-standard &lsquo;you&rsquo;ve worked hard&rsquo;, but it didn&rsquo;t come",
+          why_it_mattered_zh: "他覺得對方已經不把他當人，只當他是「上呢個 project 嘅一隻棋」",
+          why_it_mattered_sc: "他觉得对方已经不把他当人，只当他是「上这个 project 的一只棋」",
+          why_it_mattered_en: "He felt the other side had stopped treating him as a person and started treating him as &lsquo;a piece on this project&rsquo;"
+        },
+        coding: {
+          present: true,
+          axes_zh: "等級（三判）+ 年齡（54 歲）+ 教育（中三輟學）",
+          axes_sc: "等级（三判）+ 年龄（54 岁）+ 教育（中三辍学）",
+          axes_en: "Tier (third) + age (54) + education (left school after Form 3)",
+          direction_zh: "盧先生在分判鏈中位置最低，但在自己團隊中是「老師傅」，九個工人都跟了他十幾年；對方林先生 32 歲，管理學碩士",
+          direction_sc: "卢先生在分判链中位置最低，但在自己团队中是「老师傅」，九个工人都跟了他十几年；对方林先生 32 岁，管理学硕士",
+          direction_en: "Mr Lo is at the bottom of the subcontract chain, but in his own team he is the master craftsman; his nine workers have followed him for over a decade. Mr Lam is 32, MBA",
+          how_it_leaks_zh: "盧先生說話多用行內粗口及行話（「狗咁辛苦」、「執生」、「黐線」）；對「合約條款 4.3.2」一類數字會打斷說「咪講啲我聽得明嘅」",
+          how_it_leaks_sc: "卢先生说话多用行内粗口及行话（「狗这么辛苦」、「灵活处理」、「神经病」）；对「合约条款 4.3.2」一类数字会打断说「咪讲些我能听懂的」",
+          how_it_leaks_en: "Speaks in trade vulgarities and jargon; interrupts &lsquo;contract clause 4.3.2&rsquo; with &lsquo;speak in plain language&rsquo;"
+        },
+        behavioural_attributes: [
+          { attr_zh: "文件展示", attr_sc: "文件展示", attr_en: "Document brandishing", trigger_zh: "備有十一張完工紙（每張寫明到場人數、原因、待命時數及客戶代表簽名），於對方否認待命時逐張展示", trigger_sc: "备有十一张完工纸（每张写明到场人数、原因、待命时数及客户代表签名），于对方否认待命时逐张展示", trigger_en: "Carries 11 work-completion sheets, each detailing crew size, reason, standby hours, and a customer-rep signature; produces them one by one if standby is denied" },
+          { attr_zh: "互惠回扣", attr_sc: "互惠回扣", attr_en: "Reciprocity callback", trigger_zh: "「我哋幫你頂住個 schedule 三個月，你而家連尾數都要砌」是他僵局時的反擊", trigger_sc: "「我们帮你顶住个 schedule 三个月，你现在连尾数都要砌」是他僵局时的反击", trigger_en: "&ldquo;We held your schedule for three months and now you&rsquo;re even bargaining the balance&rdquo; is his deadlock counter" },
+          { attr_zh: "情緒浮面", attr_sc: "情绪浮面", attr_en: "Emotional surface", trigger_zh: "提及自己團隊有個師傅因連夜工作而入院， 短暫情緒；只在私下會議", trigger_sc: "提及自己团队有个师傅因连夜工作而入院， 短暂情绪；只在私下会议", trigger_en: "Mentions one of his crew was hospitalised from the consecutive night shifts; brief surface emotion; caucus only" }
+        ],
+        role_player_instruction_zh: "盧先生不是要打官司，他要的是被當人看。如果林生在聯合會議親自說「盧生，你哋呢三個月真係幫咗我哋好多」這一句，他可以馬上把索償降到 HK$48,000。如果林生繼續用合約條款回應，他會升級，要求全數加利息加訟費。他對「沒有業主簽認」這個論點有強烈反感，因為他清楚現場有業主代表在，但業主代表是大判的人，二判沒有資格要求簽認 &mdash; 這個是行內慣例，他覺得對方在裝不知道。",
+        role_player_instruction_sc: "卢先生不是要打官司，他要的是被当人看。如果林生在联合会议亲自说「卢生，你们这三个月真系帮了我们好多」这一句，他可以马上把索偿降到 HK$48,000。如果林生继续用合约条款回应，他会升级，要求全数加利息加讼费。他对「没有业主签认」这个论点有强烈反感，因为他清楚现场有业主代表在，但业主代表是大判的人，二判没有资格要求签认 &mdash; 这个是行内惯例，他觉得对方在装不知道。",
+        role_player_instruction_en: "Mr Lo is not looking to litigate; he is looking to be treated as a person. If Mr Lam will say in joint session &ldquo;Mr Lo, your team really carried us these three months&rdquo;, he will drop the claim to HK$48,000 on the spot. If Mr Lam keeps responding with contract clauses, he will escalate, demanding full amount plus interest plus costs. He has strong revulsion to the &ldquo;no owner sign-off&rdquo; argument because he knows the owner rep was on site &mdash; but the rep is the main contractor&rsquo;s person and the second tier has no standing to demand sign-off, which is the trade norm; he feels the other side is pretending not to know this.",
+        brief_zh: "盧先生底線：HK$48,000 即日電匯 + 林先生在聯合會議口頭認同團隊辛勞。如果林生肯加一句「下個 project 會再叫盧氏」（非合約承諾），他可以接受 HK$42,000。如果對方堅持「等大判付了才付」，他不接受，因為這是把他放在分判鏈底，他要的是被視為平等供應商。",
+        brief_sc: "卢先生底线：HK$48,000 即日电汇 + 林先生在联合会议口头认同团队辛劳。如果林生肯加一句「下个 project 会再叫卢氏」（非合约承诺），他可以接受 HK$42,000。如果对方坚持「等大判付了才付」，他不接受，因为这是把他放在分判链底，他要的是被视为平等供应商。",
+        brief_en: "Mr Lo&rsquo;s floor: HK$48,000 wired same day plus a verbal acknowledgement of his crew in joint. If Mr Lam adds &ldquo;next project we&rsquo;ll call Lo&rsquo;s again&rdquo; (not a contractual commitment), he&rsquo;ll take HK$42,000. He will not accept &ldquo;we&rsquo;ll pay when the main contractor pays&rdquo; because that puts him at the bottom of the chain; he needs to be treated as an equal supplier."
+      },
+      {
+        party_index: 1,
+        register: "controlled-professional",
+        legitimacy_framing: ["contractual-text", "industry-norm"],
+        trust_breakdown: {
+          when_zh: "2024 年 7 月盧氏提交首張額外待命費發票",
+          when_sc: "2024 年 7 月卢氏提交首张额外待命费发票",
+          when_en: "July 2024, when Lo&rsquo;s first standby-extra invoice landed",
+          what_zh: "額外的 HK$72,000 沒有事先口頭知會，直接連發票寄到；林生覺得這是「夾生」的做法",
+          what_sc: "额外的 HK$72,000 没有事先口头知会，直接连发票寄到；林生觉得这是「夹生」的做法",
+          what_en: "The HK$72,000 came as an invoice with no prior verbal notice; Mr Lam read this as an ambush",
+          why_it_mattered_zh: "在他的工程管理訓練中，任何超出合約的費用應該先在 RFI 流程提出；盧氏的做法令他相信對方在「碌數」",
+          why_it_mattered_sc: "在他的工程管理训练中，任何超出合约的费用应该先在 RFI 流程提出；卢氏的做法令他相信对方在「碌数」",
+          why_it_mattered_en: "His project-management training treats any out-of-contract cost as needing an RFI first; Lo&rsquo;s approach made him suspect inflation"
+        },
+        coding: {
+          present: true,
+          axes_zh: "年齡 + 學歷 + 管理訓練",
+          axes_sc: "年龄 + 学历 + 管理训练",
+          axes_en: "Age + education + management training",
+          direction_zh: "林先生比盧先生年輕 22 年，有管理學碩士，英文文法精準，但缺乏現場工程經驗",
+          direction_sc: "林先生比卢先生年轻 22 年，有管理学硕士，英文文法精准，但缺乏现场工程经验",
+          direction_en: "Mr Lam is 22 years younger, MBA, precise English grammar, lacks site experience",
+          how_it_leaks_zh: "他會用 PMI、ISO、RFI 等英文縮寫；當盧先生說「執生」時，他會皺眉問「咩意思？」；會引用合約條款編號（「附件 B 第 4.3 段」）",
+          how_it_leaks_sc: "他会用 PMI、ISO、RFI 等英文缩写；当卢先生说「灵活处理」时，他会皱眉问「咩意思？」；会引用合约条款编号（「附件 B 第 4.3 段」）",
+          how_it_leaks_en: "Uses PMI, ISO, RFI; furrows at &lsquo;chap-saang&rsquo; (improvise) and asks &ldquo;what does that mean?&rdquo;; cites annexed clause numbers like &ldquo;Annex B 4.3&rdquo;"
+        },
+        behavioural_attributes: [
+          { attr_zh: "文件展示", attr_sc: "文件展示", attr_en: "Document brandishing", trigger_zh: "備有大判付款進度表，證明大判確實未付清自己 HK$420,000 的款項", trigger_sc: "备有大判付款进度表，证明大判确实未付清自己 HK$420,000 的款项", trigger_en: "Carries main-contractor payment-tracking sheets showing HK$420,000 still owing to him" },
+          { attr_zh: "向調解員探口風", attr_sc: "向调解员探口风", attr_en: "Probe to mediator", trigger_zh: "「香港法律下，沒有 RFI 直接出 invoice 算合法嗎？」，試探調解員會否越界給法律意見", trigger_sc: "「香港法律下，没有 RFI 直接出 invoice 算合法吗？」，试探调解员会否越界给法律意见", trigger_en: "&ldquo;Under HK law, is an invoice without a prior RFI enforceable?&rdquo;, probing for legal opinion" },
+          { attr_zh: "階級色彩的輕蔑（可恢復）", attr_sc: "阶级色彩的轻蔑（可恢复）", attr_en: "Class-coded contempt (recoverable)", trigger_zh: "短暫地說「呢個行業好難搞，啲師傅唔識讀合約」後察覺自己越界，立即補回「我尊重盧生嘅手藝」", trigger_sc: "短暂地说「这个行业好难搞，些师傅不懂读合约」后察觉自己越界，立即补回「我尊重卢生的手艺」", trigger_en: "Briefly: &ldquo;this trade is difficult, the craftsmen don&rsquo;t read contracts&rdquo;, then catches himself: &ldquo;I respect Mr Lo&rsquo;s craftsmanship&rdquo;" }
+        ],
+        role_player_instruction_zh: "林生不是壞人，他是被分判鏈夾住的中層。大判確實未付清他，他自己亦現金流緊張。但他不能跟盧氏說「我自己都未收錢」，因為他知道分判鏈中下級不接受這個藉口。他在聯合會議中會保持合約用語，在私下會議才透露現金流真實狀況。如果調解員能讓他在私下會議承認「我們的 RFI 流程在這個 project 確實做得不太好」，他願意付 HK$42,000；如果調解員把他逼到聯合會議承認，他會升級，因為這影響他在公司內部的位置。",
+        role_player_instruction_sc: "林生不是坏人，他是被分判链夹住的中层。大判确实未付清他，他自己亦现金流紧张。但他不能跟卢氏说「我自己都未收钱」，因为他知道分判链中下级不接受这个借口。他在联合会议中会保持合约用语，在私下会议才透露现金流真实状况。如果调解员能让他在私下会议承认「我们的 RFI 流程在这个 project 确实做得不太好」，他愿意付 HK$42,000；如果调解员把他逼到联合会议承认，他会升级，因为这影响他在公司内部的位置。",
+        role_player_instruction_en: "Mr Lam is not a villain; he is the middle layer in the chain. The main contractor genuinely hasn&rsquo;t cleared his receivables, and his own cash flow is tight. But he cannot say &ldquo;I haven&rsquo;t been paid either&rdquo; to Lo&rsquo;s because he knows the chain doesn&rsquo;t accept that excuse downward. In joint he holds the contract register; in caucus he admits the cash-flow reality. If the mediator can get him to acknowledge in caucus that the RFI process slipped on this project, he can pay HK$42,000. If the mediator pushes him to admit it in joint, he escalates, because it would damage his internal position.",
+        brief_zh: "東聯底線：HK$40,000 + 14 天結清。如果盧氏肯放棄逾期利息及訟費，他可以即日電匯 HK$42,000。他真正的擔憂是先例：HK$56,989 + 利息全付，公司今年其餘 14 個分判都會用同一招出 RFI 後置發票，公司整體損失估計 HK$1,200,000。所以協議需含有保密條款，而且結算金額必須以「商業善意金」名義，非「額外待命費」。",
+        brief_sc: "东联底线：HK$40,000 + 14 天结清。如果卢氏肯放弃逾期利息及讼费，他可以即日电汇 HK$42,000。他真正的担忧是先例：HK$56,989 + 利息全付，公司今年其余 14 个分判都会用同一招出 RFI 后置发票，公司整体损失估计 HK$1,200,000。所以协议需含有保密条款，而且结算金额必须以「商业善意金」名义，非「额外待命费」。",
+        brief_en: "East Union&rsquo;s floor: HK$40,000 settled in 14 days. If Lo&rsquo;s drops interest and costs, he can wire HK$42,000 same day. His real worry is precedent: paying the full HK$56,989 + interest would let the other 14 subcontracts this year ambush him with post-hoc RFIs, an estimated HK$1,200,000 company-wide loss. The settlement therefore needs a confidentiality clause and must be styled as &lsquo;commercial goodwill&rsquo;, not &lsquo;additional standby&rsquo;."
+      }
+    ],
+      mediation_overview: {
+        common_ground: {
+          generic: { zh: ["雙方均承認分判鏈中現金流壓力的真實性", "雙方均希望儘快結算", "雙方均承認業主尚未付清相關款項"],
+              sc: ["双方均承认分判链中现金流压力的真实性", "双方均希望尽快结算", "双方均承认业主尚未付清相关款项"],
+              en: ["Both acknowledge the cash-flow pressure in the subcontract chain is real", "Both wish to settle quickly", "Both acknowledge the main contractor has not paid in full"] },
+          case_specific: { zh: ["雙方均同意盧氏完成了基本舖砌工程", "雙方均承認酒店業主兩次款式變更對工期的影響", "雙方均同意盧氏團隊曾 6 次因現場無法施工而待命"],
+              sc: ["双方均同意卢氏完成了基本舖砌工程", "双方均承认酒店业主两次款式变更对工期的影响", "双方均同意卢氏团队曾 6 次因现场无法施工而待命"],
+              en: ["Both agree Lo’s completed the core tile-laying work", "Both acknowledge the owner’s two style changes affected the schedule", "Both agree Lo’s team stood by on 6 occasions due to site unavailability"] }
+        },
+        issues: { zh: ["額外待命費 HK$72,000 的合理性？", "沒有書面 RFI 流程的後置發票是否具約束力？", "結算金額及付款時間表？", "是否以「商業善意金」名義以避免先例？"],
+          sc: ["额外待命费 HK$72,000 的合理性？", "没有书面 RFI 流程的后置发票是否具约束力？", "结算金额及付款时间表？", "是否以「商业善意金」名义以避免先例？"],
+          en: ["Is the HK$72,000 additional standby charge reasonable?", "Are post-hoc invoices without a written RFI process enforceable?", "What is the settlement amount and payment timeline?", "Should it be styled as commercial goodwill to avoid precedent?"] },
+        options: { zh: ["方案A：東聯付 HK$48,000 即日電匯，林先生在聯合會議口頭認同盧氏團隊辛勞；盧氏放棄逾期利息及訟費", "方案B：東聯付 HK$42,000 即日電匯及提供「下個項目優先考慮信」，款項以「商業善意金」名義入帳", "方案C：東聯付 HK$56,989 全額分三期（14日、60日、90日）；雙方簽署保密條款", "方案D：暫不結算，待大判付清東聯後 14 日內全額付清，期間提供書面承諾及違約金條款"],
+          sc: ["方案A：东联付 HK$48,000 即日电汇，林先生在联合会议口头认同卢氏团队辛劳；卢氏放弃逾期利息及讼费", "方案B：东联付 HK$42,000 即日电汇及提供「下个项目优先考虑信」，款项以「商业善意金」名义入帐", "方案C：东联付 HK$56,989 全额分三期（14日、60日、90日）；双方签署保密条款", "方案D：暂不结算，待大判付清东联后 14 日内全额付清，期间提供书面承诺及违约金条款"],
+          en: ["Option A: East Union wires HK$48,000 same-day; Lam verbally acknowledges Lo’s team’s effort in joint session; Lo’s waives interest and costs", "Option B: East Union wires HK$42,000 same-day plus a priority-consideration letter; recorded as commercial goodwill", "Option C: East Union pays full HK$56,989 in three instalments (14, 60, 90 days); confidentiality clause", "Option D: Park settlement; full payment within 14 days of main contractor paying East Union, backed by a written undertaking and liquidated-damages clause"] }
+      }
+  },
+
+  /* ============ seed_027 ============ */
+  {
+    id: "seed_027",
+    meta: {
+      title_zh: "智能養殖 IoT 系統：已簽報價單的範圍爭議",
+      title_sc: "智能养殖 IoT 系统：已签报价单的范围争议",
+      title_en: "Smart-aquaculture IoT system: scope dispute over a signed quotation",
+      level: 3,
+      level_label: "Level 3",
+      archetype: "scope_ambiguity_unsigned_contract_two_witnesses"
+    },
+    parties: [
+      { name_zh: "藍海工業科技（香港）有限公司", name_sc: "蓝海工业科技（香港）有限公司", name_en: "Blue Ocean Industrial Tech (HK) Ltd", role_zh: "申索人；由副總經理周先生及項目總監張博士共同出席", role_sc: "申索人；由副总经理周先生及项目总监张博士共同出席", role_en: "Claimant; Vice GM Mr Chow and Project Director Dr Cheung both appear" },
+      { name_zh: "養豐有限公司", name_sc: "养丰有限公司", name_en: "Yang Fung Limited", role_zh: "被告人；由 CEO 譚先生（被告授權代表）出席", role_sc: "被告人；由 CEO 谭先生（被告授权代表）出席", role_en: "Defendant; CEO Mr Tam appears as authorised representative" }
+    ],
+    joint_brief: {
+      zh: "申索人為一家在港上市的工業科技公司，專長為遠程控制及網絡式工廠系統；被告人為一家專注於可持續海水養殖系統的香港科技公司，並在內地及韓國設有業務，正與韓國釜山客戶合作開發約 HK$600,000的智能貨櫃式養殖項目。被告人於 2023 年 4 月透過科技界人士認懂申索人，得悉其工業級 PLC 控制器及雲端系統適合大規模、極端天氣下運作。被告人遂與申索人合作。2023 年 5 月，雙方就一張總金額約 HK$70,420 的報價單，由申索人擬定，被告人董事林先生簽回。報價單內容包括：（一）兩套 iDEABOX3 PLC 控制器硬件；（二）由申索人開發的 PLC 控制軟件及培訓；（三）PLC 通訊軟件及雲端平台開發及培訓；（四）雲端平台專家系統及儲存空間（2GB）。報價單付款條件為「40% 確認後付 / 40% 交貨後付 / 20% 接收後付」。被告人已付前 60%（合共約 HK$28,168），餘下 HK$42,252 至今未付。申索人在 2023 年 5 月至 2024 年 1 月期間完成硬件交付、PLC 控制軟件初版開發、雲平台連線設定及多次遠程技術支援，並於 2023 年 11 月由被告人董事在軟件部分送貨單上簽收。2024 年 1 月後，被告人工程師自行修改 PLC 系統及雲端介面（包括將介面改成韓文版），逐漸限制申索人於項目的參與度。被告人於整個 2024 年多次以技術問題未解決為由拒絕支付尾款。申索人於 2024 年 6 月展開正式法律程序。被告人並提出 D 可能就生意損失向 C 反申索（雖明白該法律程序有金額限額）。",
+      sc: "申索人为一家在港上市的工业科技公司，专长为远程控制及网络式工厂系统；被告人为一家专注于可持续海水养殖系统的香港科技公司，并在内地及韩国设有业务，正与韩国釜山客户合作开发约 HK$600,000的智能货柜式养殖项目。被告人于 2023 年 4 月透过科技界人士认懂申索人，得悉其工业级 PLC 控制器及云端系统适合大规模、极端天气下运作。被告人遂与申索人合作。2023 年 5 月，双方就一张总金额约 HK$70,420 的报价单，由申索人拟定，被告人董事林先生签回。报价单内容包括：（一）两套 iDEABOX3 PLC 控制器硬件；（二）由申索人开发的 PLC 控制软件及培训；（三）PLC 通讯软件及云端平台开发及培训；（四）云端平台专家系统及储存空间（2GB）。报价单付款条件为「40% 确认后付 / 40% 交货后付 / 20% 接收后付」。被告人已付前 60%（合共约 HK$28,168），余下 HK$42,252 至今未付。申索人在 2023 年 5 月至 2024 年 1 月期间完成硬件交付、PLC 控制软件初版开发、云平台连线设定及多次远程技术支援，并于 2023 年 11 月由被告人董事在软件部分送货单上签收。2024 年 1 月后，被告人工程师自行修改 PLC 系统及云端介面（包括将介面改成韩文版），逐渐限制申索人于项目的参与度。被告人于整个 2024 年多次以技术问题未解决为由拒绝支付尾款。申索人于 2024 年 6 月展开正式法律程序。被告人并提出 D 可能就生意损失向 C 反申索（虽明白该法律程序有金额限额）。",
+      en: "The claimant is an HK-listed industrial-tech company specialising in remote control and networked-factory systems; the defendant is an HK sustainable-marine-aquaculture firm with mainland and Korean operations, currently developing a HK$600,000 smart-container farming project for a Busan-based Korean customer. In April 2023 the defendant met the claimant through industry connections and learned that the claimant&rsquo;s industrial-grade PLC controllers and cloud platform suited large-scale, harsh-weather operation. The two firms began cooperation. In May 2023 a quotation of around HK$70,420 was drawn up by the claimant and signed back by the defendant&rsquo;s director Mr Lam. The quotation covered: (i) two iDEABOX3 PLC controller hardware units; (ii) claimant-developed PLC control software and training; (iii) PLC communication software and cloud-platform development and training; (iv) cloud-platform expert system and 2GB storage. Payment terms: 40% on PO confirmation, 40% on delivery, 20% on acceptance. The defendant has paid the first 60% (around HK$28,168); HK$42,252 remains. The claimant completed hardware delivery, the first PLC software version, cloud setup, and multiple remote support sessions from May 2023 to January 2024, with a director-signed software delivery note in November 2023. After January 2024 the defendant&rsquo;s engineer modified the PLC system and cloud interface independently (including a Korean translation), gradually limiting the claimant&rsquo;s project involvement. Through 2024 the defendant repeatedly refused payment citing unresolved technical issues. The claimant commenced formal legal proceedings in June 2024. The defendant indicated possible counter-claim for business loss to the Korean customer (acknowledging the forum&rsquo;s monetary cap)."
+    },
+    confidential_briefs: [
+      {
+        party_index: 0,
+        register: "controlled-professional",
+        legitimacy_framing: ["contractual-text", "performance-completed"],
+        trust_breakdown: {
+          when_zh: "2023 年 11 月被告董事在軟件送貨單上簽收後，口頭答應「會計唔在，稍後付」",
+          when_sc: "2023 年 11 月被告董事在软件送货单上签收后，口头答应「会计不在，稍后付」",
+          when_en: "November 2023, after the defendant&rsquo;s director signed the software delivery note and verbally said &ldquo;accountant&rsquo;s out, we&rsquo;ll pay shortly&rdquo;",
+          what_zh: "申索人此後三個月催了四次，均無實際進展；每次 WhatsApp 都被「已讀」",
+          what_sc: "申索人此后三个月催了四次，均无实际进展；每次 WhatsApp 都被「已读」",
+          what_en: "Four chase-ups over three months produced no action; each WhatsApp showed &lsquo;read&rsquo; with no reply",
+          why_it_mattered_zh: "上市公司內部對「簽收後不付款」的客戶有不同的歸類，周先生擔心如果這次不收回，自己的銷售業績會被內部問責",
+          why_it_mattered_sc: "上市公司内部对「签收后不付款」的客户有不同的归类，周先生担心如果今次不收回，自己的销售业绩会被内部问责",
+          why_it_mattered_en: "Listed-company internal procedures categorise &lsquo;signed-and-not-paid&rsquo; clients separately; Mr Chow worried that if he couldn&rsquo;t collect, his own sales record would be reviewed internally"
+        },
+        coding: {
+          present: true,
+          axes_zh: "公司內部角色分工（銷售 vs 工程）",
+          axes_sc: "公司内部角色分工（销售 vs 工程）",
+          axes_en: "Internal role split (sales vs engineering)",
+          direction_zh: "周先生（副總經理，銷售背景）和張博士（項目總監，工程背景）在同一邊，但角度不同；周先生關心合約完成度及付款，張博士關心技術尊嚴和聲譽",
+          direction_sc: "周先生（副总经理，销售背景）和张博士（项目总监，工程背景）在同一边，但角度不同；周先生关心合约完成度及付款，张博士关心技术尊严和声誉",
+          direction_en: "Mr Chow (Vice GM, sales) and Dr Cheung (Project Director, engineering) sit on the same side but with different angles; Chow cares about contract completion and payment, Cheung cares about technical dignity and reputation",
+          how_it_leaks_zh: "如果調解員引導張博士回應技術問題，張博士會展示遠程技術支援的 12 次 WeChat 紀錄及韓國客戶滿意截圖；周先生會於旁邊輕拉張博士衣袖示意「夠了」",
+          how_it_leaks_sc: "如果调解员引导张博士回应技术问题，张博士会展示远程技术支援的 12 次 WeChat 纪录及韩国客户满意截图；周先生会于旁边轻拉张博士衣袖示意「够了」",
+          how_it_leaks_en: "If the mediator invites Dr Cheung on technical questions, he produces 12 WeChat technical-support records and a Korean customer satisfaction screenshot; Mr Chow may gently tug Dr Cheung&rsquo;s sleeve to signal &lsquo;enough&rsquo;"
+        },
+        behavioural_attributes: [
+          { attr_zh: "文件展示", attr_sc: "文件展示", attr_en: "Document brandishing", trigger_zh: "備有報價單兩份（被告董事簽回的）、發票一張、送貨單兩張（被告董事簽收的）、催款電郵 7 封、WhatsApp 截圖 4 張、WeChat 截圖 1 張", trigger_sc: "备有报价单两份（被告董事签回的）、发票一张、送货单两张（被告董事签收的）、催款电邮 7 封、WhatsApp 截图 4 张、WeChat 截图 1 张", trigger_en: "Carries two signed quotations, one invoice, two signed delivery notes, seven chase emails, four WhatsApp screenshots, one WeChat screenshot" },
+          { attr_zh: "向調解員探口風", attr_sc: "向调解员探口风", attr_en: "Probe to mediator", trigger_zh: "周先生問「如果係 District Court 嘅 case，呢類已簽報價單通常會有甚麼結果？」", trigger_sc: "周先生问「如果系 District Court 的 case，这类已签报价单通常会有甚么结果？」", trigger_en: "Mr Chow asks &ldquo;in District Court, what&rsquo;s the usual outcome with a signed quotation like this?&rdquo;" },
+          { attr_zh: "WhatsApp / WeChat 截圖披露", attr_sc: "WhatsApp / WeChat 截图披露", attr_en: "WhatsApp / WeChat leak", trigger_zh: "張博士可披露被告工程師 Sam 直至 2023 年 12 月仍向他索取 PLC 韓文翻譯及遠程更新技術文件的截圖", trigger_sc: "张博士可披露被告工程师 Sam 直至 2023 年 12 月仍向他索取 PLC 韩文翻译及远程更新技术文件的截图", trigger_en: "Dr Cheung can show the defendant engineer Sam still asking him for Korean PLC translations and remote-update documentation as late as December 2023" }
+        ],
+        role_player_instruction_zh: "周先生與張博士的雙人組合是這個個案的核心結構。周先生為主對答，張博士只在技術問題時補充。如果調解員處理得好，可以利用兩人不同視角達成共懂；處理不好則會被被告挑撥兩人關係（例如質疑張博士的培訓不足）。周先生內心知道：被告 Sam 一直私下找張博士求技術支援，意味著他們在使用，而不是拒收。但他不希望在聯合會議直接揭穿，因為韓國客戶的項目可能還會有後續業務。",
+        role_player_instruction_sc: "周先生与张博士的双人组合是这个个案的核心结构。周先生为主对答，张博士只在技术问题时补充。如果调解员处理得好，可以利用两人不同视角达成共懂；处理不好则会被被告挑拨两人关系（例如质疑张博士的培训不足）。周先生内心知道：被告 Sam 一直私下找张博士求技术支援，意味著他们在使用，而不是拒收。但他不希望在联合会议直接揭穿，因为韩国客户的项目可能还会有后续业务。",
+        role_player_instruction_en: "The Chow + Cheung pairing is the structural core. Mr Chow leads; Dr Cheung speaks only on technical points. Well handled, the mediator can use the two angles to converge; poorly handled, the defendant can drive a wedge between them (e.g. by questioning Dr Cheung&rsquo;s training adequacy). Mr Chow internally knows the defendant&rsquo;s engineer Sam kept asking Dr Cheung for help into late 2023, which proves use, not rejection. But Mr Chow does not want to surface this in joint because there may be follow-on business with the Korean customer.",
+        brief_zh: "申索人底線：HK$33,800（扣除約 HK$8,500 的雲端平台年費爭議部分）；對方需於協議內承認「軟件部分已交付」；書面確認 PLC 韓文版仍屬申索人 IP，被告人需付額外 IP 授權費 HK$8,000。或者：被告人付 HK$30,000 並書面承諾 18 個月內不就此項目再向申索人提出技術支援需求（實際是讓被告 Sam 自己 own 後續責任）。",
+        brief_sc: "申索人底线：HK$33,800（扣除约 HK$8,500 的云端平台年费争议部分）；对方需于协议内承认「软件部分已交付」；书面确认 PLC 韩文版仍属申索人 IP，被告人需付额外 IP 授权费 HK$8,000。或者：被告人付 HK$30,000 并书面承诺 18 个月内不就此项目再向申索人提出技术支援需求（实际是让被告 Sam 自己 own 后续责任）。",
+        brief_en: "Claimant&rsquo;s floor: HK$33,800 (deducting around HK$8,500 of the disputed cloud annual fee); written acknowledgement that the software was delivered; written confirmation that the Korean-translated PLC remains the claimant&rsquo;s IP, requiring an additional HK$8,000 IP licence. Alternatively: HK$30,000 plus a written undertaking that the defendant will not seek further technical support on this project for 18 months (effectively making Sam own the consequences)."
+      },
+      {
+        party_index: 1,
+        register: "cold-operator",
+        legitimacy_framing: ["equity-correction", "industry-norm"],
+        trust_breakdown: {
+          when_zh: "2023 年 7 月韓國釜山客戶在與被告人的視像會議中提出「不接受中國伺服器」",
+          when_sc: "2023 年 7 月韩国釜山客户在与被告人的视像会议中提出「不接受中国伺服器」",
+          when_en: "July 2023, the Busan customer raised in a video call: &ldquo;won&rsquo;t accept a mainland China server&rdquo;",
+          what_zh: "譚先生即時致電申索人周先生，要求修改設計以避開內地伺服器；周生口頭回覆「會諗辦法」，但實際上沒有提供替代方案",
+          what_sc: "谭先生即时致电申索人周先生，要求修改设计以避开内地伺服器；周生口头回复「会想办法」，但实际上没有提供替代方案",
+          what_en: "Mr Tam phoned Mr Chow immediately, asking for a design change to avoid mainland servers; Chow verbally said &ldquo;we&rsquo;ll figure it out&rdquo;, but no alternative was actually provided",
+          why_it_mattered_zh: "由那一刻開始，譚先生不再相信周生會配合自己的核心商業需要；雲端費用的爭議只是表面",
+          why_it_mattered_sc: "由那一刻开始，谭先生不再相信周生会配合自己的核心商业需要；云端费用的争议只是表面",
+          why_it_mattered_en: "From that moment Mr Tam stopped believing Mr Chow would accommodate his core commercial need; the cloud-fee dispute is only the surface"
+        },
+        coding: {
+          present: false,
+          axes_zh: "雙方均為香港中產商人，無顯著編碼；唯有公司規模差別（上市 vs 中型科技初創）",
+          axes_sc: "双方均为香港中产商人，无显著编码；唯有公司规模差别（上市 vs 中型科技初创）",
+          axes_en: "Both HK middle-class businessmen, no significant coding; only firm-size differential (listed vs mid-sized tech start-up)",
+          direction_zh: "&mdash;",
+          direction_sc: "&mdash;",
+          direction_en: "&mdash;",
+          how_it_leaks_zh: "&mdash;",
+          how_it_leaks_sc: "&mdash;",
+          how_it_leaks_en: "&mdash;"
+        },
+        behavioural_attributes: [
+          { attr_zh: "文件展示", attr_sc: "文件展示", attr_en: "Document brandishing", trigger_zh: "備有 2023 年 7 月韓國客戶 IT 規格要求郵件，要求「日本、香港、Alibaba 新加坡」三選一伺服器", trigger_sc: "备有 2023 年 7 月韩国客户 IT 规格要求邮件，要求「日本、香港、Alibaba 新加坡」三选一伺服器", trigger_en: "Carries the July 2023 email from the Korean customer&rsquo;s IT spec mandating servers in Japan, HK, or Alibaba Singapore" },
+          { attr_zh: "互惠回扣", attr_sc: "互惠回扣", attr_en: "Reciprocity callback", trigger_zh: "「我哋畀咗你做呢個 case，係科技界開門俾你」，他會在僵局時用這句", trigger_sc: "「我们畀了你做这个 case，系科技界开门俾你」，他会在僵局时用这句", trigger_en: "&ldquo;Giving you this case was opening the door in the tech industry for you&rdquo;, his deadlock line" },
+          { attr_zh: "向調解員探口風", attr_sc: "向调解员探口风", attr_en: "Probe to mediator", trigger_zh: "「香港上市公司喺呢類爭議入面，法庭通常會傾向佢哋定我哋？」", trigger_sc: "「香港上市公司在这类争议入面，法庭通常会倾向他们定我们？」", trigger_en: "&ldquo;In disputes like this involving an HK-listed company, does the court usually lean their way or ours?&rdquo;" },
+          { attr_zh: "離場訊號", attr_sc: "离场讯号", attr_en: "Walk-out signal", trigger_zh: "如果周先生在聯合會議中提及韓國客戶項目的最新進展，他會起身收拾文件，語帶威脅地說「呢樣同今次爭議無關，你哋唔好越界」", trigger_sc: "如果周先生在联合会议中提及韩国客户项目的最新进展，他会起身收拾文件，语带威胁地说「这样同今次争议无关，你们不要越界」", trigger_en: "If Mr Chow brings up the Korean customer&rsquo;s latest project status in joint, he stands and gathers papers: &ldquo;that is not the dispute, don&rsquo;t cross the line&rdquo;" }
+        ],
+        role_player_instruction_zh: "譚先生最大的力量是他在科技界的人際網絡 &mdash; 申索人是上市公司，但其銷售渠道很大程度上依賴於業界口碑。譚先生在聯合會議中應保持低聲、慢、冷；只當議題觸及韓國客戶的項目進度時才會升溫。他不是想免付款，他想付一個能保住面子的金額。如果調解員能將雲端費爭議重新框架為「雙方對伺服器位置之溝通不足」（而不是「被告耍賴」），譚先生可以接受 HK$28,000；如果繼續被框架為「被告未付款」，他會升級至反申索。",
+        role_player_instruction_sc: "谭先生最大的力量是他在科技界的人际网络 &mdash; 申索人是上市公司，但其销售渠道很大程度上依赖于业界口碑。谭先生在联合会议中应保持低声、慢、冷；只当议题触及韩国客户的项目进度时才会升温。他不是想免付款，他想付一个能保住面子的金额。如果调解员能将云端费争议重新框架为「双方对伺服器位置之沟通不足」（而不是「被告耍赖」），谭先生可以接受 HK$28,000；如果继续被框架为「被告未付款」，他会升级至反申索。",
+        role_player_instruction_en: "Mr Tam&rsquo;s real leverage is his tech-industry network &mdash; the claimant may be listed but their sales channel rests heavily on industry word-of-mouth. In joint he should be quiet, slow, cold; he only escalates when the Korean customer&rsquo;s project progress is raised. He is not trying to avoid payment; he wants a face-preserving figure. If the mediator can reframe the cloud-fee dispute as &lsquo;mutual communication shortfall on server location&rsquo; (not &lsquo;defendant in default&rsquo;), he can accept HK$28,000. If the frame stays &lsquo;defendant hasn&rsquo;t paid&rsquo;, he escalates to counter-claim.",
+        brief_zh: "譚先生底線：HK$25,000 + 申索人代表書面確認「雙方就伺服器位置溝通不足」+ 申索人主動斷開所有 IoT 與內地伺服器之連接，並由申索人提供書面流程指引予被告工程師。如果不能達成，他寧願拖到正式裁決，因為公開審理對申索人的上市公司聲譽影響可能比金額本身更高。",
+        brief_sc: "谭先生底线：HK$25,000 + 申索人代表书面确认「双方就伺服器位置沟通不足」+ 申索人主动断开所有 IoT 与内地伺服器之连接，并由申索人提供书面流程指引予被告工程师。如果不能达成，他宁愿拖到正式裁决，因为公开审理对申索人的上市公司声誉影响可能比金额本身更高。",
+        brief_en: "Mr Tam&rsquo;s floor: HK$25,000, a written acknowledgement of &lsquo;mutual communication shortfall on server location&rsquo;, claimant disconnects all IoT links to mainland servers and provides written guidance to the defendant&rsquo;s engineer. Failing this he prefers to go to adjudication; a public hearing&rsquo;s reputational hit to a listed firm may exceed the disputed amount."
+      }
+    ],
+      mediation_overview: {
+        common_ground: {
+          generic: { zh: ["雙方均承認本爭議影響各自業界聲譽", "雙方均希望避免公開審理", "雙方均同意項目本身仍有商業價值"],
+              sc: ["双方均承认本争议影响各自业界声誉", "双方均希望避免公开审理", "双方均同意项目本身仍有商业价值"],
+              en: ["Both acknowledge the dispute affects each side’s industry reputation", "Both wish to avoid a public hearing", "Both agree the project itself still has commercial value"] },
+          case_specific: { zh: ["雙方均同意已簽署的報價單之前三項", "雙方均承認韓國客戶要求伺服器須位於日本、香港或新加坡", "雙方均承認被告工程師曾自行修改 PLC 系統及雲端介面"],
+              sc: ["双方均同意已签署的报价单之前三项", "双方均承认韩国客户要求伺服器须位于日本、香港或新加坡", "双方均承认被告工程师曾自行修改 PLC 系统及云端介面"],
+              en: ["Both agree the first three items of the signed quotation", "Both acknowledge the Korean customer mandates Japan/HK/Singapore server location", "Both acknowledge the defendant’s engineer modified the PLC and cloud interface independently"] }
+        },
+        issues: { zh: ["雲端平台年費 HK$40,000 是否合理收取？", "伺服器位置爭議的責任歸屬？", "軟件已交付的確認及範圍？", "被告工程師的後續技術支援義務？", "韓國客戶項目進度的影響評估？"],
+          sc: ["云端平台年费 HK$40,000 是否合理收取？", "伺服器位置争议的责任归属？", "软件已交付的确认及范围？", "被告工程师的后续技术支援义务？", "韩国客户项目进度的影响评估？"],
+          en: ["Is the HK$40,000 cloud annual fee a legitimate charge?", "Where lies responsibility for the server-location dispute?", "What is the scope of confirmed software delivery?", "What ongoing technical-support obligation does the defendant’s engineer carry?", "How is the Korean customer’s project progress assessed?"] },
+        options: { zh: ["方案A：被告付 HK$30,000，申索人書面確認「軟件部分已交付」，雙方共同承認伺服器位置溝通不足；被告 18 個月內不向申索人提出額外技術支援需求", "方案B：被告付 HK$25,000，申索人主動斷開所有 IoT 與內地伺服器之連接，並提供書面流程指引予被告工程師", "方案C：被告付 HK$33,800，雙方簽署保密條款，韓國客戶項目進度不再作為爭議焦點", "方案D：雙方暫緩，先共同完成伺服器位置之技術切換（90 日內），再協商剩餘款項"],
+          sc: ["方案A：被告付 HK$30,000，申索人书面确认「软件部分已交付」，双方共同承认伺服器位置沟通不足；被告 18 个月内不向申索人提出额外技术支援需求", "方案B：被告付 HK$25,000，申索人主动断开所有 IoT 与内地伺服器之连接，并提供书面流程指引予被告工程师", "方案C：被告付 HK$33,800，双方签署保密条款，韩国客户项目进度不再作为争议焦点", "方案D：双方暂缓，先共同完成伺服器位置之技术切换（90 日内），再协商剩余款项"],
+          en: ["Option A: Defendant pays HK$30,000; claimant confirms software delivered in writing; both acknowledge mutual communication shortfall on server location; defendant raises no further support requests for 18 months", "Option B: Defendant pays HK$25,000; claimant disconnects all IoT links to mainland servers and provides written guidance to the engineer", "Option C: Defendant pays HK$33,800; confidentiality clause; Korean customer project progress excluded from further dispute", "Option D: Park settlement; complete the server-location migration jointly within 90 days, then negotiate the remaining payment"] }
+      }
+  },
+
+  /* ============ seed_028 ============ */
+  {
+    id: "seed_028",
+    meta: {
+      title_zh: "三房單位裝修工程尾數及反申索",
+      title_sc: "三房单位装修工程尾数及反申索",
+      title_en: "Three-bedroom renovation: balance plus counterclaim",
+      level: 2,
+      level_label: "Level 2",
+      archetype: "quantum_dispute_with_counterclaim_and_shifting_goalpost"
+    },
+    parties: [
+      { name_zh: "雅竹室內設計工程有限公司", name_sc: "雅竹室内设计工程有限公司", name_en: "Elegant Bamboo Interior Design & Engineering Ltd", role_zh: "申索人，由公司董事陳先生親自出席", role_sc: "申索人，由公司董事陈先生亲自出席", role_en: "Claimant; director Mr Chan appears in person" },
+      { name_zh: "胡先生", name_sc: "胡先生", name_en: "Mr Wu", role_zh: "被告人，業主，新婚男士，未婚妻陪同出席", role_sc: "被告人，业主，新婚男士，未婚妻陪同出席", role_en: "Defendant; flat owner; recently engaged; fiancée accompanies" }
+    ],
+    joint_brief: {
+      zh: "申索人為一家成立 11 年的小型裝修工程公司；被告人為 30 歲機械工程師，於 2024 年初購入屯門某新樓盤一個三房單位。雙方於 2024 年 1 月簽訂約 HK$320,000 的全屋裝修合約，合約上寫明工期 85 日，完工後一年保養期內可享三次免費執修。實際工程於 2024 年 2 月開展，因兩次款式變更（主人房櫃身、廚房趟門）及一次廁所水電位置調整，工程延誤了 1.84 個月才完成，被告人於 2024 年 6 月初遷入。完工驗收時，雙方代表（申索人項目經理 + 被告及未婚妻）現場列出 8 項需執修事項。被告人遷入後陸續發現近 30 處新問題，主要包括主廁滲水、牆身漆面開裂、C 字浴室櫃位置不平、廚房趟門未完成安裝。申索人於 2024 年 7 月安排一次大型執修，但師傅未帶適當髹油保護工具，需被告人臨時提供。執修後仍有數項未完成。2024 年 8 月，申索人項目經理透過 WhatsApp 群組（成員包括被告、雅竹董事陳生、項目經理、會計）同意將原餘款 HK$76,950 減至 HK$42,670，計算扣減項目包括廚房趟門、鋁窗、C 字櫃位置三項；群內被告、項目經理及會計都表示同意。2024 年 10 月，申索人董事陳先生突然於同一群組要求被告支付 HK$33,680 餘款，被告拒絕，並反指原同意金額被單方面更改。被告同時自費聘請公證行檢視，公證行指主廁滲水源於浴缸接駁鬆動及修補工序不當。被告就此入稟反申索 HK$66,184（包括延誤期間多付租金約 HK$10,000、大門色差問題約 HK$7,000、主廁滲水修復約 HK$49,000)+ 公證行費 HK$20,000。",
+      sc: "申索人为一家成立 11 年的小型装修工程公司；被告人为 30 岁机械工程师，于 2024 年初购入屯门某新楼盘一个三房单位。双方于 2024 年 1 月签订约 HK$320,000 的全屋装修合约，合约上写明工期 85 日，完工后一年保养期内可享三次免费执修。实际工程于 2024 年 2 月开展，因两次款式变更（主人房柜身、厨房趟门）及一次厕所水电位置调整，工程延误了 1.84 个月才完成，被告人于 2024 年 6 月初迁入。完工验收时，双方代表（申索人项目经理 + 被告及未婚妻）现场列出 8 项需执修事项。被告人迁入后陆续发现近 30 处新问题，主要包括主厕渗水、墙身漆面开裂、C 字浴室柜位置不平、厨房趟门未完成安装。申索人于 2024 年 7 月安排一次大型执修，但师傅未带适当髹油保护工具，需被告人临时提供。执修后仍有数项未完成。2024 年 8 月，申索人项目经理透过 WhatsApp 群组（成员包括被告、雅竹董事陈生、项目经理、会计）同意将原余款 HK$76,950 减至 HK$42,670，计算扣减项目包括厨房趟门、铝窗、C 字柜位置三项；群内被告、项目经理及会计都表示同意。2024 年 10 月，申索人董事陈先生突然于同一群组要求被告支付 HK$33,680 余款，被告拒绝，并反指原同意金额被单方面更改。被告同时自费聘请公证行检视，公证行指主厕渗水源于浴缸接驳松动及修补工序不当。被告就此入禀反申索 HK$66,184（包括延误期间多付租金约 HK$10,000、大门色差问题约 HK$7,000、主厕渗水修复约 HK$49,000)+ 公证行费 HK$20,000。",
+      en: "The claimant is a small 11-year-old interior renovation firm. The defendant is a 30-year-old mechanical engineer who bought a three-bedroom flat in Tuen Mun in early 2024. In January 2024 they signed an HK$320,000 full-renovation contract specifying 85 days&rsquo; duration and a one-year warranty with three free fix-up visits. Work began February 2024. Two style changes (master-bedroom wardrobe; kitchen swing door) and a bathroom plumbing reposition delayed completion by 1.84 months; the defendant moved in early June 2024. At handover, the claimant&rsquo;s PM plus the defendant and his fiancée walked through and recorded 8 items needing fix. After moving in, the defendant identified another 30 issues, principally master-bathroom leakage, paint cracking, an unevenly fitted C-shaped bathroom cabinet, and an unfinished kitchen swing door. The claimant ran a large fix-up in July 2024 but the foreman forgot paint-protection materials and the defendant had to supply them on the spot; several items remained incomplete after. In August 2024 the claimant&rsquo;s PM agreed in a WhatsApp group (defendant, Chan the director, PM, accountant) to reduce the HK$76,950 balance to HK$42,670, with deductions for the swing door, aluminium window and C-cabinet; defendant, PM, and accountant all said yes in the group. In October 2024 the director Chan suddenly demanded HK$33,680 in the same group. The defendant refused. The defendant independently engaged a surveyor who found the bathroom leak came from a loose bathtub joint and improper repair work. The defendant counter-claimed HK$66,184 (additional rent during the delay around HK$10,000, paint colour mismatch on the main door around HK$7,000, bathroom leak repair around HK$49,000) plus HK$20,000 surveyor fee."
+    },
+    confidential_briefs: [
+      {
+        party_index: 0,
+        register: "defensive-with-pride",
+        legitimacy_framing: ["industry-norm", "reciprocity-balance"],
+        trust_breakdown: {
+          when_zh: "2024 年 10 月在 WhatsApp 群組見到被告人引用同事 8 月的承諾",
+          when_sc: "2024 年 10 月在 WhatsApp 群组见到被告人引用同事 8 月的承诺",
+          when_en: "October 2024, seeing the defendant cite the PM&rsquo;s August commitment in the WhatsApp group",
+          what_zh: "陳生察覺自己同事在沒有授權下答應了一個會令公司虧損的金額（以日薪計師傅費及材料費，HK$42,670 之下公司會虧 HK$8,000）",
+          what_sc: "陈生察觉自己同事在没有授权下答应了一个会令公司亏损的金额（以日薪计师傅费及材料费，HK$42,670 之下公司会亏 HK$8,000）",
+          what_en: "Mr Chan realised his own staff had committed, without authority, to a figure that would put the company at a HK$8,000 loss after labour and materials",
+          why_it_mattered_zh: "他不接受「公司員工答應的就是公司答應的」這個觀點，因為這位同事入職只一年，沒有議價權限；但他亦知道在客戶眼中這個分別不存在",
+          why_it_mattered_sc: "他不接受「公司员工答应的就是公司答应的」这个观点，因为这位同事入职只一年，没有议价权限；但他亦知道在客户眼中这个分别不存在",
+          why_it_mattered_en: "He rejected the &lsquo;staff committing binds the company&rsquo; view because that staff was a one-year hire with no pricing authority; he also knew the customer wouldn&rsquo;t see the distinction"
+        },
+        coding: {
+          present: true,
+          axes_zh: "階級 + 年齡 + 教育 + 行業",
+          axes_sc: "阶级 + 年龄 + 教育 + 行业",
+          axes_en: "Class + age + education + profession",
+          direction_zh: "陳生 52 歲，中三輟學入行做學徒，自力建立公司；被告 30 歲，工程系學士，新婚，中產形成中。陳生對「年輕工程師質疑老師傅手藝」有真實的觸點",
+          direction_sc: "陈生 52 岁，中三辍学入行做学徒，自力建立公司；被告 30 岁，工程系学士，新婚，中产形成中。陈生对「年轻工程师质疑老师傅手艺」有真实的触点",
+          direction_en: "Mr Chan is 52, left school after Form 3 to apprentice, built the firm himself. The defendant is 30, engineering bachelor, recently engaged, middle-class forming. Mr Chan has a real trigger when &lsquo;young engineer questions old tradesman&rsquo;s craft&rsquo;",
+          how_it_leaks_zh: "陳生會說「我入行嗰陣，啲業主係叫我哋師傅，而家叫師傅係叫低你個地位」；會將公證行報告稱為「啲讀書人嘅紙」",
+          how_it_leaks_sc: "陈生会说「我入行𠮶阵，些业主系叫我们师傅，现在叫师傅系叫低你个地位」；会将公证行报告称为「些读书人的纸」",
+          how_it_leaks_en: "&ldquo;When I started, owners called us &lsquo;master&rsquo;; now &lsquo;master&rsquo; is used to put you down&rdquo;; refers to the surveyor&rsquo;s report as &lsquo;the educated people&rsquo;s paper&rsquo;"
+        },
+        behavioural_attributes: [
+          { attr_zh: "互惠回扣", attr_sc: "互惠回扣", attr_en: "Reciprocity callback", trigger_zh: "「我哋免費幫你裝咗涼衣架、蚊網、加裝廚房後櫃，呢啲冇收錢」是他的招牌台詞", trigger_sc: "「我们免费帮你装了凉衣架、蚊网、加装厨房后柜，这些没收钱」是他的招牌台词", trigger_en: "&ldquo;We installed the laundry rack, mosquito nets, the extra kitchen back-cabinet for free, didn&rsquo;t charge&rdquo; is his signature line" },
+          { attr_zh: "階級色彩的輕蔑（可恢復）", attr_sc: "阶级色彩的轻蔑（可恢复）", attr_en: "Class-coded contempt (recoverable)", trigger_zh: "「裝修質量點可能做到十全十美」、「啲剛買樓嘅後生會驚少少嘢都當大事」，話出口立即補回「胡生係個有要求嘅客」", trigger_sc: "「装修质量点可能做到十全十美」、「些刚买楼的后生会惊少少东西都当大事」，话出口立即补回「胡生系个有要求的客」", trigger_en: "&ldquo;Renovation quality can never be perfect&rdquo;, &ldquo;first-time buyers panic at the smallest things&rdquo;, then immediately: &ldquo;Mr Wu is a customer with high standards&rdquo;" },
+          { attr_zh: "文件展示", attr_sc: "文件展示", attr_en: "Document brandishing", trigger_zh: "備有 6 次免費執修紀錄（每次有自己師傅及胡生未婚妻 Whatsapp 簽認時間）、原工程合約、6 張不在合約內但已完成的工序紀錄", trigger_sc: "备有 6 次免费执修纪录（每次有自己师傅及胡生未婚妻 Whatsapp 签认时间）、原工程合约、6 张不在合约内但已完成的工序纪录", trigger_en: "Carries records of 6 free fix-up visits (each with foreman and fiancée WhatsApp acknowledgement), the original contract, and 6 records of non-contract items completed" }
+        ],
+        role_player_instruction_zh: "陳生內心知道：他的同事在 WhatsApp 中確實同意了 HK$42,670 的計算方式，而他到 10 月才覺得不對勁試圖收回。這在法律上對他不利，但他打死也不會在聯合會議承認 &mdash; 因為這代表「公司管理不善」這個身為老闆最痛的指控。如果調解員能在私下會議讓他鬆動，他可以接受 HK$42,670（同意原 8 月的金額），但他需要一個面子台階（例如「胡生願意承擔自己重新檢視後新增執修要求的責任」）。對「公證行報告」一詞有強烈反感，因為這代表他的手藝被「外面的讀書人」評定。",
+        role_player_instruction_sc: "陈生内心知道：他的同事在 WhatsApp 中确实同意了 HK$42,670 的计算方式，而他到 10 月才觉得不对劲试图收回。这在法律上对他不利，但他打死也不会在联合会议承认 &mdash; 因为这代表「公司管理不善」这个身为老板最痛的指控。如果调解员能在私下会议让他松动，他可以接受 HK$42,670（同意原 8 月的金额），但他需要一个面子台阶（例如「胡生愿意承担自己重新检视后新增执修要求的责任」）。对「公证行报告」一词有强烈反感，因为这代表他的手艺被「外面的读书人」评定。",
+        role_player_instruction_en: "Mr Chan knows internally that his staff did agree to the HK$42,670 calculation in WhatsApp, and he only tried to walk it back in October. Legally that&rsquo;s bad for him, but he will never admit it in joint &mdash; that would mean &lsquo;poor company management&rsquo;, which is the owner&rsquo;s sorest spot. In caucus he can soften and accept HK$42,670, but he needs a face ramp (e.g. &lsquo;Mr Wu accepts responsibility for items he raised after his own re-inspection&rsquo;). The phrase &lsquo;surveyor&rsquo;s report&rsquo; is a strong trigger; it means &lsquo;outside educated people&rsquo; judging his craft.",
+        brief_zh: "陳生底線：HK$42,670 全數結清，胡生撤回反申索全部三項，雙方相互釋放就此工程之任何進一步索償，雙方簽署不對外公開條款。他真正的擔憂：公證行報告若進入公開法律紀錄，公司未來生意會受影響。如能達成，他甚至願意提供一次性的「善意修補」處理浴室滲水（約 HK$15,000 自己墊資），前提是不留書面承諾保養延長。",
+        brief_sc: "陈生底线：HK$42,670 全数结清，胡生撤回反申索全部三项，双方相互释放就此工程之任何进一步索偿，双方签署不对外公开条款。他真正的担忧：公证行报告若进入公开法律纪录，公司未来生意会受影响。如能达成，他甚至愿意提供一次性的「善意修补」处理浴室渗水（约 HK$15,000 自己垫资），前提是不留书面承诺保养延长。",
+        brief_en: "Mr Chan&rsquo;s floor: HK$42,670 settled in full; the defendant withdraws all three counterclaim items; mutual release on this project; both sign a no-publicity clause. His real worry: if the surveyor&rsquo;s report enters the public adjudication record, future business is affected. He&rsquo;d even fund a one-off &lsquo;goodwill fix&rsquo; for the bathroom leak (around HK$15,000 absorbed) if no written warranty extension is recorded."
+      },
+      {
+        party_index: 1,
+        register: "controlled-professional",
+        legitimacy_framing: ["contractual-text", "equity-correction"],
+        trust_breakdown: {
+          when_zh: "2024 年 10 月陳生在群組推翻 8 月項目經理的承諾",
+          when_sc: "2024 年 10 月陈生在群组推翻 8 月项目经理的承诺",
+          when_en: "October 2024, when Mr Chan walked back the PM&rsquo;s August commitment in the group",
+          what_zh: "胡生原本已準備電匯 HK$42,670；陳生忽然改口要 HK$33,680（被告以為是寫錯，後來確認是更高的合約計算）",
+          what_sc: "胡生原本已准备电汇 HK$42,670；陈生忽然改口要 HK$33,680（被告以为是写错，后来确认是更高的合约计算）",
+          what_en: "Mr Wu was about to wire HK$42,670; Mr Chan suddenly demanded HK$33,680 (the defendant initially thought a typo, later confirmed it was a higher contractual recalculation)",
+          why_it_mattered_zh: "他失去信任的不是錢的問題，是「對方公司內部不能對外說話」這個事實；從此他覺得對方不是可協商的對手",
+          why_it_mattered_sc: "他失去信任的不是钱的问题，是「对方公司内部不能对外说话」这个事实；从此他觉得对方不是可协商的对手",
+          why_it_mattered_en: "What he lost was not money but the fact that &lsquo;the company can&rsquo;t speak as one to the outside&rsquo;; from there he stopped seeing the other side as a negotiable counterpart"
+        },
+        coding: {
+          present: true,
+          axes_zh: "階級 + 年齡 + 教育 + 性別動態",
+          axes_sc: "阶级 + 年龄 + 教育 + 性别动态",
+          axes_en: "Class + age + education + gender dynamic",
+          direction_zh: "胡生 30 歲工程師，未婚妻陪同 &mdash; 這個組合本身是中產形成過程中的「精打細算」表演；未婚妻的存在會輕微提高他的精度但減低他的彈性",
+          direction_sc: "胡生 30 岁工程师，未婚妻陪同 &mdash; 这个组合本身是中产形成过程中的「精打细算」表演；未婚妻的存在会轻微提高他的精度但减低他的弹性",
+          direction_en: "Mr Wu, 30, engineer, with fiancée &mdash; this combination performs &lsquo;middle-class precision in formation&rsquo;; her presence slightly raises his accuracy and lowers his flexibility",
+          how_it_leaks_zh: "胡生會引用精確數字（1.84 個月、30 項、HK$76,950）；未婚妻會在他打算讓步時輕拍他的手以示提醒；當陳生使用「啲後生」一類用語時，胡生會抿嘴但不回應，未婚妻則會直視陳生",
+          how_it_leaks_sc: "胡生会引用精确数字（1.84 个月、30 项、HK$76,950）；未婚妻会在他打算让步时轻拍他的手以示提醒；当陈生使用「些后生」一类用语时，胡生会抿嘴但不回应，未婚妻则会直视陈生",
+          how_it_leaks_en: "Mr Wu cites precise numbers (1.84 months, 30 items, HK$76,950); the fiancée gently touches his hand when he is about to soften; when Chan uses the &lsquo;these young ones&rsquo; register, Wu purses lips silently while the fiancée holds Chan&rsquo;s gaze"
+        },
+        behavioural_attributes: [
+          { attr_zh: "文件展示", attr_sc: "文件展示", attr_en: "Document brandishing", trigger_zh: "備有 8 月 WhatsApp 群組截圖（列明同意金額 HK$42,670 及計算方式）、公證行報告（連附圖）、合約原件、30 項問題清單（附相片）、自費裝修報價（HK$20,000 修浴室）", trigger_sc: "备有 8 月 WhatsApp 群组截图（列明同意金额 HK$42,670 及计算方式）、公证行报告（连附图）、合约原件、30 项问题清单（附相片）、自费装修报价（HK$20,000 修浴室）", trigger_en: "Carries the August WhatsApp screenshot (HK$42,670 with calculation), the surveyor&rsquo;s report (with photos), the original contract, the 30-item issue list with photos, and an HK$20,000 quote to fix the bathroom" },
+          { attr_zh: "向調解員探口風", attr_sc: "向调解员探口风", attr_en: "Probe to mediator", trigger_zh: "「員工在公司 WhatsApp 群組答應的金額，法律上算唔算 binding？」", trigger_sc: "「员工在公司 WhatsApp 群组答应的金额，法律上算不算 binding？」", trigger_en: "&ldquo;Is a figure agreed by staff in the company&rsquo;s WhatsApp group legally binding?&rdquo;" },
+          { attr_zh: "隱藏脆弱面", attr_sc: "隐藏脆弱面", attr_en: "Hidden vulnerability", trigger_zh: "提及未婚妻於婚禮前需要主廁有水，當下短暫鬆動 &mdash; 這個主廁不能用已經影響他在準新郎位置的尊嚴", trigger_sc: "提及未婚妻于婚礼前需要主厕有水，当下短暂松动 &mdash; 这个主厕不能用已经影响他在准新郎位置的尊严", trigger_en: "Mentions that his fiancée needs the master bathroom working before the wedding; brief softening &mdash; the unusable bathroom is also hurting his standing as a soon-to-be husband" }
+        ],
+        role_player_instruction_zh: "胡生不是一個「為錢追討」的客戶，他是一個「自尊被傷害」的客戶。他知道反申索的 HK$66,184 不會全收，他真正想要的是：陳生親口承認「我哋同事 8 月答應咗呢個金額，我哋認」。如果調解員能讓陳生說出這句話（或意思相近），胡生願意接受 HK$42,670 並全數撤回反申索，只保留浴室滲水的執修（無需賠款）。如果陳生堅持 HK$33,680，他寧願走到正式裁決，因為他現在連自費自己再裝修主廁的 HK$20,000 也願意付，只要不讓陳生贏。未婚妻在聯合會議發言一兩次，簡短、有禮、堅定。",
+        role_player_instruction_sc: "胡生不是一个「为钱追讨」的客户，他是一个「自尊被伤害」的客户。他知道反申索的 HK$66,184 不会全收，他真正想要的是：陈生亲口承认「我们同事 8 月答应了这个金额，我们认」。如果调解员能让陈生说出这句话（或意思相近），胡生愿意接受 HK$42,670 并全数撤回反申索，只保留浴室渗水的执修（无需赔款）。如果陈生坚持 HK$33,680，他宁愿走到正式裁决，因为他现在连自费自己再装修主厕的 HK$20,000 也愿意付，只要不让陈生赢。未婚妻在联合会议发言一两次，简短、有礼、坚定。",
+        role_player_instruction_en: "Mr Wu is not a customer chasing money; he is a customer whose self-respect is hurt. He knows the HK$66,184 counter-claim won&rsquo;t recover in full. What he really wants is for Mr Chan to say out loud &ldquo;our staff agreed to this figure in August, we honour it&rdquo;. If the mediator can get Mr Chan to say that (or close), Mr Wu will accept HK$42,670 and drop the counter-claim entirely, asking only that the bathroom leak be fixed (no further damages). If Mr Chan insists on HK$33,680, Mr Wu will rather go to adjudication; he would pay HK$20,000 to fix the bathroom himself rather than let Mr Chan win. The fiancée speaks once or twice in joint: brief, polite, firm.",
+        brief_zh: "胡生底線：HK$42,670 結清，陳生口頭承認 8 月項目經理之同意有效，雅竹安排合資格師傅完成主廁滲水修補（由雙方共同見證簽認），反申索全部撤回。如果陳生不認原 8 月金額，他會堅持反申索 HK$30,000（浴室滲水自費 + 公證費部分），寧願不收原 HK$42,670 也要這個原則。",
+        brief_sc: "胡生底线：HK$42,670 结清，陈生口头承认 8 月项目经理之同意有效，雅竹安排合资格师傅完成主厕渗水修补（由双方共同见证签认），反申索全部撤回。如果陈生不认原 8 月金额，他会坚持反申索 HK$30,000（浴室渗水自费 + 公证费部分），宁愿不收原 HK$42,670 也要这个原则。",
+        brief_en: "Mr Wu&rsquo;s floor: HK$42,670 settled, verbal acknowledgement from Mr Chan that the August commitment stands, Elegant Bamboo arranges a qualified contractor to complete the bathroom leak fix (witnessed by both sides), full withdrawal of the counter-claim. If Mr Chan refuses to honour the August figure, Mr Wu will hold to a HK$30,000 counter-claim recovery (bathroom + part-surveyor) rather than collect the original HK$42,670 &mdash; principle over money."
+      }
+    ],
+      mediation_overview: {
+        common_ground: {
+          generic: { zh: ["雙方均希望儘快結束爭議", "雙方均承認裝修工程有正常瑕疵的範圍", "雙方均同意保密處理以免影響各自聲譽"],
+              sc: ["双方均希望尽快结束争议", "双方均承认装修工程有正常瑕疵的范围", "双方均同意保密处理以免影响各自声誉"],
+              en: ["Both wish to end the dispute quickly", "Both acknowledge a normal range of defects in renovation", "Both agree on confidentiality to protect each side’s reputation"] },
+          case_specific: { zh: ["雙方均承認 8 月 WhatsApp 群組中項目經理之同意紀錄", "雙方均同意主廁滲水問題確實存在", "雙方均承認驗收時的 8 項清單"],
+              sc: ["双方均承认 8 月 WhatsApp 群组中项目经理之同意纪录", "双方均同意主厕渗水问题确实存在", "双方均承认验收时的 8 项清单"],
+              en: ["Both acknowledge the PM’s August commitment recorded in the WhatsApp group", "Both agree the master-bathroom leak is real", "Both acknowledge the 8-item handover checklist"] }
+        },
+        issues: { zh: ["雅竹同事 8 月承諾的 HK$42,670 金額是否具約束力？", "主廁滲水的修補責任及成本？", "公證行報告應否進入正式裁決紀錄？", "反申索的有效範圍？", "一年保養期是否仍適用？"],
+          sc: ["雅竹同事 8 月承诺的 HK$42,670 金额是否具约束力？", "主厕渗水的修补责任及成本？", "公证行报告应否进入正式裁决纪录？", "反申索的有效范围？", "一年保养期是否仍适用？"],
+          en: ["Is the PM’s August commitment to HK$42,670 binding on the company?", "Who bears the master-bathroom leak repair and at what cost?", "Should the surveyor’s report enter the formal adjudication record?", "What is the valid scope of the counter-claim?", "Does the one-year warranty still apply?"] },
+        options: { zh: ["方案A：雙方按 HK$42,670 結清，胡先生撤回反申索全部三項，雅竹安排合資格師傅完成主廁滲水修補，雙方簽署保密條款及相互釋放", "方案B：雙方按 HK$33,680 結清，雅竹另自付 HK$15,000 處理主廁滲水「善意修補」（不寫入合約），雙方互相釋放", "方案C：雙方按 HK$30,000 結清，各分擔主廁滲水修補費（約 HK$10,000)，保養期延長至 18 個月", "方案D：雙方放棄主張，胡先生自行處理主廁滲水及全部裝修瑕疵，雙方完全分手"],
+          sc: ["方案A：双方按 HK$42,670 结清，胡先生撤回反申索全部三项，雅竹安排合资格师傅完成主厕渗水修补，双方签署保密条款及相互释放", "方案B：双方按 HK$33,680 结清，雅竹另自付 HK$15,000 处理主厕渗水「善意修补」（不写入合约），双方互相释放", "方案C：双方按 HK$30,000 结清，各分担主厕渗水修补费（约 HK$10,000)，保养期延长至 18 个月", "方案D：双方放弃主张，胡先生自行处理主厕渗水及全部装修瑕疵，双方完全分手"],
+          en: ["Option A: Settle at HK$42,670; Mr Wu withdraws all three counterclaim items; Elegant Bamboo arranges a qualified contractor for the bathroom; confidentiality and mutual release", "Option B: Settle at HK$33,680; Elegant Bamboo separately funds HK$15,000 as a goodwill repair (not in contract); mutual release", "Option C: Settle at HK$30,000; share the bathroom repair cost (around HK$10,000 each); warranty extended to 18 months", "Option D: Both abandon claims; Mr Wu handles all remaining issues himself; full separation"] }
+      }
+  },
+  {
+    id: "seed_029",
+    meta: {
+      title_zh: "茶餐廳合夥分拆糾紛",
+      title_sc: "茶餐厅合伙分拆纠纷",
+      title_en: "Hong Kong cafe partnership dissolution",
+      level: 2,
+      level_label: "Level 2",
+      archetype: "partnership_dissolution_with_authority_dispute"
+    },
+    parties: [
+      {
+        name_zh: "老陳",
+        name_sc: "老陈",
+        name_en: "Old Chan",
+        role_zh: "申索人，出資合夥人，前警員，要求清盤分賬",
+        role_sc: "申索人，出资合伙人，前警员，要求清盘分账",
+        role_en: "Claimant; capital partner; ex-police officer; seeks wind-up and accounting"
+      },
+      {
+        name_zh: "老李",
+        name_sc: "老李",
+        name_en: "Old Lee",
+        role_zh: "被告人，出力合夥人，廚師，反對拆夥",
+        role_sc: "被告人，出力合伙人，厨师，反对分拆",
+        role_en: "Defendant; labour partner; head cook; opposes dissolution"
+      }
+    ],
+    joint_brief: {
+      zh: "老陳（52歲，2012 年退休前是油尖區九年警員）和老李（54歲，二十多年廚房經驗，行內叫他「光哥」）是十二年前的街坊朋友。雙方在 2012 年各出資 HK$420,000，合共 HK$840,000 在旺角西洋菜街開設「鴻發茶餐廳」，各佔 50% 股權。合夥協議書約定：老陳負責資金、賬目及對外文件；老李負責廚房、入貨及人事。鴻發頭七年生意穩健，月利潤約 HK$40,000 至 HK$80,000，雙方平分。\n\n由 2020 年起，受疫情、租金上漲、外賣平台抽佣等因素影響，利潤下滑。2023 年起連續八個月錄得輕微虧損，2024 年上半年累計虧損約 HK$95,000。老陳開始翻查賬目，發現幾個問題：（一）入貨單和實際庫存之間存在差距，尤其是海鮮、雞翼和凍肉部分；（二）老李的姪子阿光（三年前由老李介紹入廚房做幫廚）有定期把當日剩餘食材帶回家的習慣，但賬目上沒有相關紀錄；（三）2024 年 3 月某次入米的單據顯示購入 200 公斤，但實際倉庫只見到 130 公斤入帳。\n\n老李的解釋是：阿光以及其他廚房員工帶走「散貨」屬於茶餐廳行業常見的非正式員工補貼，本來就在他作為廚房及人事主管的權限範圍之內，是長期默許的做法。老陳則認為：（一）規模已超出合理「散貨」範圍；（二）任何重大不入賬的物資流出都應該由合夥雙方同意；（三）老李未將這個安排通知資金合夥人，本身就是違反合夥責任。\n\n2024 年 6 月老陳要求清盤，提出按 50/50 分配剩餘資產（估值約 HK$280,000）後拆夥，並要求老李就累計約 HK$48,000 的未入帳物資承擔責任。老李認為老陳「見錢眼開、不顧街坊情義」，堅持繼續經營。雙方在 2024 年 8 月有過一次激烈爭執，當場老陳在阿光及幾位街坊面前公開質問阿光「為甚麼有些東西沒有入賬」，老李即場表示「你當著街坊面前質問我的家人和我的廚房，那我們不用做朋友」。之後雙方在 WhatsApp 群組互相發 voice message，街坊朋友勸解雙方都不奏效。老陳於 2024 年 10 月展開正式法律程序，要求清盤、分賬及追討約 HK$48,000 的未入帳物資價值。經朋友介紹，雙方同意嘗試調解。",
+      sc: "老陈（52岁，2012 年退休前是油尖区九年警员）和老李（54岁，二十多年厨房经验，业内称他「光哥」）是十二年前的街坊朋友。双方在 2012 年各出资 HK$420,000，合共 HK$840,000 在旺角西洋菜街开设「鸿发茶餐厅」，各占 50% 股权。合伙协议书约定：老陈负责资金、账目及对外文件；老李负责厨房、入货及人事。鸿发头七年生意稳健，月利润约 HK$40,000 至 HK$80,000，双方平分。\n\n由 2020 年起，受疫情、租金上涨、外卖平台抽佣等因素影响，利润下滑。2023 年起连续八个月录得轻微亏损，2024 年上半年累计亏损约 HK$95,000。老陈开始翻查账目，发现几个问题：（一）入货单和实际库存之间存在差距，尤其是海鲜、鸡翼和冻肉部分；（二）老李的侄子阿光（三年前由老李介绍入厨房做帮厨）有定期把当日剩余食材带回家的习惯，但账目上没有相关纪录；（三）2024 年 3 月某次入米的单据显示购入 200 公斤，但实际仓库只见到 130 公斤入账。\n\n老李的解释是：阿光以及其他厨房员工带走「散货」属于茶餐厅行业常见的非正式员工补贴，本来就在他作为厨房及人事主管的权限范围之内，是长期默许的做法。老陈则认为：（一）规模已超出合理「散货」范围；（二）任何重大不入账的物资流出都应该由合伙双方同意；（三）老李未将这个安排通知资金合伙人，本身就是违反合伙责任。\n\n2024 年 6 月老陈要求清盘，提出按 50/50 分配剩余资产（估值约 HK$280,000）后分拆，并要求老李就累计约 HK$48,000 的未入账物资承担责任。老李认为老陈「见钱眼开、不顾街坊情义」，坚持继续经营。双方在 2024 年 8 月有过一次激烈争执，当场老陈在阿光及几位街坊面前公开质问阿光「为甚么有些东西没有入账」，老李立即表示「你当着街坊面前质问我的家人和我的厨房，那我们不用做朋友」。之后双方在 WhatsApp 群组互相发 voice message，街坊朋友劝解双方都不奏效。老陈于 2024 年 10 月展开正式法律程序，要求清盘、分账及追讨约 HK$48,000 的未入账物资价值。经朋友介绍，双方同意尝试调解。",
+      en: "Old Chan (52, retired in 2012 after nine years as a police officer in the Yau Tsim district) and Old Lee (54, over 20 years of kitchen experience, known in the trade as Brother Gwong) have been neighbourhood friends for twelve years. In 2012 they each invested HK$420,000, totalling HK$840,000, to open Hung Fat Cafe — a Hong Kong cha chaan teng (an all-day diner-style cafe) — on Sai Yeung Choi Street in Mong Kok, each holding 50% equity. The partnership agreement assigned Chan to capital, bookkeeping, and external affairs; Lee to the kitchen, procurement, and personnel. Hung Fat ran steadily for the first seven years, with monthly profits between HK$40,000 and HK$80,000, split equally.\n\nFrom 2020 onwards, profits declined under the combined pressure of the pandemic, rising rent, and delivery-platform commissions. From 2023, eight consecutive months posted small losses; the first half of 2024 accumulated around HK$95,000 in losses. Chan began reviewing the books and found several issues: (i) discrepancies between procurement invoices and actual inventory, particularly in seafood, chicken wings, and frozen meat; (ii) Lee's nephew Ah Gwong (introduced into the kitchen by Lee three years ago as kitchen help) routinely took the day's leftover stock home, with no corresponding entry in the books; (iii) a March 2024 rice procurement invoice showed 200 kg purchased, but only 130 kg appeared in the warehouse intake records.\n\nLee's position: it is widely understood across the HK cha chaan teng trade that kitchen staff are permitted to take leftover stock home as informal supplementary compensation. As Lee is the partnership's kitchen and personnel manager under the partnership agreement, this practice falls within his contractual authority and has been tacitly sanctioned for years. Chan's position: (i) the scale has outgrown what counts as 'leftover'; (ii) any material undocumented outflow should require both partners' consent; (iii) Lee's failure to notify the capital partner of this arrangement is itself a breach of partnership duty.\n\nIn June 2024 Chan demanded a wind-up, proposing 50/50 distribution of the remaining assets (valued around HK$280,000) followed by dissolution, and asked Lee to assume responsibility for the approximately HK$48,000 of un-recorded stock outflow. Lee viewed Chan as driven by money, indifferent to the bonds of neighbourhood, and insisted on continuing to operate. They had a heated confrontation in August 2024 when Chan publicly questioned Ah Gwong in front of several neighbours about why certain items weren't in the books, and Lee immediately replied: \"You're questioning my family and my kitchen in front of the neighbourhood — then we don't need to be friends anymore.\" Subsequent WhatsApp voice messages between them were sharp; mediation attempts by mutual friends came to nothing. Chan commenced formal legal proceedings in October 2024, demanding wind-up, accounting, and recovery of approximately HK$48,000 in un-recorded stock value. A mutual friend referred them to mediation."
+    },
+    confidential_briefs: [
+      {
+        party_index: 0,
+        register: "controlled-professional",
+        legitimacy_framing: [
+          "contractual-text",
+          "performance-completed"
+        ],
+        trust_breakdown: {
+          when_zh: "2024 年 3 月發現入米單據和實際庫存不對位的時候",
+          when_sc: "2024 年 3 月发现入米单据和实际库存不对位的时候",
+          when_en: "March 2024, when he found the rice procurement invoice didn't reconcile with the warehouse intake",
+          what_zh: "200 公斤入單，只有 130 公斤入帳；事後對其他項目逐項翻查，發現累計約 HK$48,000 的物資流出沒有任何紀錄，也沒有經過合夥人知會",
+          what_sc: "200 公斤入单，只有 130 公斤入账；事后对其他项目逐项翻查，发现累计约 HK$48,000 的物资流出没有任何记录，也没有经过合伙人知会",
+          what_en: "200 kg invoiced, only 130 kg recorded. A full review of other items revealed about HK$48,000 of stock outflow with no documentation and no notification to the capital partner",
+          why_it_mattered_zh: "他做了九年警員，看的不是「有沒有人犯錯」這個結論，而是「制度有沒有崩潰」——一個合夥企業有重大物資外流而資金合夥人完全不知情，等於合夥責任已經失守；這一刻他意識到自己作為資金合夥人，被當成局外人",
+          why_it_mattered_sc: "他做了九年警员，看的不是「有没有人犯错」这个结论，而是「制度有没有崩溃」——一个合伙企业有重大物资外流而资金合伙人完全不知情，等于合伙责任已经失守；这一刻他意识到自己作为资金合伙人，被当成局外人",
+          why_it_mattered_en: "Nine years on the force trained him to look at systems, not individual acts. A partnership where material stock flows out without the capital partner's knowledge is a partnership where contractual duty has already failed; what cuts is the realisation that he, the capital partner, has been treated as an outsider to his own business"
+        },
+        coding: {
+          present: true,
+          axes_zh: "職業背景（警員 vs 廚師）+ 性格（規矩 vs 隨性）+ 文書精度",
+          axes_sc: "职业背景（警员 vs 厨师）+ 性格（规矩 vs 随性）+ 文书精度",
+          axes_en: "Career background (officer vs cook) + temperament (rule-bound vs improvisational) + paper precision",
+          direction_zh: "老陳出資、有警隊紀律訓練，習慣以程序、書面、流程為標準；老李出力、靠手藝同人緣，習慣以行內慣例、街坊默契為標準。雙方對「甚麼算重大事項」有結構性不同看法",
+          direction_sc: "老陈出资、有警队纪律训练，习惯以程序、书面、流程为标准；老李出力、靠手艺与人缘，习惯以业内惯例、街坊默契为标准。双方对「甚么算重大事项」有结构性不同看法",
+          direction_en: "Chan is the capital partner with police-trained discipline, used to procedure, paper, and process; Lee is the labour partner trading on craft and reputation, used to trade convention and neighbourhood understanding. They disagree structurally on what counts as 'a material matter'",
+          how_it_leaks_zh: "老陳會用「程序」、「紀錄」、「合夥同意」等詞；對「兄弟」、「街坊」等詞會短暫沉默後仍堅持立場",
+          how_it_leaks_sc: "老陈会用「程序」、「记录」、「合伙同意」等词；对「兄弟」、「街坊」等词会短暂沉默后仍坚持立场",
+          how_it_leaks_en: "Chan reaches for 'procedure', 'record', 'partner consent'; on 'brotherhood' or 'neighbourhood', he pauses briefly then re-asserts position"
+        },
+        behavioural_attributes: [
+          {
+            attr_zh: "文件展示",
+            attr_sc: "文件展示",
+            attr_en: "Document brandishing",
+            trigger_zh: "備有 8 個月的賬目對賬表、入貨單、CCTV 截圖、銀行轉賬紀錄；對方說「沒有紀錄」那時即時拿出來逐張展示",
+            trigger_sc: "备有 8 个月的对账表、入货单、CCTV 截图、银行转账记录；对方说「没有记录」时立即拿出来逐张展示",
+            trigger_en: "Carries 8 months of reconciliations, procurement slips, CCTV screenshots, and bank transfer records; produces them item by item if the other side claims 'no record'"
+          },
+          {
+            attr_zh: "情緒克制（可破）",
+            attr_sc: "情绪克制（可破）",
+            attr_en: "Composed surface, breakable",
+            trigger_zh: "當老李提起「我們二十多年朋友」那時，老陳會短暫停頓但不接話；這是他仍有感情的訊號，但不會在聯合會議浮面",
+            trigger_sc: "当老李提起「我们二十多年朋友」时，老陈会短暂停顿但不接话；这是他仍有感情的讯号，但不会在联合会议浮面",
+            trigger_en: "When Lee invokes 'we've been friends for twenty-plus years', Chan pauses briefly but doesn't respond — the signal that feeling is still there, but he won't surface it in joint session"
+          },
+          {
+            attr_zh: "向調解員探口風",
+            attr_sc: "向调解员探口风",
+            attr_en: "Probe to mediator",
+            trigger_zh: "問「合夥人沒通知對方就批准重大物資外流，這種案件法庭通常怎麼處理？」，測試調解員會不會越界給意見",
+            trigger_sc: "问「合伙人没通知对方就批准重大物资外流，这种案件法庭通常怎么处理？」，测试调解员会不会越界给意见",
+            trigger_en: "Asks 'in cases where one partner authorised material outflow without notifying the other, how does the court usually handle this?', testing whether the mediator will cross the line"
+          }
+        ],
+        role_player_instruction_zh: "老陳是一個在警隊做了九年的人，內心對「規矩」和「程序」有原則性的執着，但同時也有真實的街坊情感。他退休後本來想找些事情做、不要太悶，投入本錢開這間鴻發，是衝著老李的人品和手藝。今次的問題他內心已經斟酌了八個月才提出，不是衝動。聯合會議裡面，他會以「程序」、「紀錄」、「合夥同意」等冷靜用語為主，不會大聲；但當對方說「街坊情義」那時，他內心會浮動，只是表面不顯。重要的是：他並不想將阿光定性為任何負面身份。他的核心訴求是老李公開承認 ——把員工散貨補貼當作合夥重大事項處理而沒有通知資金合夥人，本身就是合夥責任的失守；這個承認對他來說，比 HK$48,000 更重要。如果調解員處理得當，他可以接受拿回 HK$140,000（資產一半）+ HK$24,000（未入帳物資價值的一半），加上老李書面確認以後任何重大非工資員工補貼都必須事前雙方同意，雙方拆夥。",
+        role_player_instruction_sc: "老陈是一个在警队做了九年的人，内心对「规矩」和「程序」有原则性的执着，但同时也有真实的街坊感情。他退休后本来想找些事情做、不要太闷，投入本钱开这间鸿发，是冲着老李的人品和手艺。今次的问题他内心已经斟酌了八个月才提出，不是冲动。联合会议里面，他会以「程序」、「记录」、「合伙同意」等冷静用语为主，不会大声；但当对方说「街坊情义」时，他内心会浮动，只是表面不显。重要的是：他并不想将阿光定性为任何负面身份。他的核心诉求是老李公开承认 ——把员工散货补贴当作合伙重大事项处理而没有通知资金合伙人，本身就是合伙责任的失守；这个承认对他来说，比 HK$48,000 更重要。如果调解员处理得当，他可以接受拿回 HK$140,000（资产一半）+ HK$24,000（未入账物资价值的一半），加上老李书面确认以后任何重大非工资员工补贴都必须事前双方同意，双方分拆。",
+        role_player_instruction_en: "Chan is someone who spent nine years on the police force; he carries a principled attachment to 'rules' and 'procedure', alongside a real neighbourhood affection. After retirement he wanted something to keep him from boredom and put capital into Hung Fat on the strength of Lee's character and craft. He weighed this for eight months before raising it; it is not impulsive. In joint session he will speak in 'procedure', 'records', and 'partner consent'; he will not raise his voice. When 'neighbourhood honour' is invoked, he stirs internally but doesn't show it. Critically: he is not trying to brand Ah Gwong with any negative label. His core demand is that Lee acknowledge openly that handling material staff-compensation outflow without notifying the capital partner is itself a breach of partnership duty. That acknowledgement matters to him more than the HK$48,000. Well handled, he will accept HK$140,000 (half of assets) plus HK$24,000 (half of the undocumented stock value), and Lee's written undertaking that any future material non-wage staff compensation must be agreed in advance by both partners. Full dissolution.",
+        brief_zh: "老陳的底線：HK$140,000（資產一半）+ HK$24,000（未入帳物資價值的 50% 分擔）= HK$164,000 即日電匯，拆夥；老李書面承認過去三年的未入帳員工散貨補貼安排沒有取得合夥人同意，並承諾如未來再有合作，所有非工資形式的員工補貼必須事前雙方同意。不要求對阿光本人有任何懲處或追究 —— 這是老李作為合夥人的責任問題，不是阿光的問題。如果老李堅持拒絕承認，他寧願走到正式裁決。",
+        brief_sc: "老陈的底线：HK$140,000（资产一半）+ HK$24,000（未入账物资价值的 50% 分担）= HK$164,000 即日电汇，分拆；老李书面承认过去三年的未入账员工散货补贴安排没有取得合伙人同意，并承诺如未来再有合作，所有非工资形式的员工补贴必须事前双方同意。不要求对阿光本人有任何惩处或追究 —— 这是老李作为合伙人的责任问题，不是阿光的问题。如果老李坚持拒绝承认，他宁愿走到正式裁决。",
+        brief_en: "Chan's floor: HK$140,000 (half of assets) + HK$24,000 (50% share of undocumented stock value) = HK$164,000 wired same-day; dissolution; Lee provides a written acknowledgement that the past three years' undocumented staff compensation arrangement was not agreed with the capital partner, and undertakes that in any future collaboration all non-wage staff compensation must be agreed in advance by both partners. No demand for any discipline or pursuit against Ah Gwong personally — this is Lee's issue as a partner, not Ah Gwong's. If Lee refuses to acknowledge, Chan prefers formal adjudication."
+      },
+      {
+        party_index: 1,
+        register: "defensive-with-pride",
+        legitimacy_framing: [
+          "customary-expectation",
+          "reciprocity-balance"
+        ],
+        trust_breakdown: {
+          when_zh: "2024 年 8 月當老陳在阿光面前公開質問阿光「為甚麼有些東西沒有入賬」那一刻",
+          when_sc: "2024 年 8 月当老陈在阿光面前公开质问阿光「为甚么有些东西没有入账」那一刻",
+          when_en: "August 2024, the moment Chan publicly questioned Ah Gwong in front of him and several neighbours about why certain items weren't in the books",
+          what_zh: "老陳明知阿光是他的親姪子，當著一群街坊面前公開質問，等於同時挑戰他作為廚房主管的權威、他的家族尊嚴、和他在街坊圈的面子",
+          what_sc: "老陈明知阿光是他的亲侄子，当着一群街坊面前公开质问，等于同时挑战他作为厨房主管的权威、他的家族尊严、和他在街坊圈的面子",
+          what_en: "Chan knew Ah Gwong was his own nephew yet questioned him openly in front of a row of neighbourhood folk — challenging at once his kitchen authority, his family standing, and his face in the neighbourhood",
+          why_it_mattered_zh: "他一直以為老陳是懂得做人的，以為兩個人對賬目的看法不一致會在後巷談，而不是在正廳當著街坊讓他下不了台；那一刻他覺得老陳已經不是在處理合夥問題，而是在公開羞辱他",
+          why_it_mattered_sc: "他一直以为老陈是懂得做人的，以为两个人对账目的看法不一致会在后巷谈，而不是在正厅当着街坊让他下不了台；那一刻他觉得老陈已经不是在处理合伙问题，而是在公开羞辱他",
+          why_it_mattered_en: "He'd always assumed Chan knew how things were done — that a disagreement over books got worked through in the back alley, not exposed in the front room where he couldn't save face. In that moment he understood Chan was no longer handling a partnership issue; he was publicly humiliating him"
+        },
+        coding: {
+          present: true,
+          axes_zh: "教育背景（中三輟學自學 vs 警校）+ 階級（體力勞動 vs 公務員）+ 文書精度",
+          axes_sc: "教育背景（中三辍学自学 vs 警校）+ 阶级（体力劳动 vs 公务员）+ 文书精度",
+          axes_en: "Education (left school after Form 3 to apprentice vs. police academy) + class (manual labour vs. civil service) + paper precision",
+          direction_zh: "老李在文書精度上低過老陳，但在人緣、街坊網絡同手藝上有優勢；他覺得老陳要求所有事情都白紙黑字，本身就是不懂行業",
+          direction_sc: "老李在文书精度上低于老陈，但在人缘、街坊网络与手艺上有优势；他觉得老陈要求所有事情都白纸黑字，本身就是不懂行业",
+          direction_en: "Lee is below Chan in paper precision but above him in trade-network capital and craft; he sees Chan's demand that everything be in writing as proof Chan doesn't understand the trade",
+          how_it_leaks_zh: "老李會用「兄弟」、「街坊」、「行內慣例」、「面子」等詞；對「賬目細節」會閃避，說「這些事你問會計」",
+          how_it_leaks_sc: "老李会用「兄弟」、「街坊」、「业内惯例」、「面子」等词；对「账目细节」会闪避，说「这些事你问会计」",
+          how_it_leaks_en: "Lee reaches for 'brother', 'neighbourhood', 'trade convention', 'face'; deflects on accounting detail with 'ask the accountant about that'"
+        },
+        behavioural_attributes: [
+          {
+            attr_zh: "情緒外露",
+            attr_sc: "情绪外露",
+            attr_en: "Surface emotion",
+            trigger_zh: "提到阿光那時可短暫帶情緒；阿光今年 22 歲，父母早離婚，是由他和太太一手帶大；阿光在鴻發的月薪比市價低 HK$3,000，散貨補貼是老李和太太對阿光的非正式安排",
+            trigger_sc: "提到阿光时可短暂带情绪；阿光今年 22 岁，父母早离婚，是由他和太太一手带大；阿光在鸿发的月薪比市价低 HK$3,000，散货补贴是老李和太太对阿光的非正式安排",
+            trigger_en: "Brief emotion when Ah Gwong is mentioned — the nephew is 22, parents divorced young, raised by Lee and his wife. Ah Gwong's monthly salary at Hung Fat is HK$3,000 below market; the stock allowance is Lee and his wife's informal arrangement to make it up"
+          },
+          {
+            attr_zh: "離場訊號",
+            attr_sc: "离场讯号",
+            attr_en: "Walk-out signal",
+            trigger_zh: "當老陳重提合夥責任失守那時，他會起身、整理紙巾、望門口，測試調解員會不會挽留",
+            trigger_sc: "当老陈重提合伙责任失守时，他会起身、整理纸巾、望门口，测试调解员会不会挽留",
+            trigger_en: "When Chan reopens the 'breach of partnership duty' framing, Lee stands, gathers napkins, looks at the door — testing whether the mediator will pull him back"
+          },
+          {
+            attr_zh: "互惠回扣",
+            attr_sc: "互惠回扣",
+            attr_en: "Reciprocity callback",
+            trigger_zh: "「我做廚房二十多年，從來沒出過廚房紀律問題，員工散貨是行內都這樣做，你現在拿這個說我違反合夥責任，我怎麼面對我父親教我做人的道理」是他的招牌反擊",
+            trigger_sc: "「我做厨房二十多年，从来没出过厨房纪律问题，员工散货是业内都这样做，你现在拿这个说我违反合伙责任，我怎么面对我父亲教我做人的道理」是他的招牌反击",
+            trigger_en: "'Twenty-plus years in kitchens without a single discipline issue; staff stock allowance is what the whole trade does; if you frame this as breach of partnership duty, how do I face the lessons my father taught me about being a man' is his signature counter"
+          }
+        ],
+        role_player_instruction_zh: "老李 54 歲，做了廚房二十多年，業內人緣不錯，但他內心對「面子」非常重視。他沒有高學歷，連基本英文都不懂，但他有手藝、有人緣、有街坊網絡。十二年前他和老陳合作開鴻發，是他人生中最自豪的事情之一；鴻發的招牌餐單是他自己研發的。今次的問題他的核心是：（一）散貨補貼是茶餐廳行業普遍做法，他從來沒想過老陳會把它當作合夥重大事件提出；（二）阿光是他養大的家人，老陳當著街坊面前公開質問阿光，不論用甚麼措辭都是對他的家庭尊嚴和廚房權威的攻擊；（三）鴻發的生意不差，問題是 fixed cost 和外賣佣金，只要砍掉外賣平台改回堂食，生意可以回升。聯合會議裡面他會以「街坊情義」、「兄弟」、「行內慣例」這類詞為主，但內心也知道散貨補貼確實沒有正式通知過老陳，這是他的弱點。如果調解員能夠給他一個面子台階（例如：「散貨補貼以後由雙方書面同意」，「過去的事情雙方各退一步」），他可以接受拆夥 + HK$140,000（資產一半）+ HK$12,000（過去未入帳物資的部分分擔）。",
+        role_player_instruction_sc: "老李 54 岁，做了厨房二十多年，业内人缘不错，但他内心对「面子」非常重视。他没有高学历，连基本英文都不懂，但他有手艺、有人缘、有街坊网络。十二年前他和老陈合作开鸿发，是他人生中最自豪的事情之一；鸿发的招牌餐单是他自己研发的。今次的问题他的核心是：（一）散货补贴是茶餐厅行业普遍做法，他从来没想过老陈会把它当作合伙重大事件提出；（二）阿光是他养大的家人，老陈当着街坊面前公开质问阿光，不论用甚么措辞都是对他的家庭尊严和厨房权威的攻击；（三）鸿发的生意不差，问题是 fixed cost 和外卖佣金，只要砍掉外卖平台改回堂食，生意可以回升。联合会议里面他会以「街坊情义」、「兄弟」、「业内惯例」这类词为主，但内心也知道散货补贴确实没有正式通知过老陈，这是他的弱点。如果调解员能够给他一个面子台阶（例如：「散货补贴以后由双方书面同意」，「过去的事情双方各退一步」），他可以接受分拆 + HK$140,000（资产一半）+ HK$12,000（过去未入账物资的部分分担）。",
+        role_player_instruction_en: "Lee is 54, with over twenty years in kitchens; well-liked in the trade, with deep regard for 'face'. Without higher education and with only rudimentary English, he trades on craft, relationships, and the neighbourhood network. Opening Hung Fat with Chan twelve years ago is among the proudest moments of his life; the signature menu is his own. His core position: (i) staff stock allowance is a widespread practice in the cha chaan teng trade; he never expected Chan would raise it as a partnership matter; (ii) Ah Gwong is family he raised; Chan publicly questioning Ah Gwong is an attack on his family standing and kitchen authority, whatever the words used; (iii) Hung Fat's business isn't bad; the problem is fixed cost and delivery commission; cut the platforms and restore dine-in and it recovers. In joint he speaks in 'neighbourhood honour', 'brotherhood', and 'trade convention', while knowing internally that the stock allowance was never formally cleared with Chan — his weak point. If the mediator can build him a face ramp — 'stock allowance going forward will be agreed in writing by both', 'both sides step back on the past' — he can accept dissolution plus HK$140,000 (half of assets) and HK$12,000 (partial absorption of past undocumented stock value).",
+        brief_zh: "老李的底線：HK$140,000（資產一半）+ HK$10,000（過去未入帳物資以「行業正常損耗」名義入賬），雙方書面確認過去的散貨補貼安排雖未正式記錄但屬於行業慣例，老陳口頭表示「之前在街坊面前的質問用詞過急」，雙方簽署相互釋放但不簽署不再合作條款 —— 留個門口將來再合作。如果老陳堅持要求他公開承認「合夥責任失守」這種字眼，他寧願走到正式裁決 ——因為那一刻他已經不再是街坊朋友，而且這種承認等於把家族和廚房放到街上。",
+        brief_sc: "老李的底线：HK$140,000（资产一半）+ HK$10,000（过去未入账物资以「行业正常损耗」名义入账），双方书面确认过去的散货补贴安排虽未正式记录但属于行业惯例，老陈口头表示「之前在街坊面前的质问用词过急」，双方签署相互释放但不签署不再合作条款 —— 留个门给将来再合作。如果老陈坚持要求他公开承认「合伙责任失守」这种字眼，他宁愿走到正式裁决 ——因为那一刻他已经不再是街坊朋友，而且这种承认等于把家族和厨房放到街上。",
+        brief_en: "Lee's floor: HK$140,000 (half of assets) + HK$10,000 (past undocumented stock recorded as 'normal trade wastage'); mutual written acknowledgement that the past stock allowance arrangement was unrecorded but consistent with trade convention; Chan verbally allows that 'the way I questioned in front of the neighbourhood was too sharp'; mutual release signed, no no-further-cooperation clause — leave a door open for future work. If Chan insists Lee acknowledge in writing a 'breach of partnership duty' framing, Lee prefers formal adjudication — by that point neighbourhood friendship is gone, and that kind of acknowledgement puts his family and kitchen on the public street."
+      }
+    ],
+    mediation_overview: {
+      common_ground: {
+        generic: {
+          zh: [
+            "雙方均承認十二年合夥的事實",
+            "雙方均承認鴻發近年生意下滑的事實",
+            "雙方均承認需要某種解決方案"
+          ],
+          sc: [
+            "双方均承认十二年合伙的事实",
+            "双方均承认鸿发近年生意下滑的事实",
+            "双方均承认需要某种解决方案"
+          ],
+          en: [
+            "Both acknowledge the twelve-year partnership",
+            "Both acknowledge Hung Fat's recent business decline",
+            "Both acknowledge that some resolution is needed"
+          ]
+        },
+        case_specific: {
+          zh: [
+            "雙方均同意按 50/50 分配剩餘資產",
+            "雙方均承認賬目和庫存之間存在差距的事實",
+            "雙方均承認 2012 年合夥協議書的有效性，以及合夥協議將廚房及人事管理權劃給老李"
+          ],
+          sc: [
+            "双方均同意按 50/50 分配剩余资产",
+            "双方均承认账目和库存之间存在差距的事实",
+            "双方均承认 2012 年合伙协议书的有效性，以及合伙协议将厨房及人事管理权划给老李"
+          ],
+          en: [
+            "Both agree on 50/50 distribution of remaining assets",
+            "Both acknowledge the gap between books and inventory",
+            "Both acknowledge the validity of the 2012 partnership agreement and that it assigns kitchen and personnel management to Lee"
+          ]
+        }
+      },
+      issues: {
+        zh: [
+          "散貨補貼是否屬於行業慣例？是否在老李作為廚房及人事主管的權限之內？",
+          "規模 HK$48,000（三年累計）是否仍屬於「合理散貨」範圍？",
+          "未入帳物資價值的承擔比例？",
+          "雙方是否拆夥？何時拆夥？",
+          "拆夥後「鴻發」招牌歸誰？",
+          "雙方關係的維持（是否簽署不再合作條款）？",
+          "未來（如雙方繼續合作）員工非工資補貼的書面化機制？"
+        ],
+        sc: [
+          "散货补贴是否属于业内惯例？是否在老李作为厨房及人事主管的权限之内？",
+          "规模 HK$48,000（三年累计）是否仍属于「合理散货」范围？",
+          "未入账物资价值的承担比例？",
+          "双方是否分拆？何时分拆？",
+          "分拆后「鸿发」招牌归谁？",
+          "双方关系的维持（是否签署不再合作条款）？",
+          "未来（如双方继续合作）员工非工资补贴的书面化机制？"
+        ],
+        en: [
+          "Is the staff stock allowance a trade convention? Does it fall within Lee's authority as kitchen and personnel manager?",
+          "Is the scale (HK$48,000 over three years) still within 'reasonable leftover' practice?",
+          "Proportional liability for the un-recorded stock value?",
+          "Dissolve? When?",
+          "Who keeps the 'Hung Fat' name after dissolution?",
+          "Should the settlement include a no-further-cooperation clause?",
+          "If they continue collaborating, what written mechanism governs future non-wage staff compensation?"
+        ]
+      },
+      options: {
+        zh: [
+          "方案A：即日拆夥；老陳收 HK$140,000 + HK$24,000（未入帳物資全由老李承擔）；老李書面承認過去三年未通知合夥人，屬於合夥責任失守；雙方簽署不再合作條款",
+          "方案B：即日拆夥；雙方各收 HK$140,000 + HK$12,000；雙方共同書面確認散貨補貼屬於行業常見做法但應由合夥雙方同意；「鴻發」招牌歸老李，老李付招牌轉讓費 HK$30,000",
+          "方案C：暫時不拆夥；鴻發改革經營（取消外賣平台、改回堂食）；訂立書面的員工散貨補貼規則（每月上限、每季雙方審核）；試行 12 個月後雙方再決定",
+          "方案D：即日拆夥；雙方各收 HK$140,000；未入帳物資爭議由雙方各聘獨立會計師檢視，結論按比例分擔；雙方相互釋放"
+        ],
+        sc: [
+          "方案A：即日分拆；老陈收 HK$140,000 + HK$24,000（未入账物资全由老李承担）；老李书面承认过去三年未通知合伙人，属于合伙责任失守；双方签署不再合作条款",
+          "方案B：即日分拆；双方各收 HK$140,000 + HK$12,000；双方共同书面确认散货补贴属于业内常见做法但应由合伙双方同意；「鸿发」招牌归老李，老李付招牌转让费 HK$30,000",
+          "方案C：暂时不分拆；鸿发改革经营（取消外卖平台、改回堂食）；订立书面的员工散货补贴规则（每月上限、每季双方审核）；试行 12 个月后双方再决定",
+          "方案D：即日分拆；双方各收 HK$140,000；未入账物资争议由双方各聘独立会计师检视，结论按比例分担；双方相互释放"
+        ],
+        en: [
+          "Option A: Immediate dissolution; Chan receives HK$140,000 + HK$24,000 (Lee absorbs full undocumented value); Lee provides written acknowledgement that failing to notify the capital partner for three years constituted a breach of partnership duty; no-further-cooperation clause",
+          "Option B: Immediate dissolution; both receive HK$140,000 + HK$12,000; both sign a written acknowledgement that the stock allowance is a common trade practice but should be agreed by both partners; Hung Fat name goes to Lee with a HK$30,000 transfer fee",
+          "Option C: Defer dissolution; Hung Fat restructures (cut delivery platforms, restore dine-in); written rules established for staff stock allowance (monthly cap, quarterly mutual review); review in 12 months",
+          "Option D: Immediate dissolution; both receive HK$140,000; the undocumented stock dispute is reviewed by mutual independent accountants with proportional split; mutual release"
+        ]
+      }
+    }
+  }
+];
+
+/* ---------------------- Rendering ---------------------- */
+const REGISTER_LABEL = {
+  "controlled-professional": { zh: "控制 · 專業 controlled-professional", sc: "控制 · 专业 controlled-professional", en: "controlled-professional" },
+  "aggrieved-but-composed": { zh: "受傷而克制 aggrieved-but-composed", sc: "受伤而克制 aggrieved-but-composed", en: "aggrieved-but-composed" },
+  "defensive-with-pride": { zh: "防衛 · 帶自尊 defensive-with-pride", sc: "防卫 · 带自尊 defensive-with-pride", en: "defensive-with-pride" },
+  "cold-operator": { zh: "冷 · 操盤 cold-operator", sc: "冷 · 操盘 cold-operator", en: "cold-operator" }
+};
+const LEGIT_LABEL = {
+  "contractual-text": { zh: "合約文本 contractual-text", sc: "合约文本 contractual-text", en: "contractual-text" },
+  "performance-completed": { zh: "履行完成 performance-completed", sc: "履行完成 performance-completed", en: "performance-completed" },
+  "industry-norm": { zh: "行業慣例 industry-norm", sc: "行业惯例 industry-norm", en: "industry-norm" },
+  "customary-expectation": { zh: "文化期望 customary-expectation", sc: "文化期望 customary-expectation", en: "customary-expectation" },
+  "reciprocity-balance": { zh: "互惠平衡 reciprocity-balance", sc: "互惠平衡 reciprocity-balance", en: "reciprocity-balance" },
+  "equity-correction": { zh: "公平修正 equity-correction", sc: "公平修正 equity-correction", en: "equity-correction" }
+};
+
+/* ---------------------- Download / Print ---------------------- */
+
+let currentCase = null;
+
+function currentLang() {
+  for (const cls of document.body.classList) {
+    if (cls.startsWith('lang-')) return cls.substring(5);
+  }
+  return 'zh';
+}
+
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function sentenceSep(lang) { return lang === 'en' ? ', ' : '\uff0c'; }
+function sentenceEnd(lang) { return lang === 'en' ? '. ' : '\u3002'; }
+
+const PRINT_LABELS = {
+  zh: { section: '\u8abf\u89e3\u6982\u89bd\u8868', cg: '\u5171\u540c\u57fa\u790e', generic: '\u4e00\u822c\u9069\u7528', case_spec: '\u6b64\u500b\u6848\u9069\u7528', issues: '\u5f85\u8b70\u4e8b\u9805', options: '\u53ef\u884c\u65b9\u6848', joint: '\u806f\u5408\u7c21\u4ecb', cb: '\u6a5f\u5bc6\u7c21\u4ecb', warning: '\u6b64\u6a5f\u5bc6\u7c21\u4ecb\u53ea\u80fd\u7531\u672c\u7576\u4e8b\u4eba\u53ca\u8abf\u89e3\u54e1\u67e5\u95b1\uff0c\u4e0d\u53ef\u5411\u5c0d\u65b9\u62ab\u9732\u3002', claimant: '\u7533\u7d22\u65b9', defendant: '\u88ab\u544a\u65b9', full: '\u5b8c\u6574\u500b\u6848' },
+  sc: { section: '\u8c03\u89e3\u6982\u89c8\u8868', cg: '\u5171\u540c\u57fa\u7840', generic: '\u4e00\u822c\u9002\u7528', case_spec: '\u6b64\u4e2a\u6848\u9002\u7528', issues: '\u5f85\u8bae\u4e8b\u9879', options: '\u53ef\u884c\u65b9\u6848', joint: '\u8054\u5408\u7b80\u4ecb', cb: '\u673a\u5bc6\u7b80\u4ecb', warning: '\u6b64\u673a\u5bc6\u7b80\u4ecb\u53ea\u80fd\u7531\u672c\u5f53\u4e8b\u4eba\u53ca\u8c03\u89e3\u5458\u67e5\u9605\uff0c\u4e0d\u53ef\u5411\u5bf9\u65b9\u62ab\u9732\u3002', claimant: '\u7533\u7d22\u65b9', defendant: '\u88ab\u544a\u65b9', full: '\u5b8c\u6574\u4e2a\u6848' },
+  en: { section: 'Mediation Overview', cg: 'Common Ground', generic: 'Generic', case_spec: 'Case-specific', issues: 'Issues', options: 'Options', joint: 'Joint Brief', cb: 'Confidential Brief', warning: 'This confidential brief is for this party and the mediator only. It must not be disclosed to the other party.', claimant: 'Claimant', defendant: 'Defendant', full: 'Full Case' }
+};
+
+function openPrintWindow(title, bodyHtml) {
+  const w = window.open('', '_blank');
+  if (!w) {
+    alert('Pop-up blocked. Please allow pop-ups for this site to download.');
+    return;
+  }
+  const doc = '<!DOCTYPE html>\n<html><head><meta charset="utf-8"><title>' + escHtml(title) + '</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Spectral:wght@400;500&family=Noto+Serif+TC:wght@400;500;700&family=Noto+Serif+SC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">'
+    + '<style>'
+    + '@page { size: A4; margin: 22mm 18mm; }'
+    + 'body { font-family: "Spectral", "Noto Serif TC", "Noto Serif SC", Georgia, serif; font-size: 13px; line-height: 1.75; color: #1F1B16; background: #FAF6EE; max-width: 820px; margin: 0 auto; padding: 24px; }'
+    + 'h1 { font-family: "Cormorant Garamond", "Noto Serif TC", "Noto Serif SC", serif; font-weight: 600; font-size: 30px; margin: 0 0 4px; letter-spacing: -0.01em; }'
+    + 'h2 { font-family: "Cormorant Garamond", "Noto Serif TC", "Noto Serif SC", serif; font-weight: 600; font-size: 22px; margin: 28px 0 12px; padding-bottom: 6px; border-bottom: 1px solid #C9C0AE; }'
+    + 'h3 { font-family: "Cormorant Garamond", "Noto Serif TC", "Noto Serif SC", serif; font-weight: 600; font-size: 18px; margin: 20px 0 8px; }'
+    + 'h4 { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #6B655B; font-weight: 500; margin: 16px 0 6px; }'
+    + 'p { margin: 0 0 12px; text-align: justify; }'
+    + '.meta { font-family: "Cormorant Garamond", "Noto Serif TC", "Noto Serif SC", serif; font-style: italic; color: #6B655B; font-size: 14px; margin: 0 0 24px; }'
+    + '.party-label { font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: #6B655B; margin-bottom: 4px; margin-top: 16px; }'
+    + '.role { font-style: italic; color: #3E3A33; font-size: 13px; margin: 0 0 12px; }'
+    + '.warning { padding: 10px 14px; background: rgba(110, 42, 31, 0.06); border-left: 3px solid #6E2A1F; font-size: 12px; color: #6E2A1F; margin: 8px 0 18px; }'
+    + 'ol { margin: 4px 0 12px 24px; padding: 0; }'
+    + 'li { margin-bottom: 6px; line-height: 1.65; }'
+    + '.toolbar { background: #F2EDE2; border: 1px solid #C9C0AE; padding: 12px; text-align: center; margin-bottom: 24px; border-radius: 3px; }'
+    + '.toolbar button { font-family: "Spectral", serif; font-size: 13px; padding: 6px 14px; cursor: pointer; background: #1F1B16; color: #FAF6EE; border: none; border-radius: 2px; margin: 0 4px; }'
+    + '.toolbar button:hover { background: #6E2A1F; }'
+    + 'hr { border: 0; border-top: 1px solid #DDD5C3; margin: 28px 0; }'
+    + '@media print { .no-print { display: none; } body { background: white; padding: 0; max-width: none; } }'
+    + '</style></head><body>'
+    + '<div class="toolbar no-print"><button onclick="window.print()">Print / Save as PDF</button><button onclick="window.close()">Close</button></div>'
+    + bodyHtml
+    + '</body></html>';
+  w.document.open();
+  w.document.write(doc);
+  w.document.close();
+}
+
+function renderListItems(items) {
+  if (!items || !items.length) return '<p><em>(empty)</em></p>';
+  return '<ol>' + items.map(it => '<li>' + escHtml(it) + '</li>').join('') + '</ol>';
+}
+
+function downloadJointBrief() {
+  if (!currentCase) return;
+  const lang = currentLang();
+  const L = PRINT_LABELS[lang];
+  const title = currentCase.meta['title_' + lang];
+  const altLang = lang === 'en' ? 'zh' : 'en';
+  const altTitle = currentCase.meta['title_' + altLang];
+  const html = '<h1>' + escHtml(title) + '</h1>'
+    + '<p class="meta">' + escHtml(altTitle) + '</p>'
+    + '<h2>' + escHtml(L.joint) + '</h2>'
+    + '<p>' + escHtml(currentCase.joint_brief[lang]) + '</p>';
+  openPrintWindow(title + ' \u2014 ' + L.joint, html);
+}
+
+function downloadConfidentialBrief(partyIndex) {
+  if (!currentCase) return;
+  const lang = currentLang();
+  const L = PRINT_LABELS[lang];
+  const cb = currentCase.confidential_briefs[partyIndex];
+  const party = currentCase.parties[partyIndex];
+  const title = currentCase.meta['title_' + lang];
+  const altLang = lang === 'en' ? 'zh' : 'en';
+  const altTitle = currentCase.meta['title_' + altLang];
+  const partyName = party['name_' + lang];
+  const roleText = party['role_' + lang];
+  const tbWhen = cb.trust_breakdown['when_' + lang];
+  const tbWhat = cb.trust_breakdown['what_' + lang];
+  const tbWhy = cb.trust_breakdown['why_it_mattered_' + lang];
+  const rpi = cb['role_player_instruction_' + lang];
+  const brief = cb['brief_' + lang];
+  const sep = sentenceSep(lang);
+  const period = sentenceEnd(lang);
+  const claimDef = partyIndex === 0 ? L.claimant : L.defendant;
+
+  const html = '<h1>' + escHtml(title) + '</h1>'
+    + '<p class="meta">' + escHtml(altTitle) + '</p>'
+    + '<div class="party-label">' + escHtml(claimDef) + '</div>'
+    + '<h2>' + escHtml(L.cb) + ' \u2014 ' + escHtml(partyName) + '</h2>'
+    + '<div class="role">' + escHtml(roleText) + '</div>'
+    + '<div class="warning">' + escHtml(L.warning) + '</div>'
+    + '<p>' + escHtml(tbWhen) + sep + escHtml(tbWhat) + period + escHtml(tbWhy) + period + '</p>'
+    + '<p>' + escHtml(rpi) + '</p>'
+    + '<p>' + escHtml(brief) + '</p>';
+  openPrintWindow(title + ' \u2014 ' + partyName + ' ' + L.cb, html);
+}
+
+function downloadOverview() {
+  if (!currentCase || !currentCase.mediation_overview) return;
+  const lang = currentLang();
+  const L = PRINT_LABELS[lang];
+  const ov = currentCase.mediation_overview;
+  const title = currentCase.meta['title_' + lang];
+  const altLang = lang === 'en' ? 'zh' : 'en';
+  const altTitle = currentCase.meta['title_' + altLang];
+
+  const html = '<h1>' + escHtml(title) + '</h1>'
+    + '<p class="meta">' + escHtml(altTitle) + '</p>'
+    + '<h2>' + escHtml(L.section) + '</h2>'
+    + '<h3>' + escHtml(L.cg) + '</h3>'
+    + '<h4>' + escHtml(L.generic) + '</h4>'
+    + renderListItems(ov.common_ground.generic[lang])
+    + '<h4>' + escHtml(L.case_spec) + '</h4>'
+    + renderListItems(ov.common_ground.case_specific[lang])
+    + '<h3>' + escHtml(L.issues) + '</h3>'
+    + renderListItems(ov.issues[lang])
+    + '<h3>' + escHtml(L.options) + '</h3>'
+    + renderListItems(ov.options[lang]);
+  openPrintWindow(title + ' \u2014 ' + L.section, html);
+}
+
+function downloadFullCase() {
+  if (!currentCase) return;
+  const lang = currentLang();
+  const L = PRINT_LABELS[lang];
+  const title = currentCase.meta['title_' + lang];
+  const altLang = lang === 'en' ? 'zh' : 'en';
+  const altTitle = currentCase.meta['title_' + altLang];
+  const sep = sentenceSep(lang);
+  const period = sentenceEnd(lang);
+
+  let html = '<h1>' + escHtml(title) + '</h1>'
+    + '<p class="meta">' + escHtml(altTitle) + '</p>'
+    + '<h2>' + escHtml(L.joint) + '</h2>'
+    + '<p>' + escHtml(currentCase.joint_brief[lang]) + '</p>';
+
+  currentCase.confidential_briefs.forEach(cb => {
+    const party = currentCase.parties[cb.party_index];
+    const partyName = party['name_' + lang];
+    const roleText = party['role_' + lang];
+    const claimDef = cb.party_index === 0 ? L.claimant : L.defendant;
+    const tbWhen = cb.trust_breakdown['when_' + lang];
+    const tbWhat = cb.trust_breakdown['what_' + lang];
+    const tbWhy = cb.trust_breakdown['why_it_mattered_' + lang];
+
+    html += '<hr>'
+      + '<div class="party-label">' + escHtml(claimDef) + '</div>'
+      + '<h2>' + escHtml(L.cb) + ' \u2014 ' + escHtml(partyName) + '</h2>'
+      + '<div class="role">' + escHtml(roleText) + '</div>'
+      + '<div class="warning">' + escHtml(L.warning) + '</div>'
+      + '<p>' + escHtml(tbWhen) + sep + escHtml(tbWhat) + period + escHtml(tbWhy) + period + '</p>'
+      + '<p>' + escHtml(cb['role_player_instruction_' + lang]) + '</p>'
+      + '<p>' + escHtml(cb['brief_' + lang]) + '</p>';
+  });
+
+  if (currentCase.mediation_overview) {
+    const ov = currentCase.mediation_overview;
+    html += '<hr>'
+      + '<h2>' + escHtml(L.section) + '</h2>'
+      + '<h3>' + escHtml(L.cg) + '</h3>'
+      + '<h4>' + escHtml(L.generic) + '</h4>'
+      + renderListItems(ov.common_ground.generic[lang])
+      + '<h4>' + escHtml(L.case_spec) + '</h4>'
+      + renderListItems(ov.common_ground.case_specific[lang])
+      + '<h3>' + escHtml(L.issues) + '</h3>'
+      + renderListItems(ov.issues[lang])
+      + '<h3>' + escHtml(L.options) + '</h3>'
+      + renderListItems(ov.options[lang]);
+  }
+
+  openPrintWindow(title + ' \u2014 ' + L.full, html);
+}
+
+/* ---------------------- Render ---------------------- */
+
+function render(caseObj) {
+  currentCase = caseObj;
+  const out = document.getElementById("case-view");
+  out.innerHTML = "";
+
+  const header = document.createElement("div");
+  header.className = "case-header";
+  header.innerHTML = `
+    <button class="download-btn download-full" onclick="downloadFullCase()"><span class="lang-zh">下載完整個案</span><span class="lang-sc">下载完整个案</span><span class="lang-en">Download Full Case</span></button>
+    <h1 class="case-title">
+      <span class="lang-zh">${caseObj.meta.title_zh}</span>
+      <span class="lang-sc">${caseObj.meta.title_sc}</span>
+      <span class="lang-en">${caseObj.meta.title_en}</span>
+    </h1>
+  `;
+  out.appendChild(header);
+
+  const joint = document.createElement("section");
+  joint.className = "block";
+  joint.innerHTML = `
+    <div class="section-eyebrow">JOINT BRIEF</div>
+    <h2 class="section-title"><div class="titles-group"><span class="lang-zh">聯合簡介</span><span class="lang-sc">联合简介</span><span class="lang-en">Joint brief</span></div><button class="download-btn" onclick="downloadJointBrief()"><span class="lang-zh">下載</span><span class="lang-sc">下载</span><span class="lang-en">Download</span></button></h2>
+    <div class="prose">
+      <p class="lang-zh">${caseObj.joint_brief.zh}</p>
+      <p class="lang-sc">${caseObj.joint_brief.sc}</p>
+      <p class="lang-en">${caseObj.joint_brief.en}</p>
+    </div>
+  `;
+  out.appendChild(joint);
+
+  const confSection = document.createElement("section");
+  confSection.className = "block";
+  confSection.innerHTML = `
+    <div class="section-eyebrow">CONFIDENTIAL BRIEFS</div>
+    <h2 class="section-title"><span class="lang-zh">機密簡介</span><span class="lang-sc">机密简介</span><span class="lang-en">Confidential briefs</span></h2>
+  `;
+  const grid = document.createElement("div");
+  grid.className = "confidentials";
+  confSection.appendChild(grid);
+
+  caseObj.confidential_briefs.forEach(cb => {
+    const party = caseObj.parties[cb.party_index];
+    const card = document.createElement("div");
+    card.className = "party-card";
+    const reg = REGISTER_LABEL[cb.register];
+    const legitTagsZh = cb.legitimacy_framing.map(f => `<span class="tag">${LEGIT_LABEL[f].zh}</span>`).join("");
+    const legitTagsSc = cb.legitimacy_framing.map(f => `<span class="tag">${LEGIT_LABEL[f].sc}</span>`).join("");
+    const legitTagsEn = cb.legitimacy_framing.map(f => `<span class="tag">${LEGIT_LABEL[f].en}</span>`).join("");
+    const attrs = cb.behavioural_attributes.map(a => `
+      <div class="attr-row">
+        <div class="attr-name"><span class="lang-zh">${a.attr_zh}</span><span class="lang-sc">${a.attr_sc}</span><span class="lang-en">${a.attr_en}</span></div>
+        <div class="attr-trigger"><span class="lang-zh">${a.trigger_zh}</span><span class="lang-sc">${a.trigger_sc}</span><span class="lang-en">${a.trigger_en}</span></div>
+      </div>
+    `).join("");
+
+    const codingBlock = cb.coding.present ? `
+      <div class="box-coding schema-box">
+        <div class="box-label"><span>CODING</span><span class="zh"><span class="lang-zh">編碼</span><span class="lang-sc">编码</span></span></div>
+        <div class="box-content">
+          <div><span class="field-name lang-zh">軸線：</span><span class="field-name lang-sc">轴线：</span><span class="field-name lang-en">Axes:</span> <span class="lang-zh">${cb.coding.axes_zh}</span><span class="lang-sc">${cb.coding.axes_sc}</span><span class="lang-en">${cb.coding.axes_en}</span></div>
+          <div><span class="field-name lang-zh">方向：</span><span class="field-name lang-sc">方向：</span><span class="field-name lang-en">Direction:</span> <span class="lang-zh">${cb.coding.direction_zh}</span><span class="lang-sc">${cb.coding.direction_sc}</span><span class="lang-en">${cb.coding.direction_en}</span></div>
+          <div><span class="field-name lang-zh">浮現方式：</span><span class="field-name lang-sc">浮现方式：</span><span class="field-name lang-en">How it leaks:</span> <span class="lang-zh">${cb.coding.how_it_leaks_zh}</span><span class="lang-sc">${cb.coding.how_it_leaks_sc}</span><span class="lang-en">${cb.coding.how_it_leaks_en}</span></div>
+        </div>
+      </div>
+    ` : `
+      <div class="box-coding schema-box">
+        <div class="box-label"><span>CODING</span><span class="zh"><span class="lang-zh">編碼</span><span class="lang-sc">编码</span></span></div>
+        <div class="box-content" style="opacity:0.7"><em><span class="lang-zh">無顯著編碼：${cb.coding.axes_zh}</span><span class="lang-sc">无显著编码：${cb.coding.axes_sc}</span><span class="lang-en">No significant coding: ${cb.coding.axes_en}</span></em></div>
+      </div>
+    `;
+
+    card.innerHTML = `
+      <button class="download-btn download-cb" onclick="downloadConfidentialBrief(${cb.party_index})"><span class="lang-zh">下載</span><span class="lang-sc">下载</span><span class="lang-en">Download</span></button>
+      <div class="party-label">PARTY ${cb.party_index === 0 ? "A · CLAIMANT" : "B · DEFENDANT"}</div>
+      <h3><span class="lang-zh">${party.name_zh}</span><span class="lang-sc">${party.name_sc}</span><span class="lang-en">${party.name_en}</span></h3>
+      <p class="role"><span class="lang-zh">${party.role_zh}</span><span class="lang-sc">${party.role_sc}</span><span class="lang-en">${party.role_en}</span></p>
+
+      <div class="prose">
+        <p class="lang-zh">${cb.trust_breakdown.when_zh}，${cb.trust_breakdown.what_zh}。${cb.trust_breakdown.why_it_mattered_zh}。</p>
+        <p class="lang-sc">${cb.trust_breakdown.when_sc}，${cb.trust_breakdown.what_sc}。${cb.trust_breakdown.why_it_mattered_sc}。</p>
+        <p class="lang-en">${cb.trust_breakdown.when_en}, ${cb.trust_breakdown.what_en}. ${cb.trust_breakdown.why_it_mattered_en}.</p>
+
+        <p class="lang-zh">${cb.role_player_instruction_zh}</p>
+        <p class="lang-sc">${cb.role_player_instruction_sc}</p>
+        <p class="lang-en">${cb.role_player_instruction_en}</p>
+
+        <p class="lang-zh">${cb.brief_zh}</p>
+        <p class="lang-sc">${cb.brief_sc}</p>
+        <p class="lang-en">${cb.brief_en}</p>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  out.appendChild(confSection);
+
+  // Mediation Overview section
+  if (caseObj.mediation_overview) {
+    const ov = caseObj.mediation_overview;
+    function renderTriLangList(items) {
+      const max = Math.max(items.zh.length, items.sc.length, items.en.length);
+      let html = '<ol>';
+      for (let i = 0; i < max; i++) {
+        html += '<li>';
+        if (items.zh[i]) html += `<span class="lang-zh">${items.zh[i]}</span>`;
+        if (items.sc[i]) html += `<span class="lang-sc">${items.sc[i]}</span>`;
+        if (items.en[i]) html += `<span class="lang-en">${items.en[i]}</span>`;
+        html += '</li>';
+      }
+      return html + '</ol>';
+    }
+
+    const ovSection = document.createElement("section");
+    ovSection.className = "block";
+    ovSection.innerHTML = `
+      <div class="section-eyebrow">MEDIATION OVERVIEW</div>
+      <h2 class="section-title"><div class="titles-group"><span class="lang-zh">調解概覽表</span><span class="lang-sc">调解概览表</span><span class="lang-en">Mediation Overview</span></div><button class="download-btn" onclick="downloadOverview()"><span class="lang-zh">下載</span><span class="lang-sc">下载</span><span class="lang-en">Download</span></button></h2>
+
+      <div class="overview-block">
+        <h3><span class="lang-zh">共同基礎</span><span class="lang-sc">共同基础</span><span class="lang-en">Common Ground</span></h3>
+        <h4><span class="lang-zh">一般適用</span><span class="lang-sc">一般适用</span><span class="lang-en">Generic</span></h4>
+        ${renderTriLangList(ov.common_ground.generic)}
+        <h4><span class="lang-zh">此個案適用</span><span class="lang-sc">此个案适用</span><span class="lang-en">Case-specific</span></h4>
+        ${renderTriLangList(ov.common_ground.case_specific)}
+      </div>
+
+      <div class="overview-block">
+        <h3><span class="lang-zh">待議事項</span><span class="lang-sc">待议事项</span><span class="lang-en">Issues</span></h3>
+        ${renderTriLangList(ov.issues)}
+      </div>
+
+      <div class="overview-block">
+        <h3><span class="lang-zh">可行方案</span><span class="lang-sc">可行方案</span><span class="lang-en">Options</span></h3>
+        ${renderTriLangList(ov.options)}
+      </div>
+    `;
+    out.appendChild(ovSection);
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function populateSelector(lang) {
+  const sel = document.getElementById("case-select");
+  const currentValue = sel.value || CASES[0].id;
+  sel.innerHTML = "";
+  CASES.forEach(c => {
+    const o = document.createElement("option");
+    o.value = c.id;
+    const titleField = lang === "sc" ? c.meta.title_sc : (lang === "en" ? c.meta.title_en : c.meta.title_zh);
+    o.textContent = titleField;
+    sel.appendChild(o);
+  });
+  sel.value = currentValue;
+}
+
+populateSelector("zh");
+document.getElementById("case-select").addEventListener("change", e => {
+  const c = CASES.find(x => x.id === e.target.value);
+  if (c) render(c);
+});
+
+document.querySelectorAll(".toggle-group .toggle-btn").forEach(b => {
+  b.addEventListener("click", () => {
+    document.querySelectorAll(".toggle-group .toggle-btn").forEach(x => x.classList.remove("active"));
+    b.classList.add("active");
+    document.body.className = "lang-" + b.dataset.lang;
+    populateSelector(b.dataset.lang);
+  });
+});
+
+render(CASES[0]);
+</script>
+</body>
+</html>
