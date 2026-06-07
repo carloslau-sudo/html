@@ -225,6 +225,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang HK","P
 .card.sp   {background:#f4f8f0}.card.sp::before   {background:var(--moss)}
 .card.sm   {background:#fbf2ef}.card.sm::before   {background:var(--clay)}
 .card.au   {background:#faf3e8}.card.au::before   {background:var(--earth)}
+.card.bl   {background:#f3f2ee}.card.bl::before   {background:var(--faint)}
 
 /* NEXT hike highlight — softer ring, no harsh outline */
 .card.next{border:1.5px solid var(--primary);
@@ -246,6 +247,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang HK","P
 .done-c{background:var(--primary)}
 .part-c{background:var(--amber)}
 .warn-c{background:var(--clay)}
+.bl-c{background:var(--muted)}
 
 /* CARD BODY — improved Chinese readability */
 .cdate{font-size:.66rem;font-weight:600;color:var(--muted);margin-bottom:3px;letter-spacing:.3px}
@@ -910,6 +912,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang HK","P
     <div class="em-row" id="em-resch-row">
       <label>📅 排期日期 <span style="font-weight:500;color:var(--faint)">(可改至其他日子)</span></label>
       <input type="date" id="em-resch">
+      <label id="em-backlog-row" style="display:flex;align-items:center;gap:7px;margin-top:8px;font-size:.78rem;font-weight:600;cursor:pointer;color:var(--txt)">
+        <input type="checkbox" id="em-backlog" onchange="toggleBacklogUI()" style="width:16px;height:16px;accent-color:var(--primary)"> 📦 移入待排期（暫不定日，之後再排）
+      </label>
       <div class="em-info" id="em-resch-info" style="margin-top:4px;display:none"></div>
     </div>
     <div class="em-row" id="em-date-row">
@@ -1104,9 +1109,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang HK","P
       </div>
       <div class="br-summary" id="br-summary">尚未選擇任何行程</div>
     </div>
-    <div class="em-info">💡 改期會自動更新季節分組（春／夏／秋冬）和週幾標籤。已完成行程不顯示在此清單。</div>
+    <div class="em-info">💡 改期會自動更新季節分組（春／夏／秋冬）和週幾標籤。「移入待排期」會取消所選行程的預定日期，之後可隨時編輯重新排期。已完成行程不顯示在此清單。</div>
     <div class="em-foot">
       <button class="em-cancel" onclick="closeBulkResch()">取消</button>
+      <button class="em-save" style="background:var(--earth)" onclick="applyBulkBacklog()">📦 移入待排期</button>
       <button class="em-save" onclick="applyBulkResch()">✅ 套用改期</button>
     </div>
   </div>
@@ -2043,6 +2049,11 @@ function applyUpdate(h,u){
     const o=ORIG[h.day];
     if(o){h.isoDate=o.isoDate;h.date=o.date;h.sea=o.sea;}
   }
+  /* Backlog flag — trip parked with no committed date.
+     Original schedule fields stay intact (restored above) so un-parking
+     simply deletes the flag; sea is overridden for section grouping. */
+  h.backlog=!!u.backlog;
+  if(h.backlog&&h.done===null)h.sea="backlog";
   /* Detail field overrides — fall back to ORIG if not overridden */
   const o=ORIG[h.day]||{};
   EDITABLE_FIELDS.forEach(k=>{
@@ -2052,6 +2063,9 @@ function applyUpdate(h,u){
 /* Sort H array by isoDate so reschedules appear in chronological order */
 function sortHikes(){
   H.sort((a,b)=>{
+    /* Backlog (no committed date) always sinks to the bottom */
+    const ab=a.backlog?1:0,bb=b.backlog?1:0;
+    if(ab!==bb)return ab-bb;
     if(a.isoDate<b.isoDate)return -1;
     if(a.isoDate>b.isoDate)return 1;
     return 0;
@@ -2133,6 +2147,44 @@ function computeDisplayDays(){
   });
   sortHikes();
   computeDisplayDays();
+})();
+
+/* ── One-shot migration (2026-06): park all currently-pending trips into
+   待排期. Job change on Jun 17 invalidates the remaining schedule; trips
+   will be re-dated individually when time allows.
+   Guards:
+   - FLAG key → runs once per browser; trips re-scheduled afterwards are
+     never re-parked.
+   - Empty local updates → skip and set FLAG anyway (fresh device: the
+     parked state arrives via GitHub auto-pull instead; running here would
+     stamp local newer and block that pull). ── */
+(function migrateParkPending(){
+  const FLAG="hkHiking2026_backlogMigration_v1";
+  try{
+    if(localStorage.getItem(FLAG))return;
+    const u=loadUpdates();
+    if(Object.keys(u).length===0){
+      localStorage.setItem(FLAG,new Date().toISOString());
+      return;
+    }
+    let n=0;
+    H.forEach(h=>{
+      if(h.done!==null||h.backlog)return;
+      const cur=u[h.day]||{};
+      cur.backlog=true;
+      delete cur.isoDate;delete cur.date;delete cur.sea;
+      u[h.day]=cur;
+      applyUpdate(h,cur);
+      n++;
+    });
+    localStorage.setItem(FLAG,new Date().toISOString());
+    if(n>0){
+      saveUpdates(u);
+      sortHikes();
+      computeDisplayDays();
+      setTimeout(()=>toast(`📦 已將 ${n} 個待完成行程移入待排期。之後可隨時編輯或批量改期重新排期。`),600);
+    }
+  }catch(e){console.warn("backlog migration failed",e);}
 })();
 
 /* Track which hike is currently being edited */
@@ -2229,8 +2281,8 @@ function effectivePeakCount(h){
 
 const DC={1:"t-1",2:"t-1",3:"t-2",3.5:"t-3",4:"t-4",5:"t-5"};
 const DS={1:"★",2:"★★",3:"★★★",3.5:"★★★☆",4:"★★★★",5:"★★★★★"};
-const SC={spring:"sp",summer:"sm",autumn:"au"};
-const SL={history:"📚 已完成歷史記錄（2024年12月起）",spring:"🌱 春季（4–5月）",summer:"☀️ 夏季（6–9月）",autumn:"🍂 秋冬（10–11月）"};
+const SC={spring:"sp",summer:"sm",autumn:"au",backlog:"bl"};
+const SL={history:"📚 已完成歷史記錄（2024年12月起）",spring:"🌱 春季（4–5月）",summer:"☀️ 夏季（6–9月）",autumn:"🍂 秋冬（10–11月）",backlog:"📦 待排期（暫未定日，可隨時編輯重新排期）"};
 
 /* ── Dynamic Stats ── */
 function computeStats(){
@@ -2244,7 +2296,7 @@ function computeStats(){
   H.forEach(h=>{
     const pc=effectivePeakCount(h);
     totalPeaks+=pc;
-    if(h.isoDate)allDates.add(h.isoDate);
+    if(h.isoDate&&!h.backlog)allDates.add(h.isoDate);
     if(h.done==="done"){
       donePeaks+=pc;
       if(h.isoDate)doneDates.add(h.isoDate);
@@ -2256,7 +2308,7 @@ function computeStats(){
       donePeaks+=partialCount;
       if(h.isoDate&&partialCount>0)doneDates.add(h.isoDate);
     } else {
-      if(!nextHike && h.isoDate>=today) nextHike=h;
+      if(!nextHike && !h.backlog && h.isoDate>=today) nextHike=h;
     }
   });
   const totalDays=allDates.size;
@@ -2311,7 +2363,7 @@ function computeMonthlyStats(){
   /* Aggregate by year-month */
   const months={};
   H.forEach(h=>{
-    if(!h.isoDate)return;
+    if(!h.isoDate||h.backlog)return;
     const ym=h.isoDate.slice(0,7);
     if(!months[ym])months[ym]={ym,doneP:0,partialP:0,planP:0,doneH:0,partH:0,planH:0};
     const pc=effectivePeakCount(h);
@@ -2523,8 +2575,8 @@ function renderCards(f){
     if(seasonTags.size>0&&!seasonTags.has(seasonOf(h)))return false;
     if(wantBoat&&!h.boat)return false;
     if(wantWarn&&!h.warn)return false;
-    /* Month filter (clicked month chip in mstats strip) */
-    if(filterMonth&&(h.isoDate||"").slice(0,7)!==filterMonth)return false;
+    /* Month filter (clicked month chip in mstats strip) — backlog has no committed month */
+    if(filterMonth&&(h.backlog||(h.isoDate||"").slice(0,7)!==filterMonth))return false;
     return true;
   });
   /* Apply search query if present */
@@ -2566,7 +2618,7 @@ function renderCards(f){
     }
     const id="r"+h.day;
     const nextBadge=isNext?`<div class="next-badge">📍 下次行山</div>`:"";
-    const chip=isD?`<div class="chip done-c">✅ 完成</div>`:isP?`<div class="chip part-c">⚡ 部分</div>`:h.warn&&!isNext?`<div class="chip warn-c">⚠️ 高危</div>`:"";
+    const chip=isD?`<div class="chip done-c">✅ 完成</div>`:isP?`<div class="chip part-c">⚡ 部分</div>`:h.backlog?`<div class="chip bl-c">📦 待排期</div>`:h.warn&&!isNext?`<div class="chip warn-c">⚠️ 高危</div>`:"";
     const localBadge=isLocal&&(isD||isP)?`<span class="local-badge">📱 本地</span>`:"";
     const dnl=isD?`<div class="done-lbl dl-ok">✅ 完成 ${h.doneDate||""}${localBadge}</div>`:
                isP?`<div class="done-lbl dl-p">⚡ ${h.partialNote||"部分完成"}${localBadge}</div>`:"";
@@ -2615,7 +2667,7 @@ function renderCards(f){
     wrap.innerHTML=`<div class="card ${cls}${nextCls}">
       ${nextBadge}${chip}
       ${groupBadge}
-      <div class="cdate">📅 ${h.date}</div>
+      <div class="cdate">${h.backlog?`📦 待排期 <span style="color:var(--faint);font-weight:500">（原定 ${h.date.replace(/✅|⚡/g,"").trim()}）</span>`:`📅 ${h.date}`}</div>
       <div class="cpeaks">${h.peaks}</div>
       <div class="tags">
         <span class="tag t-a">${h.area}</span>
@@ -3190,6 +3242,8 @@ function openEdit(day){
   /* Pre-fill reschedule date with current planned date */
   document.getElementById("em-resch").value=h.isoDate;
   updateReschPreview();
+  document.getElementById("em-backlog").checked=!!h.backlog;
+  toggleBacklogUI();
   /* Pre-fill done date: existing doneDate, else today */
   const today=new Date().toISOString().slice(0,10);
   document.getElementById("em-date").value=h.doneDate||today;
@@ -3216,6 +3270,20 @@ function openEdit(day){
   document.body.style.overflow="hidden";
   /* Hook the reschedule input for live preview */
   document.getElementById("em-resch").oninput=updateReschPreview;
+}
+function toggleBacklogUI(){
+  const cb=document.getElementById("em-backlog");
+  const on=cb.checked;
+  const resch=document.getElementById("em-resch");
+  resch.disabled=on;
+  resch.style.opacity=on?".45":"";
+  const info=document.getElementById("em-resch-info");
+  if(on){
+    info.style.display="";
+    info.innerHTML=`📦 此行程將移入「待排期」，不再有預定日期；取消勾選並選擇日期即可重新排期。`;
+  } else {
+    updateReschPreview();
+  }
 }
 function toggleDetails(){
   const tog=document.getElementById("em-details-tog");
@@ -3389,6 +3457,8 @@ function pickStatus(s){
   const isDone=s==="done";
   document.getElementById("em-date-row").style.display=isDone?"":"none";
   document.getElementById("em-journal-row").style.display=isDone?"":"none";
+  const blRow=document.getElementById("em-backlog-row");
+  if(blRow)blRow.style.display=isDone?"none":"flex";
 }
 function saveEdit(){
   if(!editingDay)return;
@@ -3398,6 +3468,7 @@ function saveEdit(){
   const orig=ORIG[editingDay]||{};
   const newIso=document.getElementById("em-resch").value||orig.isoDate;
   const reschChanged=newIso&&newIso!==orig.isoDate;
+  const wantBacklog=editingStatus==="pending"&&document.getElementById("em-backlog").checked;
 
   /* Read detail fields & detect any change vs original.
      peakCount is derived from the peaks string so it cannot drift —
@@ -3422,7 +3493,7 @@ function saveEdit(){
     return (a||"")!==(b||"");
   });
 
-  if(editingStatus==="pending"&&!reschChanged&&!detailChanged){
+  if(editingStatus==="pending"&&!reschChanged&&!detailChanged&&!wantBacklog){
     /* Fully revert to original */
     delete u[editingDay];
     applyUpdate(h,orig);
@@ -3436,8 +3507,11 @@ function saveEdit(){
       const journal=document.getElementById("em-journal").value.trim();
       if(journal)upd.doneNote=journal;
     }
-    /* Schedule override */
-    if(reschChanged){
+    /* Backlog takes precedence over any date override —
+       a parked trip has no committed schedule */
+    if(wantBacklog){
+      upd.backlog=true;
+    } else if(reschChanged){
       upd.isoDate=newIso;
       upd.date=formatDate(newIso);
       upd.sea=deriveSeason(newIso);
@@ -3508,7 +3582,7 @@ function renderBulkList(){
     return `<label class="br-item ${onCls}" data-d="${h.day}">
       <input type="checkbox" ${checked} onchange="brToggle('${h.day}',this.checked)">
       <div class="br-item-body">
-        <div class="br-item-day">Day ${h.day} <span style="color:var(--muted);font-weight:500">· ${h.date}</span></div>
+        <div class="br-item-day">Day ${h.day} <span style="color:var(--muted);font-weight:500">· ${h.backlog?"📦 待排期":h.date}</span></div>
         <div class="br-item-peaks">${peaksClean}</div>
         <div class="br-item-new" id="br-new-${h.day}"></div>
       </div>
@@ -3576,6 +3650,7 @@ function applyBulkResch(){
     cur.isoDate=newIso;
     cur.date=formatDate(newIso);
     cur.sea=deriveSeason(newIso);
+    delete cur.backlog; /* committing a date un-parks the trip */
     u[day]=cur;
     applyUpdate(h,u[day]);
     ok++;
@@ -3585,6 +3660,29 @@ function applyBulkResch(){
   closeBulkResch();
   refreshAll();
   toast(`✅ 已成功改期 ${ok} 個行程！`);
+}
+/* Park selected pending trips into the backlog — removes their committed
+   dates without losing routes, details, or completion tracking. */
+function applyBulkBacklog(){
+  if(brSelected.size===0){toast("⚠️ 請先選擇至少一個行程。");return;}
+  if(!confirm(`確定要把 ${brSelected.size} 個行程移入「待排期」嗎？\n（取消預定日期，之後可隨時編輯或批量改期重新排期）`))return;
+  const u=loadUpdates();
+  let ok=0;
+  brSelected.forEach(day=>{
+    const h=H.find(x=>String(x.day)===String(day));
+    if(!h||h.done!==null)return;
+    const cur=u[day]||{};
+    cur.backlog=true;
+    delete cur.isoDate;delete cur.date;delete cur.sea;
+    u[day]=cur;
+    applyUpdate(h,cur);
+    ok++;
+  });
+  saveUpdates(u);
+  sortHikes();
+  closeBulkResch();
+  refreshAll();
+  toast(`📦 已將 ${ok} 個行程移入待排期！`);
 }
 
 /* ── EXPORT ── */
@@ -3681,6 +3779,8 @@ function doImport(){
       entry.date=v.date||formatDate(v.isoDate);
       entry.sea=v.sea||deriveSeason(v.isoDate);
     }
+    /* Optional backlog flag (parked trip, no committed date) */
+    if(v.backlog===true)entry.backlog=true;
     /* Optional detail field overrides */
     EDITABLE_FIELDS.forEach(f=>{
       if(v[f]!==undefined&&v[f]!==null&&v[f]!==""){
@@ -4453,7 +4553,7 @@ function injectWxBadges(fcMap,activeWarnings){
     el.querySelectorAll(".wx-badge").forEach(b=>b.remove());
   });
   H.forEach(h=>{
-    if(h.done!==null)return;
+    if(h.done!==null||h.backlog)return;
     const hd=h.isoDate.replace(/-/g,"");
     const fc=fcMap[hd];
     if(!fc)return;
