@@ -729,7 +729,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang HK","P
 <div class="top" id="topbar">
   <div class="top-row">
     <div><h1><span class="logo-mark"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><clipPath id="hlc"><circle cx="16" cy="16" r="15"/></clipPath></defs><circle cx="16" cy="16" r="15" fill="#fdfcf8"/><g clip-path="url(#hlc)"><rect width="32" height="32" fill="#f4ecd8"/><circle cx="22" cy="11" r="3.2" fill="#c98a2b" opacity="0.85"/><path d="M-2 22 L8 10 L18 22 Z" fill="#a8c5b3"/><path d="M5 24 L13 13 L21 24 Z" fill="#7d8b3a"/><path d="M11 26 L19 12 L27 26 Z" fill="#3d6b4f"/><path d="M17 16 L19 12 L21 16 L20 17 L19 16 L18 17 Z" fill="#fdfcf8" opacity="0.9"/><rect y="25" width="32" height="7" fill="#2a4d39"/></g><circle cx="16" cy="16" r="15" fill="none" stroke="#2a4d39" stroke-width="0.8" opacity="0.3"/></svg></span>山行者計劃</h1><p><span id="total-peaks">—</span>座山峰挑戰 · 已完成<span id="sub-done">—</span> · 詳細路線</p></div>
-    <div class="updated">v9.55 · 2026-06-08</div>
+    <div class="updated">v9.59 · 2026-06-08</div>
   </div>
   <div class="stats" id="stats-bar"></div>
   <div class="prog">
@@ -1814,9 +1814,9 @@ const H=[
   {c:"wx",t:"二澳/大澳 終點",n:"巴士返東涌"}],
  tips:[{k:"i",t:"📋 與當日羌山+靈會山合併行程，由大澳午飯後接此程。注意秋分前後日落時間，建議下午2時前起步避免摸黑。"}]},
 
-{day:18,date:"10月25日(週日) ⚡提早完成",isoDate:"2026-10-25",peaks:"蝻蛇尖 ✅",
+{day:18,date:"4月26日(週日) ⚡提早完成",isoDate:"2026-04-26",peaks:"蝻蛇尖 ✅",
  peakCount:1,area:"西貢東（大浪灣）",km:12,time:"6h",d:5,
- start:"北潭凹 (M16)",tr:"96R假日巴士（鑽石山出發）",boat:0,sea:"autumn",done:"done",doneDate:"2026-04-26",warn:1,
+ start:"北潭凹 (M16)",tr:"96R假日巴士（鑽石山出發）",boat:0,sea:"spring",done:"done",doneDate:"2026-04-26",warn:1,
  route:[
   {c:"wg",t:"北潭凹 起步 M16"},{c:"wb2",t:"赤徑 (2km)"},
   {c:"wb2",t:"大浪坳 鞍部",n:"轉往蝻蛇坳"},
@@ -1995,6 +1995,25 @@ function shiftIso(iso,days){
   return dt.toISOString().slice(0,10);
 }
 
+/* v9.56/9.57: Load-time normalization of built-in data, before the ORIG
+   snapshot, so reset stays correct.
+   1) v9.57: done ⇒ isoDate === doneDate applies to BUILT-IN entries too.
+      Source data can bake a completed trip on its planned date (e.g. day 18
+      蝻蛇尖: planned 10-25, completed 04-26), mis-attributing it to the
+      planned month in the stats strip, month filter and grouping. The local
+      normalizeDoneSchedule migration only covers localStorage overrides, so
+      enforce the same invariant on H directly.
+   2) v9.56: the season tag always follows the (corrected) date — stale baked
+      sea values grouped trips under the wrong season header. */
+H.forEach(h=>{
+  if(h.sea==="history")return;
+  if(h.done==="done"&&h.doneDate&&/^\d{4}-\d{2}-\d{2}$/.test(h.doneDate)&&h.isoDate!==h.doneDate){
+    h.isoDate=h.doneDate;
+    h.date=formatDate(h.doneDate);
+  }
+  if(h.isoDate)h.sea=deriveSeason(h.isoDate);
+});
+
 /* Snapshot original values so we can restore on reset.
    Includes both status fields AND detail fields (peaks, area, km, time, d, start, tr, boat, warn, peakCount)
    so detail edits can be reverted independently. */
@@ -2043,7 +2062,7 @@ function applyUpdate(h,u){
   if(u.isoDate){
     h.isoDate=u.isoDate;
     h.date=u.date||formatDate(u.isoDate);
-    h.sea=u.sea||deriveSeason(u.isoDate);
+    h.sea=deriveSeason(u.isoDate); /* v9.56: never trust a stored sea tag */
   } else {
     /* No reschedule → restore original schedule fields */
     const o=ORIG[h.day];
@@ -2212,6 +2231,45 @@ function computeDisplayDays(){
       setTimeout(()=>toast(`📦 已將 ${n} 個待完成行程移入待排期。之後可隨時編輯或批量改期重新排期。`),600);
     }
   }catch(e){console.warn("backlog migration failed",e);}
+})();
+
+/* ── One-shot migration v2 (2026-06-08): park ALL currently-pending trips
+   into 待排期. Persistent bad weather has invalidated the remaining June
+   schedule and the dates onward; the 20 outstanding peaks will be re-dated
+   individually when conditions allow.
+   Same guards as v1:
+   - FLAG key → runs once per browser; trips re-scheduled afterwards are
+     never re-parked.
+   - Empty local updates → skip and set FLAG anyway (fresh device: the
+     parked state arrives via GitHub auto-pull instead; running here would
+     stamp local newer and block that pull). ── */
+(function migrateParkPendingV2(){
+  const FLAG="hkHiking2026_backlogMigration_v2";
+  try{
+    if(localStorage.getItem(FLAG))return;
+    const u=loadUpdates();
+    if(Object.keys(u).length===0){
+      localStorage.setItem(FLAG,new Date().toISOString());
+      return;
+    }
+    let n=0;
+    H.forEach(h=>{
+      if(h.done!==null||h.backlog)return;
+      const cur=u[h.day]||{};
+      cur.backlog=true;
+      delete cur.isoDate;delete cur.date;delete cur.sea;
+      u[h.day]=cur;
+      applyUpdate(h,cur);
+      n++;
+    });
+    localStorage.setItem(FLAG,new Date().toISOString());
+    if(n>0){
+      saveUpdates(u);
+      sortHikes();
+      computeDisplayDays();
+      setTimeout(()=>toast(`📦 天氣不穩，已將 ${n} 個待完成行程移入待排期。之後可隨時編輯或批量改期重新排期。`),600);
+    }
+  }catch(e){console.warn("backlog migration v2 failed",e);}
 })();
 
 /* Track which hike is currently being edited */
@@ -2687,10 +2745,22 @@ function renderCards(f){
     const wrap=document.createElement("div");wrap.className="cl";
     /* v9.47: For split children, show a hint listing same-day siblings
        so the user knows other mountains share this trail. Independent
-       completion — marking this peak done does not affect siblings. */
-    const groupBadge=h._splitFrom
-      ?`<div class="group-badge">🔗 ${h._splitIdx}/${h._splitTotal} · 同日另 ${h._splitTotal-1} 座: ${h._splitSiblings.filter((_,i)=>i!==h._splitIdx-1).join("・")}</div>`
-      :"";
+       completion — marking this peak done does not affect siblings.
+       v9.58: the list is resolved at render time against current status —
+       completed siblings drop out, and the badge hides once every
+       same-day sibling is done. */
+    const groupBadge=(()=>{
+      if(!h._splitFrom)return "";
+      const pendingSibs=h._splitSiblings
+        .map((nm,i)=>({nm,key:`${h._splitFrom}-${i+1}`,idx:i}))
+        .filter(s=>s.idx!==h._splitIdx-1)
+        .filter(s=>{
+          const sib=H.find(x=>String(x.day)===String(s.key));
+          return sib&&sib.done!=="done";
+        });
+      if(!pendingSibs.length)return "";
+      return `<div class="group-badge">🔗 同日另 ${pendingSibs.length} 座: ${pendingSibs.map(s=>s.nm).join("・")}</div>`;
+    })();
     wrap.innerHTML=`<div class="card ${cls}${nextCls}">
       ${nextBadge}${chip}
       ${groupBadge}
