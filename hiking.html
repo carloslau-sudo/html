@@ -729,7 +729,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang HK","P
 <div class="top" id="topbar">
   <div class="top-row">
     <div><h1><span class="logo-mark"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><clipPath id="hlc"><circle cx="16" cy="16" r="15"/></clipPath></defs><circle cx="16" cy="16" r="15" fill="#fdfcf8"/><g clip-path="url(#hlc)"><rect width="32" height="32" fill="#f4ecd8"/><circle cx="22" cy="11" r="3.2" fill="#c98a2b" opacity="0.85"/><path d="M-2 22 L8 10 L18 22 Z" fill="#a8c5b3"/><path d="M5 24 L13 13 L21 24 Z" fill="#7d8b3a"/><path d="M11 26 L19 12 L27 26 Z" fill="#3d6b4f"/><path d="M17 16 L19 12 L21 16 L20 17 L19 16 L18 17 Z" fill="#fdfcf8" opacity="0.9"/><rect y="25" width="32" height="7" fill="#2a4d39"/></g><circle cx="16" cy="16" r="15" fill="none" stroke="#2a4d39" stroke-width="0.8" opacity="0.3"/></svg></span>山行者計劃</h1><p><span id="total-peaks">—</span>座山峰挑戰 · 已完成<span id="sub-done">—</span> · 詳細路線</p></div>
-    <div class="updated">v9.52 · 2026-05-27</div>
+    <div class="updated">v9.55 · 2026-06-08</div>
   </div>
   <div class="stats" id="stats-bar"></div>
   <div class="prog">
@@ -2060,6 +2060,29 @@ function applyUpdate(h,u){
     h[k]=(u[k]!==undefined&&u[k]!==null&&u[k]!=="")?u[k]:o[k];
   });
 }
+/* v9.53: A completed trip is attributed to its ACTUAL completion date.
+   Invariant (matches all built-in ✅ entries): done ⇒ isoDate === doneDate.
+   Without this, a trip planned for June but completed in May keeps its June
+   isoDate, so the monthly stats strip, month filter, season grouping and
+   sort order all count it in the wrong month. Walks an updates object,
+   rewrites schedule fields from doneDate, returns true if anything changed. */
+function normalizeDoneSchedule(u){
+  let changed=false;
+  Object.keys(u).forEach(k=>{
+    const e=u[k];
+    if(!e||typeof e!=="object")return;
+    if(e.done!=="done")return;
+    const dd=e.doneDate;
+    if(!dd||!/^\d{4}-\d{2}-\d{2}$/.test(dd))return;
+    const effIso=e.isoDate||(ORIG[k]||{}).isoDate;
+    if(effIso===dd)return;
+    e.isoDate=dd;
+    e.date=formatDate(dd);
+    e.sea=deriveSeason(dd);
+    changed=true;
+  });
+  return changed;
+}
 /* Sort H array by isoDate so reschedules appear in chronological order */
 function sortHikes(){
   H.sort((a,b)=>{
@@ -2142,6 +2165,10 @@ function computeDisplayDays(){
     migrated=true;
   });
   if(migrated)saveUpdates(u);
+  /* v9.53: One-shot repair — completed entries saved by earlier versions kept
+     their planned isoDate, mis-attributing the peak count to the planned month
+     instead of the actual completion month. */
+  if(normalizeDoneSchedule(u))saveUpdates(u);
   H.forEach(h=>{
     if(u[h.day]) applyUpdate(h,u[h.day]);
   });
@@ -2282,7 +2309,7 @@ function effectivePeakCount(h){
 const DC={1:"t-1",2:"t-1",3:"t-2",3.5:"t-3",4:"t-4",5:"t-5"};
 const DS={1:"★",2:"★★",3:"★★★",3.5:"★★★☆",4:"★★★★",5:"★★★★★"};
 const SC={spring:"sp",summer:"sm",autumn:"au",backlog:"bl"};
-const SL={history:"📚 已完成歷史記錄（2024年12月起）",spring:"🌱 春季（4–5月）",summer:"☀️ 夏季（6–9月）",autumn:"🍂 秋冬（10–11月）",backlog:"📦 待排期（暫未定日，可隨時編輯重新排期）"};
+const SL={history:"📚 已完成歷史記錄（2024年12月起）",spring:"🌱 春季（4–5月）",summer:"☀️ 夏季（6–9月）",autumn:"🍂 秋冬（10–11月）",backlog:"📦 待排期"};
 
 /* ── Dynamic Stats ── */
 function computeStats(){
@@ -2667,7 +2694,7 @@ function renderCards(f){
     wrap.innerHTML=`<div class="card ${cls}${nextCls}">
       ${nextBadge}${chip}
       ${groupBadge}
-      <div class="cdate">${h.backlog?`📦 待排期 <span style="color:var(--faint);font-weight:500">（原定 ${h.date.replace(/✅|⚡/g,"").trim()}）</span>`:`📅 ${h.date}`}</div>
+      <div class="cdate">${h.backlog?`📦 待排期`:`📅 ${h.date}`}</div>
       <div class="cpeaks">${h.peaks}</div>
       <div class="tags">
         <span class="tag t-a">${h.area}</span>
@@ -3511,6 +3538,13 @@ function saveEdit(){
        a parked trip has no committed schedule */
     if(wantBacklog){
       upd.backlog=true;
+    } else if(editingStatus==="done"){
+      /* v9.53: a completed trip is attributed to its ACTUAL completion date,
+         not the originally planned date — keeps monthly stats, season group,
+         month filter and sorting on the real month (invariant of built-in data) */
+      upd.isoDate=upd.doneDate;
+      upd.date=formatDate(upd.doneDate);
+      upd.sea=deriveSeason(upd.doneDate);
     } else if(reschChanged){
       upd.isoDate=newIso;
       upd.date=formatDate(newIso);
@@ -3792,6 +3826,8 @@ function doImport(){
     });
     valid[k]=entry;
   });
+  /* v9.53: imported completed entries also follow the actual completion date */
+  normalizeDoneSchedule(valid);
   const n=Object.keys(valid).length;
   if(n===0){toast(`⚠️ 沒有有效記錄可匯入。${skipped?`(${skipped} 項被略過)`:""}`);return;}
   /* Confirm merge */
@@ -4177,6 +4213,9 @@ async function ghAutoPullOnOpen(){
 }
 /* Helper: apply remote updates to H array and re-render */
 function applyRemoteUpdates(updates,remotePeakOverrides){
+  /* v9.53: remote data from older app versions may carry the planned isoDate
+     on completed entries — repair before persisting */
+  normalizeDoneSchedule(updates);
   saveUpdates(updates);
   /* Apply peak overrides if provided */
   if(remotePeakOverrides&&typeof remotePeakOverrides==="object"){
