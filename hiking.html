@@ -2,7 +2,7 @@
 <html lang="zh-HK">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="山行者計劃 — 香港山峰挑戰、排期、路線、天氣策略">
 <title>山行者計劃</title>
 <!-- PWA: enables Add to Home Screen + offline -->
@@ -1931,7 +1931,7 @@ function peakInfo(originalName,hikeDay){
 /* ── Toast notifications (drop-in alert replacement) ── */
 function toast(msg,type){
   const stack=document.getElementById("toast-stack");
-  if(!stack){toast(msg);return;}
+  if(!stack){alert(msg);return;}
   /* Auto-detect type from leading emoji */
   if(!type){
     if(msg.startsWith("✅"))type="ok";
@@ -1993,6 +1993,11 @@ function shiftIso(iso,days){
   const dt=new Date(Date.UTC(y,m-1,d));
   dt.setUTCDate(dt.getUTCDate()+days);
   return dt.toISOString().slice(0,10);
+}
+/* Current calendar day in Hong Kong (UTC+8), as YYYY-MM-DD.
+   Avoids the UTC drift of new Date().toISOString() between 00:00-08:00 HKT. */
+function todayHK(){
+  return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Hong_Kong"}).format(new Date());
 }
 
 /* v9.56/9.57: Load-time normalization of built-in data, before the ORIG
@@ -2291,10 +2296,6 @@ function onSearchInput(){
   searchTimer=setTimeout(()=>{
     searchQuery=v;
     renderCards(curFilter());
-    /* Re-inject weather badges after re-render */
-    if(typeof wxCache!=="undefined"&&wxCache){
-      injectWxBadges(wxCache.fcMap,wxCache.activeWarnings);
-    }
   },180);
 }
 function clearSearch(){
@@ -2343,7 +2344,7 @@ function computeDone(){
       });
     } else if(h.done==="partial"&&h.doneDate){
       /* For partial: only count peaks explicitly marked ✅ in route */
-      h.route.forEach(r=>{
+      if(h.route)h.route.forEach(r=>{
         if(r.t.includes("✅")){
           const m=r.t.match(/^(.+?)\s*[\(（]/);
           if(m)DONE.push(m[1].trim());
@@ -2371,7 +2372,7 @@ const SL={history:"📚 已完成歷史記錄（2024年12月起）",spring:"🌱
 
 /* ── Dynamic Stats ── */
 function computeStats(){
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayHK();
   let donePeaks=0, totalPeaks=0;
   let nextHike=null;
   /* v9.47: After data split each record is one peak, so "trip count" loses
@@ -2441,8 +2442,7 @@ function computeStats(){
 
 /* ── Monthly Peak Stats ── */
 function computeMonthlyStats(){
-  const today=new Date();
-  const todayIso=today.toISOString().slice(0,10);
+  const todayIso=todayHK();
   const curYM=todayIso.slice(0,7);
 
   /* Aggregate by year-month */
@@ -3318,10 +3318,6 @@ function refreshAll(){
   renderAllPeaksByRegion();
   /* Re-render difficulty stats */
   renderDifficultyStats();
-  /* Re-inject weather badges if weather data already loaded */
-  if(typeof wxCache!=="undefined"&&wxCache){
-    injectWxBadges(wxCache.fcMap,wxCache.activeWarnings);
-  }
   updateResetInfo();
 }
 
@@ -3342,7 +3338,7 @@ function openEdit(day){
   document.getElementById("em-backlog").checked=!!h.backlog;
   toggleBacklogUI();
   /* Pre-fill done date: existing doneDate, else today */
-  const today=new Date().toISOString().slice(0,10);
+  const today=todayHK();
   document.getElementById("em-date").value=h.doneDate||today;
   /* Pre-fill journal */
   document.getElementById("em-journal").value=h.doneNote||"";
@@ -3512,9 +3508,7 @@ function savePeakEdit(){
   renderAllPeaksByRegion();
   if(document.getElementById("vt-height").classList.contains("on"))renderHeightList();
   renderDifficultyStats();
-  renderCards("pending");
-  renderCards("done");
-  renderCards("all");
+  renderCards();
   toast(`✅ 已儲存：${newName||originalName}`);
   closePeakEdit();
   /* Trigger debounced auto-push (uses same mechanism as hike status edits) */
@@ -3529,9 +3523,7 @@ function revertPeak(){
   renderAllPeaksByRegion();
   if(document.getElementById("vt-height").classList.contains("on"))renderHeightList();
   renderDifficultyStats();
-  renderCards("pending");
-  renderCards("done");
-  renderCards("all");
+  renderCards();
   toast(`↺ 已還原：${originalName}`);
   closePeakEdit();
   if(typeof scheduleAutoPush==="function")scheduleAutoPush();
@@ -3599,7 +3591,7 @@ function saveEdit(){
     /* Status fields */
     if(editingStatus!=="pending"){
       upd.done=editingStatus;
-      upd.doneDate=document.getElementById("em-date").value||new Date().toISOString().slice(0,10);
+      upd.doneDate=document.getElementById("em-date").value||todayHK();
       /* Journal */
       const journal=document.getElementById("em-journal").value.trim();
       if(journal)upd.doneNote=journal;
@@ -3642,11 +3634,12 @@ function saveEdit(){
 /* ── RESET ── */
 function resetUpdates(){
   const u=loadUpdates();
-  const n=Object.keys(u).length;
+  const n=Object.keys(u).length+Object.keys(peakOverrides).length;
   if(n===0){toast("ℹ️ 目前沒有本地更新記錄。");return;}
   if(!confirm(`⚠️ 確定要清除全部 ${n} 項本地更新並回復內建進度嗎？\n（無法復原，建議先「匯出」備份）`))return;
-  /* Clear localStorage */
-  try{localStorage.removeItem(LS_KEY);}catch(e){}
+  /* Clear localStorage (schedule updates AND peak overrides) */
+  try{localStorage.removeItem(LS_KEY);localStorage.removeItem(LS_KEY_PEAKS);}catch(e){}
+  peakOverrides={};
   /* Restore each H entry from snapshot */
   H.forEach(h=>{
     const o=ORIG[h.day];
@@ -4420,7 +4413,7 @@ const WTYPE={
 async function fetchHKO(){
   const [fndR,warnR,flwR]=await Promise.allSettled([
     fetch(HKO+"?dataType=fnd&lang=tc").then(r=>r.json()),
-    fetch(HKO+"?dataType=warningInfo&lang=tc").then(r=>r.json()),
+    fetch(HKO+"?dataType=warnsum&lang=tc").then(r=>r.json()),
     fetch(HKO+"?dataType=flw&lang=tc").then(r=>r.json())
   ]);
   return {
@@ -4519,7 +4512,7 @@ function renderWx(data){
     return;
   }
   const fc=data.fnd.weatherForecast;
-  const today=new Date().toISOString().slice(0,10).replace(/-/g,"");
+  const today=todayHK().replace(/-/g,"");
 
   /* Build forecast date map */
   const fcMap={};fc.forEach(f=>{fcMap[f.forecastDate]=f;});
@@ -4536,7 +4529,7 @@ function renderWx(data){
   }
 
   /* Get pending hikes with dates */
-  const pending=H.filter(h=>h.done===null);
+  const pending=H.filter(h=>h.done===null&&!h.backlog);
   const hikeMap={};pending.forEach(h=>{hikeMap[h.isoDate.replace(/-/g,"")]=h;});
 
   let html="";
@@ -4670,9 +4663,10 @@ function injectWxBadges(fcMap,activeWarnings){
     if(a.v==="nodata")return;
     const cls={go:"wxb-go",caution:"wxb-caution",postpone:"wxb-postpone"}[a.v];
     const icon=WICON[fc.ForecastIcon]||"";
-    const badge=`<span class="wx-badge ${cls}">${icon} ${a.l.slice(0,2)==="✅"?"GO":a.l.slice(0,2)==="⚠️"?"⚠️":"⛔"}</span>`;
+    const sym=a.v==="go"?"GO":a.v==="caution"?"⚠️":"⛔";
+    const badge=`<span class="wx-badge ${cls}">${icon} ${sym}</span>`;
     /* Find the card's date element */
-    const card=document.querySelector(`#r${h.day}`)?.closest(".card");
+    const card=document.getElementById("r"+h.day)?.closest(".card");
     if(card){
       const dateEl=card.querySelector(".cdate");
       if(dateEl)dateEl.insertAdjacentHTML("beforeend",badge);
