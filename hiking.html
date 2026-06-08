@@ -716,6 +716,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang HK","P
 .br-toolbar{display:flex;justify-content:space-between;align-items:center;
   margin-bottom:6px;font-size:.66rem;color:var(--muted)}
 .br-toolbar a{color:var(--teal);cursor:pointer;font-weight:700;text-decoration:none}
+
+/* ── grouped multi-peak day card (one trip per single day) ── */
+.grp-tag{display:inline-block;font-size:.62rem;font-weight:800;color:#3d6b4f;background:rgba(61,107,79,.12);border:1px solid rgba(61,107,79,.3);border-radius:6px;padding:2px 7px;margin:2px 0 5px}
+.card.done .grp-tag,.card.part .grp-tag{color:#15803d;background:rgba(21,128,61,.12);border-color:rgba(21,128,61,.3)}
+.grp-legs{display:flex;flex-direction:column;gap:5px;margin:6px 0 4px;padding:7px 9px;background:var(--surf-2);border-radius:9px}
+.grp-leg{display:flex;flex-direction:column;gap:3px;padding:5px 0;border-bottom:1px dashed rgba(0,0,0,.08)}
+.grp-leg:last-child{border-bottom:none}
+.grp-leg.is-done{opacity:.62}
+.grp-leg.is-done .leg-name{text-decoration:line-through;text-decoration-color:rgba(21,128,61,.5)}
+.leg-main{display:flex;align-items:center;gap:6px}
+.leg-st{font-size:.85rem;flex:0 0 auto}
+.leg-pd{filter:grayscale(1);opacity:.5}
+.leg-name{font-size:.92rem;font-weight:700;color:var(--txt);flex:1 1 auto;line-height:1.25}
+.leg-edit{flex:0 0 auto;cursor:pointer;font-size:.82rem;opacity:.65;padding:2px 5px;border-radius:6px}
+.leg-edit:active{opacity:1;background:rgba(0,0,0,.06)}
+.leg-tags{display:flex;flex-wrap:wrap;gap:4px;padding-left:22px}
+.leg-head{font-size:.74rem;font-weight:800;color:var(--muted);margin:9px 0 4px;letter-spacing:.02em}
+.nh-a{display:block;height:0;width:0;overflow:hidden}
 </style>
 </head>
 <body>
@@ -2691,16 +2709,42 @@ function renderCards(f){
   }
   const userUpd=loadUpdates();
   let ls="";
-  rows.forEach(h=>{
-    const isD=h.done==="done",isP=h.done==="partial";
-    /* v9.47: only flag the lowest-indexed split sibling as the "next hike"
-       to avoid stacking the badge on every peak of the same day. */
-    const isNext=curNextHike&&(h.day===curNextHike.day||(h._splitFrom&&curNextHike._splitFrom===h._splitFrom&&h._splitIdx===1));
-    const isLocal=!!userUpd[h.day]||(h._splitFrom&&!!userUpd[h._splitFrom]);
-    /* Show season label only when no season filter is active and viewing all/pending/done */
-    if(h.sea!==ls&&seasonTags.size===0){
-      const s=document.createElement("div");s.className="slbl";s.textContent=SL[h.sea];c.appendChild(s);ls=h.sea;
+
+  /* ── helpers shared by single + grouped cards ── */
+  function peakDiffTags(h){
+    const names=h.peaks.replace(/[✅⚡]/g,"").trim().split(/[、，,]/).map(s=>s.trim()).filter(Boolean);
+    if(names.length<=1){
+      const p=names[0];
+      const info=p?peakInfo(p,h.day):{diff:h.d,name:p};
+      const d=info.diff||h.d;
+      const escOrig=p?p.replace(/'/g,"\\'"):"";
+      const tap=p?` onclick="event.stopPropagation();openPeakEdit('${escOrig}','${h.day||""}')" style="cursor:pointer"`:"";
+      return `<span class="tag ${DC[d]||"t-2"}"${tap}>${DS[d]||"★★★"}</span>`;
     }
+    return names.map(p=>{
+      const info=peakInfo(p,h.day);
+      const d=info.diff;
+      const short=info.name.split(/[\(（]/)[0].trim();
+      const escOrig=p.replace(/'/g,"\\'");
+      return `<span class="tag tag-pd ${DC[d]||"t-2"}" onclick="event.stopPropagation();openPeakEdit('${escOrig}','${h.day||""}')" style="cursor:pointer">${short}：${DS[d]||"★★★"}</span>`;
+    }).join("");
+  }
+  function routeHTML(h){
+    return h.route.map(w=>`<div class="wp"><div class="wd ${w.c}"></div>
+      <div class="wbody"><b>${w.t}</b>${w.n?`<span class="wn">${w.n}</span>`:""}</div></div>`).join("");
+  }
+  function tipsHTML(h){
+    return h.tips.map(t=>`<div class="rtip r${t.k}">${t.t}</div>`).join("");
+  }
+  function isNextHike(h){
+    return curNextHike&&(h.day===curNextHike.day||(h._splitFrom&&curNextHike._splitFrom===h._splitFrom&&h._splitIdx===1));
+  }
+
+  /* ── single-trip card (unchanged behaviour; used for solo days + history) ── */
+  function appendSingleCard(h){
+    const isD=h.done==="done",isP=h.done==="partial";
+    const isNext=isNextHike(h);
+    const isLocal=!!userUpd[h.day]||(h._splitFrom&&!!userUpd[h._splitFrom]);
     const id="r"+h.day;
     const nextBadge=isNext?`<div class="next-badge">📍 下次行山</div>`:"";
     const chip=isD?`<div class="chip done-c">✅ 完成</div>`:isP?`<div class="chip part-c">⚡ 部分</div>`:h.backlog?`<div class="chip bl-c">📦 待排期</div>`:h.warn&&!isNext?`<div class="chip warn-c">⚠️ 高危</div>`:"";
@@ -2713,42 +2757,14 @@ function renderCards(f){
       </div>`:"";
     const boat=h.boat?`<span class="tag t-boat">🚢 需渡船</span>`:"";
     const wrn=h.warn?`<span class="tag t-warn">⚠️ 雨天禁行</span>`:"";
-    const wps=h.route.map(w=>`<div class="wp"><div class="wd ${w.c}"></div>
-      <div class="wbody"><b>${w.t}</b>${w.n?`<span class="wn">${w.n}</span>`:""}</div></div>`).join("");
-    const tips=h.tips.map(t=>`<div class="rtip r${t.k}">${t.t}</div>`).join("");
+    const wps=routeHTML(h);
+    const tips=tipsHTML(h);
     const cls=isD||isP?(isD?"done":"part"):SC[h.sea]||"sp";
     const nextCls=isNext?" next":"";
     const editBtn=`<div class="edit-btn-row">
       <span class="edit-btn" onclick="openEdit('${h.day}')">✏️ 編輯</span>
     </div>`;
-    /* Per-peak difficulty — pull each peak's difficulty from PEAK_DIFF */
-    const peakNamesForDiff=h.peaks.replace(/[✅⚡]/g,"").trim().split(/[、，,]/).map(s=>s.trim()).filter(Boolean);
-    let diffTags;
-    if(peakNamesForDiff.length<=1){
-      /* Single peak — one tag */
-      const p=peakNamesForDiff[0];
-      const info=p?peakInfo(p,h.day):{diff:h.d,name:p};
-      const d=info.diff||h.d;
-      const escOrig=p?p.replace(/'/g,"\\'"):"";
-      const tap=p?` onclick="event.stopPropagation();openPeakEdit('${escOrig}','${h.day||""}')" style="cursor:pointer"`:"";
-      diffTags=`<span class="tag ${DC[d]||"t-2"}"${tap}>${DS[d]||"★★★"}</span>`;
-    } else {
-      /* Multi-peak — show each peak's individual difficulty (tappable) */
-      diffTags=peakNamesForDiff.map(p=>{
-        const info=peakInfo(p,h.day);
-        const d=info.diff;
-        const short=info.name.split(/[\(（]/)[0].trim();
-        const escOrig=p.replace(/'/g,"\\'");
-        return `<span class="tag tag-pd ${DC[d]||"t-2"}" onclick="event.stopPropagation();openPeakEdit('${escOrig}','${h.day||""}')" style="cursor:pointer">${short}：${DS[d]||"★★★"}</span>`;
-      }).join("");
-    }
-    const wrap=document.createElement("div");wrap.className="cl";
-    /* v9.47: For split children, show a hint listing same-day siblings
-       so the user knows other mountains share this trail. Independent
-       completion — marking this peak done does not affect siblings.
-       v9.58: the list is resolved at render time against current status —
-       completed siblings drop out, and the badge hides once every
-       same-day sibling is done. */
+    const diffTags=peakDiffTags(h);
     const groupBadge=(()=>{
       if(!h._splitFrom)return "";
       const pendingSibs=h._splitSiblings
@@ -2761,6 +2777,7 @@ function renderCards(f){
       if(!pendingSibs.length)return "";
       return `<div class="group-badge">🔗 同日另 ${pendingSibs.length} 座: ${pendingSibs.map(s=>s.nm).join("・")}</div>`;
     })();
+    const wrap=document.createElement("div");wrap.className="cl";
     wrap.innerHTML=`<div class="card ${cls}${nextCls}">
       ${nextBadge}${chip}
       ${groupBadge}
@@ -2782,6 +2799,113 @@ function renderCards(f){
       <div class="day-n">Day ${h.displayDay||h.day}${String(h.day).startsWith("H")?" · 歷史":""}</div>
     </div>`;
     c.appendChild(wrap);
+  }
+
+  /* ── grouped multi-peak day card: one trip per single day. Each peak stays an
+        independent record completable via its own openEdit(), so weather or an
+        accident can leave the day partial. Aggregates km/time/area/difficulty;
+        route + tips are concatenated per leg. ── */
+  function appendGroupedCard(members){
+    const total=members.length;
+    const doneN=members.filter(m=>m.done==="done").length;
+    const partN=members.filter(m=>m.done==="partial").length;
+    const allDone=doneN===total;
+    const someDone=(doneN+partN)>0&&!allDone;
+    const allBacklog=members.every(m=>m.backlog);
+    const anyWarn=members.some(m=>m.warn);
+    const anyBoat=members.some(m=>m.boat);
+    const isNext=members.some(isNextHike);
+    const rep=members[0];
+    const isLocal=members.some(m=>!!userUpd[m.day]||(m._splitFrom&&!!userUpd[m._splitFrom]));
+
+    const cls=allDone?"done":someDone?"part":SC[rep.sea]||"sp";
+    const nextCls=isNext?" next":"";
+    const nextBadge=isNext?`<div class="next-badge">📍 下次行山</div>`:"";
+    const chip=allDone?`<div class="chip done-c">✅ 完成</div>`
+      :someDone?`<div class="chip part-c">⚡ 部分 ${doneN}/${total}</div>`
+      :allBacklog?`<div class="chip bl-c">📦 待排期</div>`
+      :anyWarn&&!isNext?`<div class="chip warn-c">⚠️ 高危</div>`:"";
+    const localBadge=isLocal&&(doneN+partN>0)?`<span class="local-badge">📱 本地</span>`:"";
+    const dnl=allDone?`<div class="done-lbl dl-ok">✅ 全日完成${localBadge}</div>`
+      :someDone?`<div class="done-lbl dl-p">⚡ 已完成 ${doneN}/${total} 座${localBadge}</div>`:"";
+
+    const legRows=members.map(m=>{
+      const st=m.done==="done"?`<span class="leg-st leg-ok">✅</span>`
+        :m.done==="partial"?`<span class="leg-st leg-pt">⚡</span>`
+        :`<span class="leg-st leg-pd">⬜</span>`;
+      return `<div class="grp-leg${m.done==="done"?" is-done":""}">
+        <div class="leg-main">${st}<span class="leg-name">${m.peaks}</span>
+          <span class="leg-edit" onclick="event.stopPropagation();openEdit('${m.day}')">✏️</span></div>
+        <div class="leg-tags">${peakDiffTags(m)}${m.boat?`<span class="tag t-boat">🚢</span>`:""}${m.warn?`<span class="tag t-warn">⚠️</span>`:""}</div>
+      </div>`;
+    }).join("");
+
+    const allPeaks=members.map(m=>m.peaks).join("、");
+    const kmSum=members.reduce((a,m)=>a+(parseFloat(m.km)||0),0);
+    const kmStr=Number.isInteger(kmSum)?kmSum:kmSum.toFixed(1);
+    const times=[...new Set(members.map(m=>m.time).filter(Boolean))].join(" + ");
+    const areas=[...new Set(members.map(m=>m.area).filter(Boolean))].join(" · ");
+    const starts=members.map(m=>m.start).filter(Boolean).join(" → ");
+    const totalPts=members.reduce((a,m)=>a+(m.route?m.route.length:0),0);
+    const parents=[...new Set(members.map(m=>m._splitFrom||String(m.day)))].join(" · ");
+    const grpId="grp-"+rep.isoDate;
+
+    const legBodies=members.map(m=>`<div class="leg-head">▸ ${m.peaks} · 📍${m.start} · 🚌${m.tr}</div>
+      <div class="wps">${routeHTML(m)}</div>${tipsHTML(m)}`).join("");
+    const anchors=members.map(m=>`<span class="nh-a" id="r${m.day}"></span>`).join("");
+
+    const journal=members.filter(m=>(m.done==="done"||m.done==="partial")&&m.doneNote)
+      .map(m=>`<div class="journal-row show"><div class="jh">📓 ${m.peaks}</div>
+        <div class="jb">${m.doneNote.replace(/</g,"&lt;").replace(/\n/g,"<br>")}</div></div>`).join("");
+
+    const wrap=document.createElement("div");wrap.className="cl";
+    wrap.innerHTML=`<div class="card ${cls}${nextCls}">
+      ${nextBadge}${chip}
+      <div class="grp-tag">🔗 同日 ${total} 座 · 一日行程</div>
+      <div class="cdate">${allBacklog?`📦 待排期`:`📅 ${rep.date}`}</div>
+      <div class="cpeaks">${allPeaks}</div>
+      <div class="grp-legs">${legRows}</div>
+      <div class="tags">
+        <span class="tag t-a">${areas}</span>
+        <span class="tag t-m">${kmStr}km</span>
+        <span class="tag t-m">${times}</span>
+        ${anyBoat?`<span class="tag t-boat">🚢 需渡船</span>`:""}
+        ${anyWarn?`<span class="tag t-warn">⚠️ 雨天禁行</span>`:""}
+      </div>
+      <div class="ctr">📍 ${starts}</div>
+      ${dnl}
+      ${journal}
+      <div class="rtog" onclick="tog('${grpId}')">▶ 詳細路線 · ${total} 段 (${totalPts} 路點)</div>
+      <div class="rbody" id="${grpId}">${legBodies}</div>
+      ${anchors}
+      <div class="day-n">Day ${parents}</div>
+    </div>`;
+    c.appendChild(wrap);
+  }
+
+  /* ── group rows into trips:
+        - history: each record is already one trip, kept solo.
+        - parked (待排期) AND still pending: solo, so an undated plan is never
+          pre-grouped on a stale date.
+        - everything else (a committed date, or mountains completed on an
+          actual date): grouped by date, so multiple mountains finished on the
+          same day present as one trip, matching the actual/historical view.
+          Marking a grouped day done therefore keeps it as one trip. ── */
+  const groupMap=new Map();
+  const order=[];
+  rows.forEach(h=>{
+    const key=(h.sea==="history"||(h.backlog&&h.done===null)||!h.isoDate)?("solo:"+h.day):("date:"+h.isoDate);
+    if(!groupMap.has(key)){groupMap.set(key,[]);order.push(key);}
+    groupMap.get(key).push(h);
+  });
+  order.forEach(key=>{
+    const members=groupMap.get(key);
+    const rep=members[0];
+    if(rep.sea!==ls&&seasonTags.size===0){
+      const s=document.createElement("div");s.className="slbl";s.textContent=SL[rep.sea];c.appendChild(s);ls=rep.sea;
+    }
+    if(members.length===1)appendSingleCard(members[0]);
+    else appendGroupedCard(members);
   });
   if(!rows.length)c.innerHTML=`<div style="text-align:center;padding:50px;color:var(--faint);font-size:.9rem">沒有符合條件的行程</div>`;
   /* Re-inject weather badges into freshly rendered cards so filter/tab changes
@@ -4669,7 +4793,7 @@ function injectWxBadges(fcMap,activeWarnings){
     const card=document.getElementById("r"+h.day)?.closest(".card");
     if(card){
       const dateEl=card.querySelector(".cdate");
-      if(dateEl)dateEl.insertAdjacentHTML("beforeend",badge);
+      if(dateEl&&!dateEl.querySelector(".wx-badge"))dateEl.insertAdjacentHTML("beforeend",badge);
     }
   });
 }
