@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="山行者計劃 — 香港山峰挑戰、排期、路線、天氣策略">
 <title>山行者計劃</title>
-<!-- PWA: enables Add to Home Screen + offline -->
+<!-- PWA: enables Add to Home Screen (no service worker, so no offline cache) -->
 <meta name="theme-color" content="#3d6b4f">
 <link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><clipPath id="lc"><circle cx="16" cy="16" r="15"/></clipPath></defs><circle cx="16" cy="16" r="15" fill="%23fdfcf8"/><g clip-path="url(%23lc)"><rect width="32" height="32" fill="%23f4ecd8"/><circle cx="22" cy="11" r="3.2" fill="%23c98a2b" opacity="0.85"/><path d="M-2 22 L8 10 L18 22 Z" fill="%23a8c5b3"/><path d="M5 24 L13 13 L21 24 Z" fill="%237d8b3a"/><path d="M11 26 L19 12 L27 26 Z" fill="%233d6b4f"/><path d="M17 16 L19 12 L21 16 L20 17 L19 16 L18 17 Z" fill="%23fdfcf8" opacity="0.9"/><rect y="25" width="32" height="7" fill="%232a4d39"/></g><circle cx="16" cy="16" r="15" fill="none" stroke="%232a4d39" stroke-width="0.8" opacity="0.25"/></svg>'>
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -748,7 +748,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","PingFang HK","P
 <div class="top" id="topbar">
   <div class="top-row">
     <div><h1><span class="logo-mark"><svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><clipPath id="hlc"><circle cx="16" cy="16" r="15"/></clipPath></defs><circle cx="16" cy="16" r="15" fill="#fdfcf8"/><g clip-path="url(#hlc)"><rect width="32" height="32" fill="#f4ecd8"/><circle cx="22" cy="11" r="3.2" fill="#c98a2b" opacity="0.85"/><path d="M-2 22 L8 10 L18 22 Z" fill="#a8c5b3"/><path d="M5 24 L13 13 L21 24 Z" fill="#7d8b3a"/><path d="M11 26 L19 12 L27 26 Z" fill="#3d6b4f"/><path d="M17 16 L19 12 L21 16 L20 17 L19 16 L18 17 Z" fill="#fdfcf8" opacity="0.9"/><rect y="25" width="32" height="7" fill="#2a4d39"/></g><circle cx="16" cy="16" r="15" fill="none" stroke="#2a4d39" stroke-width="0.8" opacity="0.3"/></svg></span>山行者計劃</h1><p><span id="total-peaks">—</span>座山峰挑戰 · 已完成<span id="sub-done">—</span> · 詳細路線</p></div>
-    <div class="updated">v9.59 · 2026-06-08</div>
+    <div class="updated">v9.60 · 2026-06-10</div>
   </div>
   <div class="stats" id="stats-bar"></div>
   <div class="prog">
@@ -1919,7 +1919,7 @@ function savePeakOverrides(){
 }
 loadPeakOverrides();
 /* Lookup with overrides applied. Returns {name, height, region, diff, overrideKey, isOverridden}. */
-function peakInfo(originalName,hikeDay){
+function peakInfo(originalName,hikeDay,fallbackD){
   /* v9.47: split-child days look like "PARENT-N"; try the literal key
      first so per-child overrides take precedence, then fall back to the
      parent's key so legacy overrides still apply to all split siblings. */
@@ -1931,8 +1931,13 @@ function peakInfo(originalName,hikeDay){
   const parentKey=originalName+"::"+parentDay;
   const parentAlt=base+"::"+parentDay;
   const o=peakOverrides[key]||peakOverrides[altKey]||peakOverrides[parentKey]||peakOverrides[parentAlt]||{};
-  /* Compute defaults from baked-in tables */
-  const defDiff=peakDiff(originalName,hikeDay,3);
+  /* Compute defaults from baked-in tables.
+     v9.60: callers pass hikeDiffFallback(h) as fallbackD, so a peak missing
+     from PEAK_DIFF inherits its trip's rating ONLY when the record is
+     single-peak (where trip rating == peak rating by construction).
+     Multi-peak records keep the neutral ★★★ default; a trip rating there
+     reflects the hardest leg and must not be pushed onto easier peaks. */
+  const defDiff=peakDiff(originalName,hikeDay,fallbackD||3);
   /* Default region: applies override or area-based rules */
   const defRegion=null; /* computed lazily by callers via getRegionForPeak */
   /* Default height: pull from PEAK_HEIGHT_FALLBACK if known, else null (caller can extract from route) */
@@ -1940,6 +1945,9 @@ function peakInfo(originalName,hikeDay){
   return {
     name:o.name||originalName,
     height:o.height!=null?o.height:defHeight,
+    /* v9.60: lets callers distinguish "user set a height" from the table
+       fallback, regardless of WHICH key (literal/alt/parent) matched. */
+    heightOverridden:o.height!=null,
     region:o.region||null, /* null = use rule-based */
     diff:o.diff!=null?o.diff:defDiff,
     overrideKey:key,
@@ -1989,6 +1997,13 @@ function esc(s){
   return String(s==null?"":s).replace(/[&<>"]/g,c=>
     ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 }
+/* Escape a value for use inside a single-quoted JS string that itself sits
+   inside a double-quoted HTML attribute (onclick="fn('VALUE')"). The old
+   pattern only escaped single quotes, so a user-edited peak name containing
+   a double quote or angle bracket broke the attribute / card markup. */
+function escJsAttr(s){
+  return esc(String(s==null?"":s).replace(/\\/g,"\\\\").replace(/'/g,"\\'"));
+}
 
 /* ── Date helpers ── */
 const WK=["週日","週一","週二","週三","週四","週五","週六"];
@@ -2011,11 +2026,14 @@ function formatDate(iso){
   return `${m}月${d}日(${hol||wkLabel})`;
 }
 function deriveSeason(iso){
+  /* v9.60 fix: previously 12/1/2月 fell through to "spring", so a trip
+     rescheduled into Dec-Feb was grouped under the 🌱 春季 header while
+     the 🍂 filter chip (seasonOf in renderCards) treated it as 秋冬.
+     Boundaries now match the filter: 春 3-5 · 夏 6-9 · 秋冬 10-2. */
   const m=parseInt(iso.split("-")[1]);
-  if(m>=4&&m<=5)return "spring";
+  if(m>=3&&m<=5)return "spring";
   if(m>=6&&m<=9)return "summer";
-  if(m>=10&&m<=11)return "autumn";
-  return "spring";
+  return "autumn";
 }
 function shiftIso(iso,days){
   const [y,m,d]=iso.split("-").map(Number);
@@ -2078,14 +2096,18 @@ function loadUpdates(){
     return JSON.parse(raw)||{};
   }catch(e){console.warn("Load updates failed:",e);return {};}
 }
-function saveUpdates(u){
+function saveUpdates(u,opts){
   try{
     localStorage.setItem(LS_KEY,JSON.stringify(u));
-    /* Track when local was last modified — used by auto-pull to avoid clobbering */
-    localStorage.setItem(LS_KEY+"_ts",new Date().toISOString());
+    /* Track when local was last modified — used by auto-pull to avoid clobbering.
+       v9.60: load-time repair migrations pass {keepTs:true} so a no-op data
+       repair on app upgrade doesn't stamp local as "newer", which would skip
+       the auto-pull (CASE 1) and then auto-push over a genuinely newer remote. */
+    if(!(opts&&opts.keepTs))localStorage.setItem(LS_KEY+"_ts",new Date().toISOString());
   }
   catch(e){console.warn("Save updates failed:",e);toast("⚠️ 儲存失敗，可能本地儲存已滿。");}
   /* Schedule auto-push if enabled */
+  if(opts&&opts.noPush)return;
   if(typeof scheduleAutoPush==="function")scheduleAutoPush();
 }
 function applyUpdate(h,u){
@@ -2189,7 +2211,7 @@ function computeDisplayDays(){
       keys.every(x=>["done","doneDate","partialNote","partialDonePeaks"].includes(x));
     if(isBugSignature){delete u[k];cleaned=true;}
   });
-  if(cleaned)saveUpdates(u);
+  if(cleaned)saveUpdates(u,{keepTs:true,noPush:true});
   /* Build parent→children map from the split markers (children in split order) */
   const parentChildren={};
   H.forEach(h=>{
@@ -2226,11 +2248,11 @@ function computeDisplayDays(){
     delete u[pk];
     migrated=true;
   });
-  if(migrated)saveUpdates(u);
+  if(migrated)saveUpdates(u,{keepTs:true,noPush:true});
   /* v9.53: One-shot repair — completed entries saved by earlier versions kept
      their planned isoDate, mis-attributing the peak count to the planned month
      instead of the actual completion month. */
-  if(normalizeDoneSchedule(u))saveUpdates(u);
+  if(normalizeDoneSchedule(u))saveUpdates(u,{keepTs:true,noPush:true});
   H.forEach(h=>{
     if(u[h.day]) applyUpdate(h,u[h.day]);
   });
@@ -2311,52 +2333,6 @@ function clearSearch(){
   }
 }
 
-const AREAS=[
- {n:"新界東北\n（烏蛟騰）",p:["吊燈籠(大青山)","馬頭峰"],c:"#dbeafe"},
- {n:"大埔八仙嶺",p:["黃嶺","仙姑峰","純陽峰"],c:"#fef9c3"},
- {n:"北區（南涌）",p:["紅花嶺","屏風山","龜頭嶺"],c:"#fee2e2"},
- {n:"屯門",p:["青山","花香爐頂"],c:"#fef3c7"},
- {n:"馬鞍山",p:["石芽山","水牛山","黃牛山"],c:"#ede9fe"},
- {n:"西貢西（麥3）",p:["岩頭山","雞公山","雷打石山","木棉山"],c:"#dcfce7"},
- {n:"西貢東（萬宜）",p:["蠄蟝石頂","螺地墩","花山","標尖角頂"],c:"#bbf7d0"},
- {n:"塔門島",p:["茅平山"],c:"#e0f2fe"},
- {n:"西貢離島",p:["黑山頂(橋咀洲)"],c:"#dbeafe"},
- {n:"北區（古洞）",p:["麒麟山"],c:"#fce7f3"},
- {n:"大嶼山中",p:["老虎頭","大葷峒","大山"],c:"#ffedd5"},
- {n:"南丫島",p:["菱角山","蘆荻灣山"],c:"#d1fae5"},
- {n:"蒲台島",p:["牛湖頂(觀日湖)"],c:"#a7f3d0"},
- {n:"西貢東（大浪灣）",p:["蝻蛇尖","西灣山","石屋山"],c:"#fecaca"},
- {n:"大嶼山西（北）",p:["羌山","靈會山"],c:"#fef3c7"},
- {n:"大嶼山西（南）",p:["牙鷹山","大磡森"],c:"#fde68a"},
- {n:"大嶼山南",p:["狗牙嶺"],c:"#fca5a5"},
-];
-/* Dynamically compute DONE peaks from H data (single source of truth).
-   Recomputable so we can refresh after user updates.
-   NOTE: Historical entries (sea==="history") are excluded from DONE because
-   the AREAS grid only tracks the 38 planned peaks, and substring matching
-   on historical names (e.g. 柴灣西灣山 vs 西貢西灣山) would cause false ✅. */
-let DONE=[];
-function computeDone(){
-  DONE.length=0;
-  H.forEach(h=>{
-    if(h.sea==="history") return;  /* skip historical to prevent name collisions */
-    if(h.done==="done"){
-      h.peaks.replace(/✅/g,"").split(/[、，,]/).forEach(p=>{
-        const name=p.trim().replace(/\s*[\(（].*?[\)）]/g,"").trim();
-        if(name)DONE.push(name);
-      });
-    } else if(h.done==="partial"&&h.doneDate){
-      /* For partial: only count peaks explicitly marked ✅ in route */
-      if(h.route)h.route.forEach(r=>{
-        if(r.t.includes("✅")){
-          const m=r.t.match(/^(.+?)\s*[\(（]/);
-          if(m)DONE.push(m[1].trim());
-        }
-      });
-    }
-  });
-}
-computeDone();
 
 /* Derive peak count from the peaks string (single source of truth).
    Prevents drift between h.peakCount (stored) and h.peaks (displayed)
@@ -2367,11 +2343,21 @@ function effectivePeakCount(h){
   const names=h.peaks.replace(/[✅⚡]/g,"").trim().split(/[、，,]/).map(s=>s.trim()).filter(Boolean);
   return names.length||1;
 }
+/* v9.60: a trip's star rating is only a valid stand-in for a peak's own
+   rating when the record holds exactly ONE peak (the post-split records),
+   where the two are the same thing by construction. For multi-peak records
+   the trip rating reflects the hardest leg, so inheriting it downward would
+   overstate the easier peaks; those fall back to the neutral ★★★ default.
+   Difficulty derivation only ever flows peaks → trip (take the highest),
+   never trip → peak. */
+function hikeDiffFallback(h){
+  return h&&effectivePeakCount(h)===1?h.d:null;
+}
 
 const DC={1:"t-1",2:"t-1",3:"t-2",3.5:"t-3",4:"t-4",5:"t-5"};
 const DS={1:"★",2:"★★",3:"★★★",3.5:"★★★☆",4:"★★★★",5:"★★★★★"};
 const SC={spring:"sp",summer:"sm",autumn:"au",backlog:"bl"};
-const SL={history:"📚 已完成歷史記錄（2024年12月起）",spring:"🌱 春季（4–5月）",summer:"☀️ 夏季（6–9月）",autumn:"🍂 秋冬（10–11月）",backlog:"📦 待排期"};
+const SL={history:"📚 已完成歷史記錄（2024年12月起）",spring:"🌱 春季（3-5月）",summer:"☀️ 夏季（6-9月）",autumn:"🍂 秋冬（10-2月）",backlog:"📦 待排期"};
 
 /* ── Dynamic Stats ── */
 function computeStats(){
@@ -2597,7 +2583,7 @@ function renderUpcoming(){
     <div class="uc-arrow">›</div>
   </div>`;
 }
-function scrollToNextHike(){
+function scrollToNextHike(retried){
   if(!curNextHike)return;
   /* Make sure schedule tab is active */
   if(!document.getElementById("pg-s").classList.contains("on"))pg("s");
@@ -2613,12 +2599,17 @@ function scrollToNextHike(){
       cardEl.style.boxShadow="0 0 0 4px rgba(240,180,41,.6),"+(orig||"var(--sh)");
       setTimeout(()=>{cardEl.style.boxShadow=orig;},1200);
     }
-  } else {
-    /* Card might be hidden by current filter — switch to pending */
-    document.querySelectorAll(".tab").forEach(t=>t.classList.remove("on"));
-    const pendingTab=Array.from(document.querySelectorAll(".tab")).find(t=>t.textContent.includes("待"));
-    if(pendingTab){pendingTab.classList.add("on");renderCards("pending");
-      setTimeout(scrollToNextHike,100);}
+  } else if(!retried){
+    /* Card hidden by current filters — clear month/tag filters and switch to
+       pending, then retry ONCE. v9.60: the old version only swapped the status
+       tab, so an active month filter that excluded the next hike caused an
+       infinite 100ms retry loop. */
+    filterMonth=null;
+    filterTags.clear();
+    document.querySelectorAll("#filter-tags .tab").forEach(el=>el.classList.remove("on"));
+    document.querySelectorAll("#mstats-strip .mstat").forEach(el=>el.classList.remove("selected"));
+    setStatusFilter("pending");
+    setTimeout(()=>scrollToNextHike(true),100);
   }
 }
 function setTabTop(){
@@ -2698,17 +2689,18 @@ function renderCards(f){
     const names=h.peaks.replace(/[✅⚡]/g,"").trim().split(/[、，,]/).map(s=>s.trim()).filter(Boolean);
     if(names.length<=1){
       const p=names[0];
-      const info=p?peakInfo(p,h.day):{diff:h.d,name:p};
+      const info=p?peakInfo(p,h.day,h.d):{diff:h.d,name:p};
       const d=info.diff||h.d;
-      const escOrig=p?p.replace(/'/g,"\\'"):"";
+      const escOrig=p?escJsAttr(p):"";
       const tap=p?` onclick="event.stopPropagation();openPeakEdit('${escOrig}','${h.day||""}')" style="cursor:pointer"`:"";
       return `<span class="tag ${DC[d]||"t-2"}"${tap}>${DS[d]||"★★★"}</span>`;
     }
     return names.map(p=>{
+      /* multi-peak record: never inherit the trip rating per peak */
       const info=peakInfo(p,h.day);
       const d=info.diff;
       const short=info.name.split(/[\(（]/)[0].trim();
-      const escOrig=p.replace(/'/g,"\\'");
+      const escOrig=escJsAttr(p);
       return `<span class="tag tag-pd ${DC[d]||"t-2"}" onclick="event.stopPropagation();openPeakEdit('${escOrig}','${h.day||""}')" style="cursor:pointer">${esc(short)}：${DS[d]||"★★★"}</span>`;
     }).join("");
   }
@@ -2838,7 +2830,7 @@ function renderCards(f){
     const anchors=members.map(m=>`<span class="nh-a" id="r${m.day}"></span>`).join("");
 
     const journal=members.filter(m=>(m.done==="done"||m.done==="partial")&&m.doneNote)
-      .map(m=>`<div class="journal-row show"><div class="jh">📓 ${m.peaks}</div>
+      .map(m=>`<div class="journal-row show"><div class="jh">📓 ${esc(m.peaks)}</div>
         <div class="jb">${m.doneNote.replace(/</g,"&lt;").replace(/\n/g,"<br>")}</div></div>`).join("");
 
     const wrap=document.createElement("div");wrap.className="cl";
@@ -2897,17 +2889,6 @@ function renderCards(f){
   if(typeof wxCache!=="undefined"&&wxCache)injectWxBadges(wxCache.fcMap,wxCache.activeWarnings);
 }
 
-function renderAreas(){
-  const g=document.getElementById("agrid");
-  AREAS.forEach(a=>{
-    const dk=a.p.filter(p=>DONE.some(d=>p.includes(d)||d.includes(p))).length;
-    const div=document.createElement("div");div.className="ac";div.style.background=a.c;
-    div.innerHTML=`<div class="acn">${a.n.replace("\n","<br>")} <span class="acc">${dk}/${a.p.length}</span></div>
-    <div>${a.p.map(p=>DONE.some(d=>p.includes(d)||d.includes(p))?
-      `<div class="pd">✅ ${p}</div>`:`<div class="pp">${p}</div>`).join("")}</div>`;
-    g.appendChild(div);
-  });
-}
 
 /* ── Comprehensive: all 160 peaks grouped by 7 standard HK regions ── */
 /* Order matters: more specific patterns must come first to win matching */
@@ -3133,8 +3114,10 @@ function computeDifficultyStats(){
     const cleaned=h.peaks.replace(/[✅⚡]/g,"").trim();
     const peakNames=cleaned.split(/[、，,]/).map(s=>s.trim()).filter(Boolean);
     peakNames.forEach(p=>{
-      const info=peakInfo(p,h.day);
-      const d=info.diff||3;
+      const info=peakInfo(p,h.day,hikeDiffFallback(h));
+      /* v9.60: a trip-level fallback can be 3.5; round to the nearest whole
+         star so those peaks are counted instead of silently dropped. */
+      const d=Math.round(info.diff||3);
       if(!stats[d])return;
       stats[d].total++;
       if(h.done==="done")stats[d].done++;
@@ -3206,10 +3189,13 @@ function buildPeakHeightTable(){
       if(!ht)ht=heights[base];
       if(!ht)ht=heights[base+"頂"];
       if(!ht)ht=PEAK_HEIGHT_FALLBACK[base]||PEAK_HEIGHT_FALLBACK[p];
-      /* Apply user overrides (height/region/diff/name) */
-      const ov=peakInfo(p,h.day);
-      const finalHeight=ov.isOverridden&&peakOverrides[p+"::"+(h.day||"")]?.height!=null
-        ? peakOverrides[p+"::"+(h.day||"")].height : (ht||null);
+      /* Apply user overrides (height/region/diff/name).
+         v9.60: use peakInfo's heightOverridden flag instead of re-probing
+         peakOverrides under the literal key only — the old check missed
+         height overrides stored under base-name or parent-day keys
+         (split children), silently reverting them to the route height. */
+      const ov=peakInfo(p,h.day,hikeDiffFallback(h));
+      const finalHeight=ov.heightOverridden?ov.height:(ht!=null?ht:ov.height);
       const finalRegion=ov.region||getRegionForPeak(p,h.area).name;
       table.push({
         originalName:p,
@@ -3268,7 +3254,7 @@ function renderHeightList(){
       `<div class="hl-height"><div class="hl-height-num">${p.height}</div><div class="hl-height-unit">米 m</div></div>`:
       `<div class="hl-height"><div class="hl-height-num" style="color:var(--faint);font-size:.7rem">未知</div></div>`;
     const editMark=p.isOverridden?`<span class="hl-edit-dot" title="已修改"></span>`:"";
-    const escOrig=p.originalName.replace(/'/g,"\\'");
+    const escOrig=escJsAttr(p.originalName);
     html+=`<div class="hl-row" onclick="openPeakEdit('${escOrig}','${p.hikeDay||""}')">
       <span class="hl-rank">${i+1}</span>
       <span class="hl-status">${status}</span>
@@ -3303,7 +3289,7 @@ function renderAllPeaksByRegion(){
     const peakNames=cleaned.split(/[、，,]/).map(s=>s.trim()).filter(Boolean);
     peakNames.forEach(p=>{
       /* Per-peak region (override → rule-based fallback) */
-      const overrideInfo=peakInfo(p,h.day);
+      const overrideInfo=peakInfo(p,h.day,hikeDiffFallback(h));
       let region,color;
       if(overrideInfo.region){
         region=overrideInfo.region;
@@ -3352,7 +3338,7 @@ function renderAllPeaksByRegion(){
       /* Apply per-peak overrides */
       const info=peakInfo(p.name,p.day);
       const displayName=esc(info.name);
-      const escapedOrig=p.name.replace(/'/g,"\\'");
+      const escapedOrig=escJsAttr(p.name);
       const tap=`onclick="openPeakEdit('${escapedOrig}','${p.day||""}')"`;
       if(p.status==="done")return `<div class="pd p-tap" ${tap}>✅ ${displayName}</div>`;
       if(p.status==="partial")return `<div class="pp p-tap" style="color:#9a3412" ${tap}>⚡ ${displayName}</div>`;
@@ -3437,7 +3423,6 @@ function toggleMstats(){
 /* Refresh everything after data change */
 function refreshAll(){
   /* Always-on, cheap work (feeds the sticky stats bar + shared state) */
-  computeDone();
   computeDisplayDays();
   curNextHike=computeStats();
   updateResetInfo();
@@ -3460,8 +3445,12 @@ function openEdit(day){
   const dispDay=h.displayDay?`Day ${h.displayDay}`:`Day ${h.day}`;
   const histTag=String(h.day).startsWith("H")?" · 📚歷史":"";
   document.getElementById("em-sub").textContent=`${dispDay}${histTag} · ${h.date} · 共 ${h.peakCount||1} 峰`;
-  /* Pre-fill reschedule date with current planned date */
-  document.getElementById("em-resch").value=h.isoDate;
+  /* Pre-fill reschedule date with current planned date.
+     v9.60: a completed trip's isoDate was forced to equal its doneDate
+     (v9.53 invariant), so pre-filling that here made a later done→pending
+     revert look like a deliberate reschedule and left a stray date override
+     in localStorage. For done trips, pre-fill the original planned date. */
+  document.getElementById("em-resch").value=(h.done==="done"&&ORIG[h.day])?ORIG[h.day].isoDate:h.isoDate;
   updateReschPreview();
   document.getElementById("em-backlog").checked=!!h.backlog;
   toggleBacklogUI();
@@ -3560,25 +3549,33 @@ function closeEdit(){
 }
 
 /* ── Peak edit modal ── */
-let peakEditState=null; /* {originalName, hikeDay, currentDiff} */
-function openPeakEdit(originalName,hikeDay){
-  const info=peakInfo(originalName,hikeDay);
-  /* Resolve current region: override → rule-based fallback */
-  const hike=H.find(h=>String(h.day)===String(hikeDay));
-  const ruleRegion=hike?getRegionForPeak(originalName,hike.area).name:"";
-  /* Resolve current height: override → fallback table → extract from route */
-  let currentHeight=info.height;
-  if(currentHeight==null&&hike&&hike.route){
-    const base=originalName.split(/[\(（]/)[0].trim();
+/* Default (non-overridden) height for a peak: fallback table → route
+   extraction. v9.60: shared by openPeakEdit and savePeakEdit so a save
+   with an untouched, pre-filled height is recognised as a no-op instead
+   of being persisted as a height override on every tap of 儲存. */
+function peakDefaultHeight(originalName,hike){
+  const base=originalName.split(/[\(（]/)[0].trim();
+  let ht=PEAK_HEIGHT_FALLBACK[base]||PEAK_HEIGHT_FALLBACK[originalName]||null;
+  if(ht==null&&hike&&hike.route){
     for(const w of hike.route){
       if(!w.t)continue;
       const m=w.t.replace(/[✅⚡⚠️]/g,"").trim().match(/^(.+?)\s*[\(（]~?(\d+)\s*m[\)）]/);
       if(m){
         const n=m[1].trim();
-        if(n===originalName||n===base||n===base+"頂"){currentHeight=parseInt(m[2]);break;}
+        if(n===originalName||n===base||n===base+"頂"){ht=parseInt(m[2]);break;}
       }
     }
   }
+  return ht;
+}
+let peakEditState=null; /* {originalName, hikeDay, currentDiff} */
+function openPeakEdit(originalName,hikeDay){
+  const hike=H.find(h=>String(h.day)===String(hikeDay));
+  const info=peakInfo(originalName,hikeDay,hikeDiffFallback(hike));
+  /* Resolve current region: override → rule-based fallback */
+  const ruleRegion=hike?getRegionForPeak(originalName,hike.area).name:"";
+  /* Resolve current height: override → fallback table → extract from route */
+  const currentHeight=info.heightOverridden?info.height:peakDefaultHeight(originalName,hike);
   /* Populate fields */
   document.getElementById("pem-name").value=info.name;
   document.getElementById("pem-height").value=currentHeight!=null?currentHeight:"";
@@ -3618,11 +3615,18 @@ function savePeakEdit(){
   const newHeightStr=document.getElementById("pem-height").value.trim();
   const newHeight=newHeightStr?parseInt(newHeightStr):null;
   const newRegion=document.getElementById("pem-region").value;
-  /* Compute defaults to know what's been changed */
-  const defDiff=peakDiff(originalName,hikeDay,3);
+  /* Compute defaults to know what's been changed.
+     v9.60: must use the SAME fallback as peakInfo (the hike's own d), or a
+     3.5★ trip whose peak is missing from PEAK_DIFF would spuriously persist
+     a diff override on every save even when nothing was changed. */
+  const hikeRec=H.find(h=>String(h.day)===String(hikeDay));
+  const defDiff=peakDiff(originalName,hikeDay,hikeDiffFallback(hikeRec)||3);
   const o={};
   if(newName&&newName!==originalName)o.name=newName;
-  if(newHeight!=null&&!isNaN(newHeight))o.height=newHeight;
+  /* v9.60: only store a height override when it differs from the default
+     (fallback table / route-extracted value pre-filled in the field). */
+  const defHeight=peakDefaultHeight(originalName,hikeRec);
+  if(newHeight!=null&&!isNaN(newHeight)&&newHeight!==defHeight)o.height=newHeight;
   if(newRegion)o.region=newRegion;
   if(currentDiff!==defDiff)o.diff=currentDiff;
   if(Object.keys(o).length===0){
@@ -3637,7 +3641,7 @@ function savePeakEdit(){
   if(document.getElementById("vt-height").classList.contains("on"))renderHeightList();
   renderDifficultyStats();
   renderCards();
-  toast(`✅ 已儲存：${newName||originalName}`);
+  toast(`✅ 已儲存：${esc(newName||originalName)}`);
   closePeakEdit();
   /* Trigger debounced auto-push (uses same mechanism as hike status edits) */
   if(typeof scheduleAutoPush==="function")scheduleAutoPush();
@@ -3652,7 +3656,7 @@ function revertPeak(){
   if(document.getElementById("vt-height").classList.contains("on"))renderHeightList();
   renderDifficultyStats();
   renderCards();
-  toast(`↺ 已還原：${originalName}`);
+  toast(`↺ 已還原：${esc(originalName)}`);
   closePeakEdit();
   if(typeof scheduleAutoPush==="function")scheduleAutoPush();
 }
@@ -4454,10 +4458,14 @@ setTimeout(ghAutoPullOnOpen,800);
     ind.classList.add("refreshing");
     txt.textContent="刷新中…";
     try{
-      if(ghHasToken()){
+      /* v9.60: ghAutoPullOnOpen() returns immediately when autoPull is off,
+         which made pull-to-refresh a silent no-op for token-holders with
+         auto-load disabled. Fall back to a local re-render in that case. */
+      const c=ghLoadConfig();
+      if(ghHasToken()&&c.autoPull){
         await ghAutoPullOnOpen();
       } else {
-        /* Not configured — just re-render local data */
+        /* Not configured for auto-load — just re-render local data */
         refreshAll();
         toast("✅ 已刷新本地畫面","ok");
       }
