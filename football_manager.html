@@ -85,6 +85,10 @@ select {
   background: var(--panel-2); color: var(--ink); border: 1px solid var(--line);
   border-radius: 4px; padding: 6px 8px; font-size: 14px;
 }
+input[type="text"], input[type="password"], input:not([type]) {
+  background: var(--panel-2); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 4px; padding: 6px 8px; font-size: 14px; font-family: inherit;
+}
 
 .club-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
 .club-card {
@@ -2356,6 +2360,149 @@ function load() {
     return true;
   } catch (e) { return false; }
 }
+/* Export/import the career as a file — backup, or move between devices.
+   (The game also autosaves to this browser continuously.) */
+function exportSave() {
+  if (!G) return;
+  save();
+  const raw = localStorage.getItem("touchline_save");
+  const a = document.createElement("a");
+  a.href = "data:application/json;charset=utf-8," + encodeURIComponent(raw);
+  a.download = "football-manager-save-season" + G.season + "-week" + G.week + ".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+}
+function importSaveText(text) {
+  const backup = localStorage.getItem("touchline_save");
+  try {
+    const data = JSON.parse(text);
+    if (!data || typeof data.ver !== "number" || !data.squads || !data.league || typeof data.myClub !== "number") {
+      throw new Error("not a save");
+    }
+    localStorage.setItem("touchline_save", JSON.stringify(data));
+    if (!load()) throw new Error("incompatible version");
+    stopTicker(); stopAnim();
+    if (G.live) {
+      G.screen = "live";
+      liveCacheDirty();
+    } else {
+      G.screen = G.week >= G.fixtures.length ? "seasonEnd" : "main";
+    }
+    save(); render();
+    return true;
+  } catch (e) {
+    if (backup !== null) localStorage.setItem("touchline_save", backup);
+    else localStorage.removeItem("touchline_save");
+    render();
+    alert("That file isn't a valid save (or comes from a newer version of the game). Your current career is untouched.");
+    return false;
+  }
+}
+function importSave(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => importSaveText(String(r.result));
+  r.readAsText(f);
+  input.value = "";
+}
+
+/* ---------------- GitHub cloud save ---------------- */
+/* The token is stored ONLY in this browser (separate from the save itself,
+   so it is never included in exported save files). */
+
+function b64encode(s) { return btoa(unescape(encodeURIComponent(s))); }
+function b64decode(b) { return decodeURIComponent(escape(atob(b.replace(/\s/g, "")))); }
+
+function ghCfg() {
+  try { return JSON.parse(localStorage.getItem("touchline_gh") || "null"); } catch (e) { return null; }
+}
+function ghStatus(msg, good) {
+  const el = document.getElementById("gh-status");
+  if (el) { el.textContent = msg; el.style.color = good ? "var(--pitch)" : "var(--amber)"; }
+}
+function ghSaveCfgFromUI() {
+  const repo = (document.getElementById("gh-repo").value || "").trim();
+  const token = (document.getElementById("gh-token").value || "").trim();
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { ghStatus("Repository should look like: yourname/football-manager", false); return; }
+  if (!token) { ghStatus("Paste your access token first.", false); return; }
+  localStorage.setItem("touchline_gh", JSON.stringify({ repo, token }));
+  ghStatus("Settings saved ✓ — you can back up now.", true);
+}
+function ghHeaders(cfg) {
+  return { "Authorization": "Bearer " + cfg.token, "Accept": "application/vnd.github+json" };
+}
+function ghUrl(cfg) {
+  return "https://api.github.com/repos/" + cfg.repo + "/contents/football-manager-save.json";
+}
+async function ghBackup() {
+  const cfg = ghCfg();
+  if (!cfg) { ghStatus("Enter your repository and token first, then press Save settings.", false); return; }
+  if (!G) return;
+  save();
+  ghStatus("Backing up…", true);
+  try {
+    let sha;
+    const probe = await fetch(ghUrl(cfg), { headers: ghHeaders(cfg) });
+    if (probe.ok) sha = (await probe.json()).sha;
+    const res = await fetch(ghUrl(cfg), {
+      method: "PUT",
+      headers: ghHeaders(cfg),
+      body: JSON.stringify({
+        message: "Career backup — season " + G.season + ", week " + G.week + " (" + CLUBS[G.myClub].name + ")",
+        content: b64encode(localStorage.getItem("touchline_save")),
+        sha,
+      }),
+    });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    ghStatus("✓ Backed up to GitHub — season " + G.season + ", week " + G.week + ".", true);
+  } catch (e) {
+    ghStatus("Backup failed (" + e.message + "). Check the repository name and that the token has Contents read & write access.", false);
+  }
+}
+async function ghRestore() {
+  const cfg = ghCfg();
+  if (!cfg) { ghStatus("Enter your repository and token first, then press Save settings.", false); return; }
+  ghStatus("Fetching from GitHub…", true);
+  try {
+    const res = await fetch(ghUrl(cfg), { headers: ghHeaders(cfg) });
+    if (!res.ok) throw new Error(res.status === 404 ? "no backup found in that repository" : "HTTP " + res.status);
+    const data = await res.json();
+    if (importSaveText(b64decode(data.content))) {
+      ghStatus("✓ Career restored from GitHub.", true);
+    }
+  } catch (e) {
+    ghStatus("Restore failed (" + e.message + ").", false);
+  }
+}
+
+function renderCloud() {
+  const cfg = ghCfg() || { repo: "", token: "" };
+  return `<div class="panel"><h2>☁ GitHub cloud save</h2>
+    <p class="note">Back your career up straight into a GitHub repository, and restore it from any device.
+    The game writes one file — <b>football-manager-save.json</b> — to your repo each time you back up.</p>
+    <div class="row"><label>Repository&nbsp;
+      <input id="gh-repo" placeholder="yourname/football-manager" value="${esc(cfg.repo)}" size="28"></label></div>
+    <div class="row"><label>Access token&nbsp;
+      <input id="gh-token" type="password" placeholder="github_pat_…" value="${esc(cfg.token)}" size="28"></label>
+      <button class="ghost" onclick="ghSaveCfgFromUI()">Save settings</button></div>
+    <div class="row">
+      <button class="action" onclick="ghBackup()">☁⬆ Back up to GitHub now</button>
+      <button class="ghost" onclick="ghRestore()">⬇ Restore from GitHub</button>
+    </div>
+    <p class="note" id="gh-status"></p>
+    <h3>One-time setup (5 minutes)</h3>
+    <p class="note">
+      1. On GitHub: your avatar → <b>Settings</b> → <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.<br>
+      2. Name it "football manager save". Under <b>Repository access</b> choose <b>Only select repositories</b> and pick your game repo.<br>
+      3. Under <b>Permissions → Repository permissions</b>, set <b>Contents</b> to <b>Read and write</b>. Generate, then copy the token (it's shown only once).<br>
+      4. Paste repository (like <b>carloslau-sudo/football-manager</b>) and token above, press Save settings, then Back up.<br><br>
+      🔒 The token stays in this browser only — it is never put inside save files or the game file, so sharing those is safe.
+      Set the token's expiry to a year, and you can revoke it any time on GitHub.</p>
+  </div>`;
+}
+
 function resetGame() {
   if (!confirm("Start a completely new game? Your current save will be erased.")) return;
   localStorage.removeItem("touchline_save");
@@ -2444,6 +2591,7 @@ function renderMain() {
   else if (G.tab === "europe") body = renderEurope();
   else if (G.tab === "cups") body = renderCups();
   else if (G.tab === "hall") body = renderHall();
+  else if (G.tab === "cloud") body = renderCloud();
   else if (G.tab === "transfers") body = renderTransfers();
   const euroFix = dueEuro();
   const cupFix = euroFix ? null : dueCup();
@@ -2488,12 +2636,16 @@ function renderMain() {
   }
   return `
     ${boardLine}
-    <div class="tabs">${tabBtn("squad","Squad")}${tabBtn("tactics","Tactics & Lineup")}${tabBtn("fixtures","Fixtures")}${tabBtn("table","Table")}${tabBtn("scorers","Top Scorers")}${G.euro ? tabBtn("europe","🌍 Europe") : ""}${tabBtn("cups","🏆 Cups")}${tabBtn("transfers", windowOpen() ? "💰 Transfers ●" : "💰 Transfers")}${tabBtn("hall","🏛 Hall of Fame")}</div>
+    <div class="tabs">${tabBtn("squad","Squad")}${tabBtn("tactics","Tactics & Lineup")}${tabBtn("fixtures","Fixtures")}${tabBtn("table","Table")}${tabBtn("scorers","Top Scorers")}${G.euro ? tabBtn("europe","🌍 Europe") : ""}${tabBtn("cups","🏆 Cups")}${tabBtn("transfers", windowOpen() ? "💰 Transfers ●" : "💰 Transfers")}${tabBtn("hall","🏛 Hall of Fame")}${tabBtn("cloud","☁ Cloud")}</div>
     ${body}
     <div class="panel row">
       ${playBtns}
+      <button class="ghost" onclick="exportSave()" title="Download your career as a file — back it up or move it to another device">💾 Save to file</button>
+      <button class="ghost" onclick="document.getElementById('save-file-input').click()" title="Restore a career from a saved file">📂 Load from file</button>
+      <input type="file" id="save-file-input" accept=".json,application/json" style="display:none" onchange="importSave(this)">
       <button class="ghost" onclick="resetGame()">New game</button>
-    </div>`;
+    </div>
+    <p class="note" style="text-align:center">The game autosaves in this browser after every action. Use 💾 Save to file for backups or to continue on another device.</p>`;
 }
 
 function euroGroupTableHtml() {
