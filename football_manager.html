@@ -107,6 +107,13 @@ input[type="text"], input[type="password"], input:not([type]) {
 .tag.sus { color: var(--amber); border-color: var(--amber); }
 .formbar { font-family: var(--mono); font-size: 12px; letter-spacing: 1px; }
 .formbar .W { color: var(--pitch); } .formbar .D { color: var(--ink-soft); } .formbar .L { color: var(--red); }
+th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+th.sortable:hover { color: #fff; text-decoration: underline; }
+details.fold { border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin: 10px 0; background: var(--panel-2); }
+details.fold summary { cursor: pointer; color: var(--ink-soft); font-weight: 600; font-size: 13px; user-select: none; }
+details.fold summary:hover { color: var(--ink); }
+details.fold[open] > summary { margin-bottom: 8px; }
+.scorer-lines { text-align: center; font-size: 13px; color: var(--ink-soft); margin: 2px 0 8px; }
 
 .minute-badge { text-align: center; font-family: var(--mono); font-size: 18px; color: var(--amber); margin: 2px 0 10px; }
 .pitch-wrap { margin: 6px auto 10px; max-width: 760px; position: relative; }
@@ -156,6 +163,7 @@ footer { text-align: center; color: var(--ink-soft); font-size: 12px; padding: 2
 .panel { overflow-x: auto; }
 
 @media (max-width: 640px) {
+  .m-hide { display: none; }
   header { padding: 10px 12px; gap: 8px; }
   header h1 { font-size: 16px; }
   #club-badge { font-size: 11px; }
@@ -204,6 +212,67 @@ const FORMATIONS = {
   "5-3-2":         { DF: 5, MF: 3, FW: 2, att: 0.94, mid: 0.96, def: 1.08 },
   "5-4-1":         { DF: 5, MF: 4, FW: 1, att: 0.87, mid: 1.00, def: 1.12 },
 };
+
+/* ---------------- Detailed positions (roles) ----------------
+   Every player has a role within his line — LB/CB/RB, CDM/CM/CAM/LM/RM,
+   LW/ST/CF/SS/RW — and every formation defines its exact slots. A player in
+   the wrong slot still plays, but his effective rating drops with how far
+   from home he is (wrong side, wrong duty, or wrong line entirely). */
+const ROLES = {
+  GK:  { line: "GK", side: "C" },
+  LB:  { line: "DF", side: "L" }, LWB: { line: "DF", side: "L" },
+  CB:  { line: "DF", side: "C" },
+  RB:  { line: "DF", side: "R" }, RWB: { line: "DF", side: "R" },
+  CDM: { line: "MF", side: "C" }, CM:  { line: "MF", side: "C" }, CAM: { line: "MF", side: "C" },
+  LM:  { line: "MF", side: "L" }, RM:  { line: "MF", side: "R" },
+  LW:  { line: "FW", side: "L" }, RW:  { line: "FW", side: "R" },
+  ST:  { line: "FW", side: "C" }, CF:  { line: "FW", side: "C" }, SS:  { line: "FW", side: "C" },
+};
+/* slot lists are in formation-group order (DF block, MF block, FW block) so
+   they line up with the lineup array and the position dropdowns */
+const FORM_SLOTS = {
+  "4-4-2":         ["LB","CB","CB","RB", "LM","CM","CM","RM", "ST","ST"],
+  "4-3-3":         ["LB","CB","CB","RB", "CDM","CM","CM", "LW","ST","RW"],
+  "4-2-3-1":       ["LB","CB","CB","RB", "CDM","CDM","LM","CAM","RM", "ST"],
+  "4-4-2 Diamond": ["LB","CB","CB","RB", "CDM","CM","CM","CAM", "ST","ST"],
+  "4-5-1":         ["LB","CB","CB","RB", "LM","CDM","CM","CDM","RM", "ST"],
+  "3-5-2":         ["CB","CB","CB", "LM","CM","CDM","CM","RM", "ST","ST"],
+  "3-4-3":         ["CB","CB","CB", "LM","CM","CM","RM", "LW","ST","RW"],
+  "5-3-2":         ["LWB","CB","CB","CB","RWB", "CM","CDM","CM", "ST","ST"],
+  "5-4-1":         ["LWB","CB","CB","CB","RWB", "LM","CM","CM","RM", "ST"],
+};
+function formSlots(formationName) {
+  return ["GK"].concat(FORM_SLOTS[formationName] || FORM_SLOTS["4-4-2"]);
+}
+function roleFit(playerRole, slotRole) {
+  if (playerRole === slotRole) return 1;
+  const a = ROLES[playerRole], b = ROLES[slotRole];
+  if (!a || !b) return 1; // unknown role (old data mid-migration): no penalty
+  if (a.line === "GK" || b.line === "GK") return 0.5; // an outfielder in goal is chaos
+  let pen = 0;
+  if (a.line !== b.line) pen += (a.side === b.side && a.side !== "C") ? 0.06 : 0.10; // LM→LW is natural
+  if (a.side !== b.side) pen += (a.side === "C" || b.side === "C") ? 0.05 : 0.08;    // wrong flank hurts most
+  if (a.line === b.line && a.side === b.side) pen += 0.03;                            // CM→CAM, ST→SS, LB→LWB
+  return Math.max(0.8, 1 - pen);
+}
+function slotRating(p, slotRole) { return effRating(p) * roleFit(p.role || p.pos, slotRole); }
+/* role templates: the strongest players in a line take the core roles */
+const LINE_ROLES = {
+  GK: ["GK"],
+  DF: ["CB", "LB", "RB", "CB", "CB", "LB", "RB", "CB"],
+  MF: ["CM", "CDM", "CAM", "LM", "RM", "CM", "CDM", "CM"],
+  FW: ["ST", "LW", "RW", "ST", "CF", "SS"],
+};
+function assignRoles(squad) { // fills only players without a role
+  for (const pos of ["GK", "DF", "MF", "FW"]) {
+    const line = squad.filter(p => p.pos === pos && !p.role).sort((a, b) => b.rating - a.rating);
+    line.forEach((p, i) => { p.role = LINE_ROLES[pos][i % LINE_ROLES[pos].length]; });
+  }
+}
+function roleFor(pos, squad) { // a single newcomer covers the thinnest role
+  const seq = [...new Set(LINE_ROLES[pos])];
+  return seq.sort((x, y) => squad.filter(p => p.role === x).length - squad.filter(p => p.role === y).length)[0];
+}
 const MENTALITIES = ["Defensive", "Balanced", "Attacking"];
 /* Weather: rolled per match-week, English seasonality. att hits both sides;
    drain multiplies fitness cost; inj multiplies injury risk. */
@@ -644,7 +713,9 @@ function potStars(p) {
 }
 
 function genSquad(clubIdx) {
-  return CLUBS[clubIdx].squad.map(([name, pos, rating, age]) => makePlayer(name, pos, rating, age));
+  const sq = CLUBS[clubIdx].squad.map(([name, pos, rating, age]) => makePlayer(name, pos, rating, age));
+  assignRoles(sq);
+  return sq;
 }
 
 /* ---------------- Fixtures (double round robin, circle method) ---------------- */
@@ -676,25 +747,33 @@ function effRating(p) {
 }
 function available(p) { return p.injury === 0 && p.ban === 0 && !p.loan; }
 
-function bestXI(squad, formationName) {
+function slotLine(formationName, slotIdx) { // which broad line owns slot i
   const f = FORMATIONS[formationName];
-  const by = pos => squad.filter(p => p.pos === pos && available(p))
-                         .sort((a, b) => effRating(b) - effRating(a));
-  const xi = [];
-  const gk = by("GK")[0];
-  if (gk) xi.push(gk.id);
-  for (const pos of ["DF", "MF", "FW"]) {
-    for (const p of by(pos).slice(0, f[pos])) xi.push(p.id);
-  }
-  // fill gaps with any available outfielder if short (injury crisis)
-  if (xi.length < 11) {
-    for (const p of squad.filter(p => available(p) && !xi.includes(p.id))
-                         .sort((a, b) => effRating(b) - effRating(a))) {
-      xi.push(p.id);
-      if (xi.length === 11) break;
+  if (slotIdx === 0) return "GK";
+  if (slotIdx <= f.DF) return "DF";
+  if (slotIdx <= f.DF + f.MF) return "MF";
+  return "FW";
+}
+function bestXI(squad, formationName) {
+  // each slot takes the available player of its line who fits the role best
+  const slots = formSlots(formationName);
+  const used = new Set();
+  const xi = slots.map((role, i) => {
+    const line = slotLine(formationName, i);
+    let best = null, bv = -1;
+    for (const p of squad) {
+      if (p.pos !== line || !available(p) || used.has(p.id)) continue;
+      const v = slotRating(p, role);
+      if (v > bv) { bv = v; best = p; }
     }
-  }
-  return xi;
+    if (best) { used.add(best.id); return best.id; }
+    return null;
+  });
+  // injury crisis: out-of-position stand-ins go into the empty slot itself
+  const reserves = squad.filter(p => available(p) && !used.has(p.id))
+                        .sort((a, b) => effRating(b) - effRating(a));
+  for (let i = 0; i < xi.length; i++) if (xi[i] === null && reserves.length) xi[i] = reserves.shift().id;
+  return xi.filter(id => id !== null);
 }
 
 function leagueFixtures(league) {
@@ -706,7 +785,7 @@ function newGame(clubIdx) {
   const squads = CLUBS.map((_, i) => genSquad(i)); // includes the Championship pool
   const league = [...Array(PL_SIZE).keys()];
   G = {
-    ver: 10,
+    ver: 11,
     season: 1, myClub: clubIdx, week: 0,
     league,
     squads,
@@ -741,8 +820,14 @@ function poisson(lambda) {
 
 function teamNumbers(squad, xiIds, mentality, formName, styleName, weatherKind) {
   const xi = xiIds.map(id => squad.find(p => p.id === id)).filter(Boolean);
-  const g = pos => xi.filter(p => p.pos === pos);
-  const avg = arr => arr.length ? arr.reduce((s, p) => s + effRating(p), 0) / arr.length : 40;
+  // the lineup array is in slot order, so each man's rating is weighed by how
+  // well his role fits the slot he is actually standing in
+  const slots = formSlots(formName);
+  const fitted = xi.map((p, i) => ({
+    p, v: effRating(p) * roleFit(p.role || p.pos, slots[i] || p.role || p.pos),
+  }));
+  const g = pos => fitted.filter(x => x.p.pos === pos);
+  const avg = arr => arr.length ? arr.reduce((s, x) => s + x.v, 0) / arr.length : 40;
   let att = avg(g("FW")) * 0.6 + avg(g("MF")) * 0.4;
   let mid = avg(g("MF"));
   let def = avg(g("DF")) * 0.65 + avg(g("GK")) * 0.35;
@@ -1853,6 +1938,7 @@ function buyForeign(key) {
   if (price > G.budget) return;
   if (wageBill() + wageFor(s.rating, s.age) > wageCap()) return;
   const p = makePlayer(s.name, s.pos, s.rating, s.age);
+  p.role = roleFor(s.pos, G.squads[G.myClub]);
   p.wage = wageFor(s.rating, s.age); p.years = 3;
   G.squads[G.myClub].push(p);
   G.budget -= price;
@@ -1926,30 +2012,35 @@ function renderTransfers() {
       market.push({ p, club: i });
     }
   });
-  market.sort((x, y) => y.p.rating - x.p.rating);
+  const MARKET_COLS = {
+    name: r => r.p.name, club: r => CLUBS[r.club].short, age: r => r.p.age,
+    rating: r => r.p.rating, pot: r => r.p.pot || 0, ask: r => askPrice(r.club, r.p),
+  };
+  const sortedMarket = sortRows(market, "market", MARKET_COLS, r => r.p);
   html += `<h3>Buy players</h3>
     <div class="row"><label>Position
       <select onchange="G.tfFilter=this.value;save();render()">` +
       ["All", "GK", "DF", "MF", "FW"].map(f => `<option${filter === f ? " selected" : ""}>${f}</option>`).join("") +
-    `</select></label><span class="note">Top 50 by rating shown · clubs demand a premium for their star player</span></div>
-    <table><thead><tr><th>Pos</th><th>Name</th><th>Club</th><th class="num">Age</th><th class="num">Rating</th><th class="num">Pot</th><th class="num">Ask</th><th></th></tr></thead><tbody>` +
-    market.slice(0, 50).map(({ p, club }) => {
+    `</select></label><span class="note">Top 50 shown · click a column heading to sort · clubs demand a premium for their star player</span></div>
+    <table><thead><tr>${thSort("market","pos","Pos")}${thSort("market","name","Name")}${thSort("market","club","Club")}${thSort("market","age","Age",1)}${thSort("market","rating","Rating",1)}${thSort("market","pot","Pot",1,"m-hide")}${thSort("market","ask","Ask",1)}<th></th></tr></thead><tbody>` +
+    sortedMarket.slice(0, 50).map(({ p, club }) => {
       const price = askPrice(club, p);
       const wDemand = wageFor(p.rating, p.age);
       const sellerOk = canLeave(club, p);
       const wageOk = wageBill() + wDemand <= wageCap();
       const can = sellerOk && price <= G.budget && G.squads[G.myClub].length < 25 && wageOk;
       const why = !sellerOk ? "Their squad is too thin to sell" : price > G.budget ? "Beyond your budget" : !wageOk ? "His wages don't fit your wage budget" : G.squads[G.myClub].length >= 25 ? "Your squad is full" : "";
-      return `<tr><td class="pos-${p.pos}">${p.pos}</td><td>${esc(p.name)}${p.injury ? ` <span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}</td><td>${CLUBS[club].short}</td>
+      return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${esc(p.name)}${p.injury ? ` <span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}</td><td>${CLUBS[club].short}</td>
         <td class="num">${p.age}</td><td class="num">${p.rating}</td>
-        <td class="num stars-bar">${potStars(p)}</td><td class="num">£${price}M<br><span class="note">£${wDemand}M/yr</span></td>
+        <td class="num stars-bar m-hide">${potStars(p)}</td><td class="num">£${price}M<br><span class="note">£${wDemand}M/yr</span></td>
         <td>${can ? `<button class="ghost" onclick="buyPlayer(${club},${p.id})">Buy</button>` : `<span class="note" title="${why}">—</span>`}</td></tr>`;
     }).join("") + `</tbody></table>`;
   // ---- world stars (European clubs) ----
-  const world = foreignStars().filter(s => filter === "All" || s.pos === filter)
-    .sort((x, y) => y.rating - x.rating).slice(0, 40);
+  const STAR_COLS = { name: x => x.name, club: x => x.club, age: x => x.age, rating: x => x.rating, ask: x => foreignAsk(x) };
+  const world = sortRows(foreignStars().filter(s => filter === "All" || s.pos === filter),
+                         "stars", STAR_COLS, x => x).slice(0, 40);
   html += `<h3>🌍 World stars — Europe's elite (35% world-record premium)</h3>
-    <table><thead><tr><th>Pos</th><th>Name</th><th>Club</th><th class="num">Age</th><th class="num">Rating</th><th class="num">Ask</th><th></th></tr></thead><tbody>` +
+    <table><thead><tr>${thSort("stars","pos","Pos")}${thSort("stars","name","Name")}${thSort("stars","club","Club")}${thSort("stars","age","Age",1)}${thSort("stars","rating","Rating",1)}${thSort("stars","ask","Ask",1)}<th></th></tr></thead><tbody>` +
     world.map(s => {
       const price = foreignAsk(s);
       const wDemand = wageFor(s.rating, s.age);
@@ -2327,6 +2418,7 @@ function genEuroSquad(ec) {
       squad.push(mk(filler(), pos, base - 3 + Math.floor(rnd() * 6)));
     }
   }
+  assignRoles(squad);
   return squad;
 }
 
@@ -3076,7 +3168,9 @@ function buildVisual() {
     const squad = G.squads[clubIdx];
     const xi = xiIds.map(id => squad.find(p => p.id === id)).filter(Boolean);
     for (const pos of ["GK", "DF", "MF", "FW"]) {
-      const line = xi.filter(p => p.pos === pos);
+      const ord = { L: 0, C: 1, R: 2 };
+      const line = xi.filter(p => p.pos === pos)
+        .sort((a, b) => (ord[(ROLES[a.role] || {}).side] ?? 1) - (ord[(ROLES[b.role] || {}).side] ?? 1));
       line.forEach((p, i) => {
         const lx = LINE_X[pos];
         const ax = homeSide ? lx : 1 - lx;
@@ -3609,6 +3703,7 @@ function nextSeason(newClub) {
       const rating = 56 + Math.floor(rnd() * 9) + Math.round((CLUBS[ci].base - 70) / 3);
       const grad = makePlayer(YOUTH_FIRST[Math.floor(rnd() * YOUTH_FIRST.length)] + " " + YOUTH_LAST[Math.floor(rnd() * YOUTH_LAST.length)],
                               pos, rating, 16 + Math.floor(rnd() * 3));
+      grad.role = roleFor(pos, G.squads[ci]);
       grad.pot = Math.min(94, rating + 8 + Math.floor(rnd() * 19));
       G.squads[ci].push(grad);
       return grad;
@@ -3705,7 +3800,8 @@ function load() {
       // old 4-team group format can't be carried into the Swiss model mid-campaign
       if (data.euro && !data.euro.format) data.euro = { legacyComp: data.euro.comp, legacyStage: data.euro.stage };
     }
-    if (data.ver !== 10) return false; // save from an older game version
+    if (data.ver === 10) data.ver = 11; // detailed roles — assigned just below
+    if (data.ver !== 11) return false; // save from an older game version
     nextId = data.nextId || 1000;
     delete data.nextId;
     G = data;
@@ -3738,6 +3834,7 @@ function load() {
       if (p.wage === undefined) p.wage = wageFor(p.rating, p.age);
       if (p.years === undefined) p.years = 1 + Math.floor(Math.random() * 4);
     }
+    for (const sq of G.squads) if (sq.some(p => !p.role)) assignRoles(sq);
     if (!G.wcap) setWageCap();
     if (G.sponsor === undefined) { // older saves get a modest existing deal
       G.sponsor = { name: "Meridian Bank", base: sponsorRep(), winBonus: 0, top4Bonus: 0, trophyBonus: 0, years: 2 };
@@ -4022,6 +4119,39 @@ function validateLineup() {
 /* ---------------- Rendering ---------------- */
 
 const $ = sel => document.querySelector(sel);
+
+/* ---------------- Sortable lists: click a column heading to sort by it ---------------- */
+const POS_ORD = { GK: 0, DF: 1, MF: 2, FW: 3 };
+const ROLE_ORD = ["GK", "LB", "LWB", "CB", "RB", "RWB", "CDM", "CM", "CAM", "LM", "RM", "LW", "ST", "CF", "SS"];
+let sortState = { // session-only view preference
+  squad:  { key: "pos",    dir: 1 },
+  market: { key: "rating", dir: -1 },
+  stars:  { key: "rating", dir: -1 },
+};
+function posCmp(a, b) {
+  return (POS_ORD[a.pos] - POS_ORD[b.pos])
+      || (ROLE_ORD.indexOf(a.role || a.pos) - ROLE_ORD.indexOf(b.role || b.pos))
+      || (b.rating - a.rating);
+}
+function setSort(t, key) {
+  const s = sortState[t];
+  if (s.key === key) s.dir = -s.dir; // second click flips the direction
+  else { s.key = key; s.dir = (key === "name" || key === "pos" || key === "club") ? 1 : -1; }
+  render();
+}
+function thSort(t, key, label, num, extra) {
+  const s = sortState[t];
+  return `<th class="sortable${num ? " num" : ""}${extra ? " " + extra : ""}" onclick="setSort('${t}','${key}')" title="Click to sort by ${label}">${label}${s.key === key ? (s.dir > 0 ? " ▲" : " ▼") : ""}</th>`;
+}
+function sortRows(rows, t, getters, posOf) {
+  const s = sortState[t];
+  return [...rows].sort((a, b) => {
+    if (s.key === "pos") return posCmp(posOf(a), posOf(b)) * s.dir;
+    const va = getters[s.key](a), vb = getters[s.key](b);
+    const c = typeof va === "string" ? va.localeCompare(vb) : va - vb;
+    return c ? c * s.dir : posCmp(posOf(a), posOf(b));
+  });
+}
 function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
 function starBar(rating) {
   const n = Math.max(1, Math.min(5, Math.round((rating - 68) / 5)));
@@ -4429,9 +4559,12 @@ function renderEurope() {
     </div>`;
 }
 
+const SQUAD_COLS = {
+  name: p => p.name, rating: p => effRating(p), pot: p => p.pot || 0, age: p => p.age,
+  fitness: p => p.fitness, form: p => p.form, goals: p => p.goals, wage: p => p.wage || 0,
+};
 function renderSquad() {
-  const squad = [...G.squads[G.myClub]].sort((a, b) =>
-    ["GK","DF","MF","FW"].indexOf(a.pos) - ["GK","DF","MF","FW"].indexOf(b.pos) || effRating(b) - effRating(a));
+  const squad = sortRows(G.squads[G.myClub], "squad", SQUAD_COLS, p => p);
   const inXI = new Set(validateLineup());
   const summerItems = (G.week === 0 ? (G.youthNews || []) : []).concat(G.week === 0 && G.sponsorNews ? [G.sponsorNews] : [])
     .concat(G.week === 0 ? (G.euroRivalNews || []) : []);
@@ -4440,13 +4573,13 @@ function renderSquad() {
        <p class="note">${summerItems.map(esc).join("<br>")}</p></div>` : "";
   return news + `<div class="panel"><h2>${clubCrest(G.myClub, 28)}Squad — ${esc(CLUBS[G.myClub].name)}</h2>
     <p class="note">Wage bill: <b style="color:${wageBill() > wageCap() ? "var(--red)" : "var(--pitch)"}">£${wageBill()}M</b> / £${wageCap()}M cap per year</p>
-    <table><thead><tr><th>Pos</th><th>Name</th><th class="num">Rating</th><th class="num">Pot</th><th class="num">Age</th><th class="num">Fitness</th><th class="num">Form</th><th class="num">Goals</th><th class="num">Contract</th><th>Status</th></tr></thead><tbody>` +
+    <table><thead><tr>${thSort("squad","pos","Pos")}${thSort("squad","name","Name")}${thSort("squad","rating","Rating",1)}${thSort("squad","pot","Pot",1,"m-hide")}${thSort("squad","age","Age",1)}${thSort("squad","fitness","Fit",1,"m-hide")}${thSort("squad","form","Form",1,"m-hide")}${thSort("squad","goals","Goals",1)}${thSort("squad","wage","Contract",1)}<th>Status</th></tr></thead><tbody>` +
     squad.map(p => `<tr${inXI.has(p.id) ? ' class="me"' : ""}>
-      <td class="pos-${p.pos}">${p.pos}</td><td>${esc(p.name)}${inXI.has(p.id) ? " <span class='tag'>XI</span>" : ""}</td>
+      <td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${esc(p.name)}${inXI.has(p.id) ? " <span class='tag'>XI</span>" : ""}</td>
       <td class="num">${Math.round(effRating(p))}</td>
-      <td class="num stars-bar" title="Scouts' view of his ceiling">${potStars(p)}</td>
+      <td class="num stars-bar m-hide" title="Scouts' view of his ceiling">${potStars(p)}</td>
       <td class="num">${p.age}</td>
-      <td class="num">${p.fitness}%</td><td class="num">${p.form > 0 ? "+" + p.form : p.form}</td>
+      <td class="num m-hide">${p.fitness}%</td><td class="num m-hide">${p.form > 0 ? "+" + p.form : p.form}</td>
       <td class="num">${p.goals}</td>
       <td class="num">£${p.wage || 0}M·${p.years || 0}y${(p.years || 0) <= 1 ? ` <button class="ghost" style="padding:2px 7px;font-size:11px" onclick="renewContract(${p.id})" title="He wants £${renewDemand(p)}M/yr">Renew</button>` : ""}</td>
       <td>${p.loan ? `<span class="tag">LOAN @${esc(p.loan)}</span>` : ""}${p.injury ? `<span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}${(p.years || 0) <= 1 ? ` <span class="tag" style="color:var(--amber)">EXPIRING</span>` : ""}</td>
@@ -4458,9 +4591,6 @@ function renderSquad() {
 function renderTactics() {
   const squad = G.squads[G.myClub];
   G.lineup = validateLineup();
-  const f = FORMATIONS[G.formation];
-  const slots = [["GK", 1], ["DF", f.DF], ["MF", f.MF], ["FW", f.FW]];
-  let slotIdx = 0;
   let html = `<div class="panel"><h2>Tactics & Lineup</h2>
     <div class="row">
       <label>Formation
@@ -4479,31 +4609,33 @@ function renderTactics() {
     </div>
     <p class="note">${esc(STYLES[G.style || "Balanced"].desc)}</p>
     <h3>Starting XI</h3><div class="lineup-grid">`;
-  for (const [pos, count] of slots) {
-    for (let k = 0; k < count; k++) {
-      const current = G.lineup[slotIdx];
-      // every available player of this position is selectable; picking a
-      // player who already starts in another slot swaps the two
-      const options = squad.filter(p => p.pos === pos && available(p))
-        .sort((a, b) => effRating(b) - effRating(a));
-      // unavailable men stay visible — greyed out with the reason — so a new
-      // signing who arrived injured/suspended can always be located
-      const out = squad.filter(p => p.pos === pos && !available(p));
-      // an out-of-position stand-in (injury crisis) is shown as this slot's
-      // occupant under his real position, never silently swapped for the
-      // first name in the list
-      const curP = squad.find(p => p.id === current);
-      const standIn = curP && curP.pos !== pos
-        ? `<option value="${curP.id}" selected>${esc(curP.name)} (${curP.pos} filling in · ${Math.round(effRating(curP))})</option>` : "";
-      html += `<div class="slot"><label class="pos-${pos}">${pos}${count > 1 ? k + 1 : ""}</label>
-        <select onchange="swapSlot(${slotIdx}, parseInt(this.value))">` + standIn +
-        options.map(p => `<option value="${p.id}"${p.id === current ? " selected" : ""}>${esc(p.name)} (${Math.round(effRating(p))}${p.fitness < 70 ? " · " + p.fitness + "%" : ""})${G.lineup.includes(p.id) && p.id !== current ? " — starting" : ""}</option>`).join("") +
-        out.map(p => `<option disabled>${esc(p.name)} — ${p.loan ? "on loan at " + esc(p.loan) : p.injury ? "🚑 injured (" + p.injury + " wk)" : "⛔ suspended (" + p.ban + ")"}</option>`).join("") +
-        `</select></div>`;
-      slotIdx++;
-    }
+  const slotRoles = formSlots(G.formation);
+  for (let i = 0; i < slotRoles.length; i++) {
+    const role = slotRoles[i];
+    const pos = slotLine(G.formation, i);
+    const current = G.lineup[i];
+    // every available player of this line is selectable, sorted by how well he
+    // fits THIS slot — the shown rating is already adjusted for the role
+    const options = squad.filter(p => p.pos === pos && available(p))
+      .sort((a, b) => slotRating(b, role) - slotRating(a, role));
+    // unavailable men stay visible — greyed out with the reason — so a new
+    // signing who arrived injured/suspended can always be located
+    const out = squad.filter(p => p.pos === pos && !available(p));
+    // an out-of-line stand-in (injury crisis) is shown as this slot's occupant
+    // under his real role, never silently swapped for the first name in the list
+    const curP = squad.find(p => p.id === current);
+    const standIn = curP && curP.pos !== pos
+      ? `<option value="${curP.id}" selected>${esc(curP.name)} (${curP.role || curP.pos} filling in · ${Math.round(slotRating(curP, role))})</option>` : "";
+    html += `<div class="slot"><label class="pos-${pos}" title="${pos} slot">${role}</label>
+      <select onchange="swapSlot(${i}, parseInt(this.value))">` + standIn +
+      options.map(p => {
+        const v = Math.round(slotRating(p, role));
+        return `<option value="${p.id}"${p.id === current ? " selected" : ""}>${esc(p.name)} (${p.role || p.pos} · ${v}${p.fitness < 70 ? " · " + p.fitness + "%" : ""})${G.lineup.includes(p.id) && p.id !== current ? " — starting" : ""}</option>`;
+      }).join("") +
+      out.map(p => `<option disabled>${esc(p.name)} — ${p.loan ? "on loan at " + esc(p.loan) : p.injury ? "🚑 injured (" + p.injury + " wk)" : "⛔ suspended (" + p.ban + ")"}</option>`).join("") +
+      `</select></div>`;
   }
-  html += `</div><p class="note">Attacking mentality boosts your attack but weakens defence; defensive does the opposite.</p></div>`;
+  html += `</div><p class="note">Each slot shows ratings <b>adjusted for that role</b> — a left-back picked at right-back, or a winger up front, plays below his real level. Attacking mentality boosts your attack but weakens defence; defensive does the opposite.</p></div>`;
   return html;
 }
 
@@ -4516,19 +4648,32 @@ function swapSlot(slotIdx, playerId) {
   render();
 }
 
+let fixturesExpanded = false; // view preference for this session only
 function renderFixtures() {
-  let html = `<div class="panel"><h2>Fixtures & Results</h2><table><tbody>`;
-  for (let w = 0; w < G.fixtures.length; w++) {
+  const weekRows = w => {
     const played = w < G.results.length;
-    html += `<tr><th colspan="3">Matchweek ${w + 1} · ${matchDateStr("league", w)}${w === G.week ? " — next" : ""}</th></tr>`;
+    let rows = `<tr><th colspan="3">Matchweek ${w + 1} · ${matchDateStr("league", w)}${w === G.week ? " — next" : ""}</th></tr>`;
     G.fixtures[w].forEach(([h, a], j) => {
       const mine = h === G.myClub || a === G.myClub;
       const r = played ? G.results[w][j] : null;
-      html += `<tr${mine ? ' class="me"' : ""}><td>${esc(CLUBS[h].name)}</td>
+      rows += `<tr${mine ? ' class="me"' : ""}><td>${esc(CLUBS[h].name)}</td>
         <td class="num">${r ? r.hg + " – " + r.ag : "vs"}</td><td>${esc(CLUBS[a].name)}</td></tr>`;
     });
+    return rows;
+  };
+  let html = `<div class="panel"><h2>Fixtures & Results</h2>`;
+  if (fixturesExpanded) {
+    html += `<p class="note"><button class="ghost" onclick="fixturesExpanded=false;render()">▴ Compact view — latest round & next round only</button></p><table><tbody>`;
+    for (let w = 0; w < G.fixtures.length; w++) html += weekRows(w);
+  } else {
+    html += `<table><tbody>`;
+    if (G.results.length > 0) html += weekRows(G.results.length - 1); // the round just played
+    if (G.week < G.fixtures.length) html += weekRows(G.week);         // the round coming up
+    if (!G.results.length && G.week >= G.fixtures.length) html += `<tr><td class="note">Season complete.</td></tr>`;
   }
-  return html + `</tbody></table></div>`;
+  html += `</tbody></table>`;
+  if (!fixturesExpanded) html += `<p class="note" style="margin-top:10px"><button class="ghost" onclick="fixturesExpanded=true;render()">📜 Show the full season — all ${G.fixtures.length} rounds</button></p>`;
+  return html + `</div>`;
 }
 
 function renderTable() {
@@ -4578,7 +4723,7 @@ function renderManagePanel(isHT) {
   const benchOpts = posFilter => squad
     .filter(p => available(p) && (!posFilter || p.pos === posFilter) && !L[key].includes(p.id))
     .sort((a, b) => effRating(b) - effRating(a))
-    .map(p => `<option value="${p.id}">${esc(p.name)} (${p.pos} ${Math.round(effRating(p))})</option>`).join("");
+    .map(p => `<option value="${p.id}">${esc(p.name)} (${p.role || p.pos} ${Math.round(effRating(p))})</option>`).join("");
   const shortHanded = L[key].length < 11 - (L.reds[my] || 0);
   const windowNote = isHT
     ? "Half-time changes are free — they don't use a substitution window."
@@ -4598,7 +4743,7 @@ function renderManagePanel(isHT) {
       ${ok ? `<select onchange="htSubIn(parseInt(this.value))"><option value="">Bring on…</option>${benchOpts(null)}</select>` : `<span class="note">No substitutions available.</span>`}
     </div>` : ""}
     <div class="lineup-grid">` +
-    xi.map(p => `<div class="slot"><label class="pos-${p.pos}">${p.pos}</label>
+    xi.map(p => `<div class="slot"><label class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</label>
       <span style="flex:1">${esc(p.name)} <span class="note">${Math.round(effRating(p))}${p.fitness < 70 ? " · " + p.fitness + "%" : ""}</span></span>
       ${ok ? `<select onchange="htSub(${p.id}, parseInt(this.value))"><option value="">sub…</option>${benchOpts(p.pos)}</select>` : ""}
     </div>`).join("") +
@@ -4784,11 +4929,30 @@ function renderMatchResult() {
   const verdict = myWin ? "A fine win!" : draw ? "Honours even." : G.lastMatchEuro ? "A tough European night." : "A tough afternoon.";
   const wxTag = r.weather && r.weather !== "clear" && WEATHER[r.weather]
     ? " · " + WEATHER[r.weather].icon + " " + WEATHER[r.weather].name : "";
+  // who scored — the headline facts stay visible; everything else folds away
+  const scorerLine = side => r.events
+    .filter(e => e.type === "goal" && e.clubIdx === side)
+    .map(e => esc(e.who || "?") + " " + e.min + "'").join(", ");
+  const hS = scorerLine(r.h), aS = scorerLine(r.a);
+  // what comes next — computed AFTER this result was committed
+  const seasonOver = G.week >= G.fixtures.length;
+  let nextLine = "";
+  if (!seasonOver) {
+    const ef = dueEuro(), cf = ef ? null : dueCup();
+    const nf = (!ef && !cf && G.fixtures[G.week]) ? G.fixtures[G.week].find(([h, a]) => h === G.myClub || a === G.myClub) : null;
+    if (ef) nextLine = "🏆 " + COMP_NAME[G.euro.comp] + " · " + esc(ef.label) + " vs " + esc(ef.opp.name) + (ef.home ? " (H)" : " (A)") + " — " + matchDateStr(G.euro.comp, G.week, G.euro.played);
+    else if (cf) nextLine = "🏆 " + esc(cf.label) + " vs " + esc(cf.opp.name) + (cf.home ? " (H)" : " (A)") + " — " + matchDateStr(cf.cupKey, G.week);
+    else if (nf) {
+      const home = nf[0] === G.myClub;
+      nextLine = "Matchweek " + (G.week + 1) + " vs " + esc(CLUBS[home ? nf[1] : nf[0]].name) + (home ? " (H)" : " (A)") + " — " + matchDateStr("league", G.week);
+    }
+  }
   return `<div class="panel">
     ${G.motmNews ? `<div class="banner" style="padding:12px;margin-bottom:14px"><p style="margin:0">${esc(G.motmNews)}</p></div>` : ""}
     <h2>Full time — ${G.lastMatchLabel ? esc(G.lastMatchLabel) : "Matchweek " + G.week}${r.dateMs ? " · " + fmtDate(r.dateMs) : ""}${wxTag}</h2>
     <div class="score-line">${esc(CLUBS[r.h].name)} <b>${r.hg}</b><span class="vs">–</span><b>${r.ag}</b> ${esc(CLUBS[r.a].name)}</div>
-    <p style="text-align:center" class="note">${verdict}</p>
+    ${hS || aS ? `<p class="scorer-lines">${hS ? "⚽ " + CLUBS[r.h].short + ": " + hS : ""}${hS && aS ? " &nbsp;·&nbsp; " : ""}${aS ? "⚽ " + CLUBS[r.a].short + ": " + aS : ""}</p>` : ""}
+    <p style="text-align:center" class="note">${verdict}${r.ratings && r.ratings.motm ? ` · ⭐ ${esc(r.ratings.motm.name)} ${r.ratings.motm.val.toFixed(1)}` : ""}</p>
     ${r.events.some(e => e.type === "goal" && e.clubIdx !== undefined) ? `
     <div style="text-align:center;margin:4px 0 10px">
       <button class="ghost" id="hl-btn" onclick="startHighlights()">🎬 Watch the goals</button>
@@ -4801,19 +4965,20 @@ function renderMatchResult() {
     <div style="text-align:center;margin:4px 0 10px">
       <button class="ghost" onclick="toggleLang()" title="Commentary language / 旁述語言">${LANG === "zh" ? "EN" : "中文旁述"}</button>
     </div>`}
-    <ul class="events">` +
-    r.events.map(e => `<li class="ev-${e.type === "goal" ? "goal" : e.type === "red" ? "red" : "other"}">
-      <span class="min">${e.min}'</span> ${evIcon(e.type)}
-      ${e.clubIdx !== undefined && CLUBS[e.clubIdx] ? `<b>${CLUBS[e.clubIdx].short}</b> — ` : ""}${esc(evText(e))}</li>`).join("") +
-    `</ul>` +
-    (r.stats ? `<h3>Match stats</h3>
+    <details class="fold"><summary>📋 Match timeline (${r.events.length} events)</summary>
+      <ul class="events">` +
+      r.events.map(e => `<li class="ev-${e.type === "goal" ? "goal" : e.type === "red" ? "red" : "other"}">
+        <span class="min">${e.min}'</span> ${evIcon(e.type)}
+        ${e.clubIdx !== undefined && CLUBS[e.clubIdx] ? `<b>${CLUBS[e.clubIdx].short}</b> — ` : ""}${esc(evText(e))}</li>`).join("") +
+      `</ul></details>` +
+    (r.stats ? `<details class="fold"><summary>📊 Match stats — possession ${r.stats.poss}%, shots ${r.stats.hShots}–${r.stats.aShots}</summary>
       <div class="poss-bar"><div class="ph" style="width:${r.stats.poss}%"></div><div class="pa" style="width:${100 - r.stats.poss}%"></div></div>
       <div class="stat-row"><span>${r.stats.poss}%</span><span class="lbl">Possession</span><span>${100 - r.stats.poss}%</span></div>
       <div class="stat-row"><span>${r.stats.hShots}</span><span class="lbl">Shots</span><span>${r.stats.aShots}</span></div>
-      <div class="stat-row"><span>${r.stats.hSot}</span><span class="lbl">On target</span><span>${r.stats.aSot}</span></div>` : "") +
+      <div class="stat-row"><span>${r.stats.hSot}</span><span class="lbl">On target</span><span>${r.stats.aSot}</span></div></details>` : "") +
     (r.ratings && r.ratings.motm ? `
+      <details class="fold"><summary>⭐ Player ratings — ${esc(CLUBS[G.myClub].name)}</summary>
       <p class="motm">⭐ Man of the Match: <b>${esc(r.ratings.motm.name)}</b> (${CLUBS[r.ratings.motm.club].short}) — ${r.ratings.motm.val.toFixed(1)}</p>
-      <h3>Player ratings — ${esc(CLUBS[G.myClub].name)}</h3>
       <table><tbody>` +
       (r.h === G.myClub ? r.ratings.home : r.ratings.away)
         .sort((x, y) => y.val - x.val)
@@ -4822,13 +4987,14 @@ function renderMatchResult() {
                        + "🟥".repeat(p.r || 0) + "❌".repeat(p.pk || 0);
           return `<tr><td class="pos-${p.pos}">${p.pos}</td><td>${esc(p.name)} ${badges}</td>
           <td class="num"><b>${p.val.toFixed(1)}</b></td></tr>`; }).join("") +
-      `</tbody></table>` : "") +
-    (others.length ? `<h3>Around the grounds</h3>
+      `</tbody></table></details>` : "") +
+    (others.length ? `<details class="fold"><summary>🏟 Around the grounds — the other ${others.length} results</summary>
     <p class="other-results">` +
     others.map(x => `${esc(CLUBS[x.h].name)} <b>${x.hg}–${x.ag}</b> ${esc(CLUBS[x.a].name)}`).join(" &nbsp;·&nbsp; ") +
-    `</p>` : "") +
-    (G.lastMatchEuro === "euro" && G.euro && G.euro.stage === "league" ? `<h3>League phase standings</h3>${euroLeagueTableHtml(true)}` : "") +
-    `<div class="row" style="margin-top:16px">
+    `</p></details>` : "") +
+    (G.lastMatchEuro === "euro" && G.euro && G.euro.stage === "league" ? `<details class="fold"><summary>🌍 League phase standings</summary>${euroLeagueTableHtml(true)}</details>` : "") +
+    (nextLine ? `<p style="text-align:center;margin-top:14px">📅 <b>Next up:</b> ${nextLine}</p>` : seasonOver ? `<p style="text-align:center;margin-top:14px">🏁 That was the final round — the season review awaits.</p>` : "") +
+    `<div class="row" style="margin-top:10px">
       <button class="action" onclick="G.screen='main';save();render()">Continue → squad & next match</button>
       <button class="ghost" onclick="G.screen='main';G.tab='${G.lastMatchEuro === "euro" ? "europe" : G.lastMatchEuro === "cup" ? "cups" : "table"}';save();render()">${G.lastMatchEuro === "euro" ? "View Europe" : G.lastMatchEuro === "cup" ? "View Cups" : "View table"}</button>
     </div></div>`;
@@ -4939,16 +5105,33 @@ function seasonCardCanvas() {
   return c;
 }
 
-function downloadSeasonCard() {
+function showSeasonCard() {
+  // render fresh every time and SHOW it — auto-downloads fail silently on many
+  // mobile browsers, which made the card look like it never updated
   const c = seasonCardCanvas();
   if (!c) return;
+  const box = document.getElementById("card-box");
+  if (!box) return;
+  box.innerHTML = "";
+  const img = document.createElement("img");
+  img.src = c.toDataURL("image/png");
+  img.alt = "Season card";
+  img.style.cssText = "max-width:400px;width:100%;display:block;margin:10px auto;border:1px solid var(--line);border-radius:8px";
+  box.appendChild(img);
+  const note = document.createElement("p");
+  note.className = "note";
+  note.style.textAlign = "center";
+  note.innerHTML = "📱 On a phone: press and hold the card → <b>Save image</b>. 🖥 On a computer: ";
   const a = document.createElement("a");
-  a.href = c.toDataURL("image/png");
-  a.download = "FM-season" + G.season + "-" + CLUBS[G.myClub].short + ".png";
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  a.textContent = "download " + "FM-" + seasonYears(G.season).replace("/", "-") + "-" + CLUBS[G.myClub].short + ".png";
+  a.download = "FM-" + seasonYears(G.season).replace("/", "-") + "-" + CLUBS[G.myClub].short + ".png";
+  a.href = img.src;
+  a.style.color = "var(--pitch)";
+  note.appendChild(a);
+  box.appendChild(note);
+  if (box.scrollIntoView) box.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
+function downloadSeasonCard() { showSeasonCard(); } // old name kept for safety
 
 function renderSeasonEnd() {
   if (!G.relegated || !G.promoted) { // season ended under an older version of the game
@@ -4997,9 +5180,10 @@ function renderSeasonEnd() {
            `</select>
            <button class="action" onclick="nextSeason(parseInt(document.getElementById('next-club').value))">Take the job — ${seasonYears(G.season + 1)} →</button>`
         : `<button class="action" onclick="nextSeason()">Start the ${seasonYears(G.season + 1)} season →</button>`}
-      <button class="ghost" onclick="downloadSeasonCard()" title="A poster of your season — share it">🖼 Season card</button>
+      <button class="ghost" onclick="showSeasonCard()" title="A poster of your season — share it">🖼 Season card</button>
       <button class="ghost" onclick="resetGame()">New game (different club)</button>
-    </div>`;
+    </div>
+    <div id="card-box"></div>`;
 }
 
 /* ---------------- Boot ---------------- */
