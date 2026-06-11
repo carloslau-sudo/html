@@ -1777,7 +1777,9 @@ function buyPlayer(clubIdx, pid) {
   p.wage = wageFor(p.rating, p.age); p.years = 3;
   G.squads[G.myClub].push(p);
   G.budget -= price;
-  G.deals.unshift("✍ You signed " + p.name + " from " + CLUBS[clubIdx].name + " for £" + price + "M");
+  G.deals.unshift("✍ You signed " + p.name + " from " + CLUBS[clubIdx].name + " for £" + price + "M" +
+    (p.injury ? " — ⚠ he arrives injured and needs " + p.injury + " week" + (p.injury > 1 ? "s" : "") + " to recover" :
+     p.ban ? " — ⚠ he arrives suspended (" + p.ban + " match ban carries over)" : ""));
   save(); render();
 }
 
@@ -1938,7 +1940,7 @@ function renderTransfers() {
       const wageOk = wageBill() + wDemand <= wageCap();
       const can = sellerOk && price <= G.budget && G.squads[G.myClub].length < 25 && wageOk;
       const why = !sellerOk ? "Their squad is too thin to sell" : price > G.budget ? "Beyond your budget" : !wageOk ? "His wages don't fit your wage budget" : G.squads[G.myClub].length >= 25 ? "Your squad is full" : "";
-      return `<tr><td class="pos-${p.pos}">${p.pos}</td><td>${esc(p.name)}</td><td>${CLUBS[club].short}</td>
+      return `<tr><td class="pos-${p.pos}">${p.pos}</td><td>${esc(p.name)}${p.injury ? ` <span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}</td><td>${CLUBS[club].short}</td>
         <td class="num">${p.age}</td><td class="num">${p.rating}</td>
         <td class="num stars-bar">${potStars(p)}</td><td class="num">£${price}M<br><span class="note">£${wDemand}M/yr</span></td>
         <td>${can ? `<button class="ghost" onclick="buyPlayer(${club},${p.id})">Buy</button>` : `<span class="note" title="${why}">—</span>`}</td></tr>`;
@@ -4478,9 +4480,13 @@ function renderTactics() {
       // player who already starts in another slot swaps the two
       const options = squad.filter(p => p.pos === pos && available(p))
         .sort((a, b) => effRating(b) - effRating(a));
+      // unavailable men stay visible — greyed out with the reason — so a new
+      // signing who arrived injured/suspended can always be located
+      const out = squad.filter(p => p.pos === pos && !available(p));
       html += `<div class="slot"><label class="pos-${pos}">${pos}${count > 1 ? k + 1 : ""}</label>
         <select onchange="swapSlot(${slotIdx}, parseInt(this.value))">` +
         options.map(p => `<option value="${p.id}"${p.id === current ? " selected" : ""}>${esc(p.name)} (${Math.round(effRating(p))}${p.fitness < 70 ? " · " + p.fitness + "%" : ""})${G.lineup.includes(p.id) && p.id !== current ? " — starting" : ""}</option>`).join("") +
+        out.map(p => `<option disabled>${esc(p.name)} — ${p.loan ? "on loan at " + esc(p.loan) : p.injury ? "🚑 injured (" + p.injury + " wk)" : "⛔ suspended (" + p.ban + ")"}</option>`).join("") +
         `</select></div>`;
       slotIdx++;
     }
