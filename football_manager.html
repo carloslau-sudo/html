@@ -4167,6 +4167,13 @@ function starBar(rating) {
 
 function render() {
   const app = $("#app");
+  if (APP_MODE === "wc") {
+    $("#club-badge").textContent = WCS && WCS.squads ? "World Cup 2026 · " + WC_TEAMS[WCS.myTeam][0] : "World Cup 2026";
+    $("#week-badge").textContent = WCS && WCS.squads && WCS.stage !== "done" ? wcDateLabel() : "";
+    stopAnim();
+    app.innerHTML = renderWC();
+    return;
+  }
   $("#club-badge").textContent = G ? CLUBS[G.myClub].name + " · " + seasonYears(G.season) : "";
   $("#week-badge").textContent = G && G.week < G.fixtures.length ? "Matchweek " + (G.week + 1) + " / " + G.fixtures.length + " · " + nextMatchDateStr(true) : (G ? "Season complete" : "");
   if (!G) { stopAnim(); app.innerHTML = renderClubSelect(); return; }
@@ -4188,6 +4195,7 @@ function renderClubSelect() {
     <p class="note">Already have a career? <button class="ghost" onclick="document.getElementById('save-file-input0').click()">📂 Load a saved file</button>
     <input type="file" id="save-file-input0" accept=".json,application/json" style="display:none" onchange="importSave(this)">
     &nbsp;(GitHub cloud restore lives in the ☁ Cloud tab once a game is open.)</p>
+    <p style="text-align:center"><button class="action" onclick="wcEnter()">🌎 World Cup 2026 — separate tournament mode${(() => { try { return localStorage.getItem("touchline_wc") ? " (in progress — resume)" : ""; } catch (e) { return ""; } })()}</button></p>
     <h3>🎖 Challenge modes</h3>
     <div class="club-grid">
       <div class="club-card" onclick="startChallenge('rescue')">
@@ -4497,6 +4505,7 @@ function renderMain() {
       <button class="ghost" onclick="exportSave()" title="Download your career as a file — back it up or move it to another device">💾 Save to file</button>
       <button class="ghost" onclick="document.getElementById('save-file-input').click()" title="Restore a career from a saved file">📂 Load from file</button>
       <input type="file" id="save-file-input" accept=".json,application/json" style="display:none" onchange="importSave(this)">
+      <button class="ghost" onclick="wcEnter()" title="A separate tournament — your career is untouched">🌎 World Cup 2026</button>
       <button class="ghost" onclick="resetGame()">New game</button>
     </div>
     <p class="note" style="text-align:center" id="cloud-note">${(ghCfg() && ghCfg().auto) ? "☁ Auto-sync to GitHub is ON — every result is backed up." : "The game autosaves in this browser after every action. Use 💾 Save to file for backups, or turn on ☁ auto-sync in the Cloud tab."}</p>`;
@@ -5191,6 +5200,395 @@ function renderSeasonEnd() {
       <button class="ghost" onclick="resetGame()">New game (different club)</button>
     </div>
     <div id="card-box"></div>`;
+}
+
+
+/* ---------------- 🌎 WORLD CUP 2026 — standalone module ----------------
+   A separate tournament with its own save slot (touchline_wc): your club
+   career is never touched. The simulation reuses the club engine wholesale —
+   teamNumbers, expGoals, poisson, bestXI, detailed roles, formations, styles,
+   and the bilingual commentary. Format: the real 2026 one — 48 nations,
+   12 groups of 4, top two plus the eight best third-placed teams into a
+   Round of 32, then knockouts to the final on 19 July 2026 (MetLife). */
+
+const WC_NAME_POOLS = {
+  LAT: ["González","Rodríguez","Fernández","Martínez","da Silva","Santos","Oliveira","Pereira","Costa","Rojas","Vargas","Castillo","Mendoza","Herrera","Flores","Ramírez","Torres","Acosta","Medina","Cabrera","Núñez","Aguilar","Ríos","Romero"],
+  AFR: ["Diallo","Traoré","Mensah","Okafor","Ndiaye","Keita","Touré","Sow","Camara","Boateng","Appiah","Moussa","Bakayoko","Sissoko","Diabaté","Zungu","Mokoena","Tau","Amrabat","Benali","Haddad","Gueye","El Idrissi","Fofana"],
+  ASI: ["Tanaka","Sato","Yamamoto","Kim","Park","Lee","Hosseini","Karimi","Rahimi","Al-Dossari","Al-Shehri","Nakamura","Ito","Watanabe","Cho","Jeong","Alimov","Rashidov","Al-Faraj","Mansour","Takagi","Endo","Kaneko","Al-Tamari"],
+  ANG: ["Smith","Johnson","Williams","Brown","Miller","Davis","Wilson","Taylor","Thompson","White","Walker","Wright","Robinson","Clarke","Mitchell","Carter","Turner","Phillips","Campbell","Parker","Evans","Morris","Murphy","Bailey"],
+};
+/* [name, short, base, colour, group A=0..L=11, region, stars] */
+const WC_TEAMS = [
+  ["Mexico","MEX",77,"#006847",0,"LAT",[["S. Giménez","FW"],["E. Álvarez","MF"]]],
+  ["Switzerland","SUI",79,"#D52B1E",0,"EUR",[["G. Xhaka","MF"],["B. Embolo","FW"]]],
+  ["Senegal","SEN",78,"#00853F",0,"AFR",[["S. Mané","FW"],["K. Koulibaly","DF"]]],
+  ["Jordan","JOR",70,"#CE1126",0,"ASI",[]],
+  ["Canada","CAN",75,"#FF0000",1,"ANG",[["A. David","FW"],["A. Davies","DF"]]],
+  ["Croatia","CRO",81,"#ED1C24",1,"EUR",[["L. Modrić","MF"],["J. Gvardiol","DF"]]],
+  ["Algeria","ALG",76,"#006233",1,"AFR",[["R. Mahrez","FW"],["I. Bennacer","MF"]]],
+  ["Uzbekistan","UZB",72,"#1EB53A",1,"ASI",[["A. Shomurodov","FW"]]],
+  ["United States","USA",77,"#1F4E9C",2,"ANG",[["C. Pulisic","FW"],["W. McKennie","MF"]]],
+  ["Italy","ITA",82,"#0066B2",2,"EUR",[["G. Donnarumma","GK"],["N. Barella","MF"]]],
+  ["Ivory Coast","CIV",75,"#FF8200",2,"AFR",[["S. Haller","FW"]]],
+  ["Qatar","QAT",70,"#8A1538",2,"ASI",[["Akram Afif","FW"]]],
+  ["Spain","ESP",88,"#C60B1E",3,"EUR",[["L. Yamal","FW"],["Pedri","MF"]]],
+  ["South Korea","KOR",78,"#0047A0",3,"ASI",[["H-m. Son","FW"],["K-i. Lee","MF"]]],
+  ["Panama","PAN",71,"#005293",3,"LAT",[]],
+  ["Cape Verde","CPV",68,"#003893",3,"AFR",[]],
+  ["France","FRA",88,"#0055A4",4,"EUR",[["K. Mbappé","FW"],["A. Tchouaméni","MF"]]],
+  ["Egypt","EGY",77,"#CE1126",4,"AFR",[["M. Salah","FW"],["O. Marmoush","FW"]]],
+  ["Paraguay","PAR",75,"#D52B1E",4,"LAT",[["M. Almirón","MF"]]],
+  ["New Zealand","NZL",67,"#000000",4,"ANG",[["C. Wood","FW"]]],
+  ["Argentina","ARG",87,"#75AADB",5,"LAT",[["L. Messi","FW"],["J. Álvarez","FW"]]],
+  ["Denmark","DEN",79,"#C8102E",5,"EUR",[["R. Højlund","FW"],["C. Eriksen","MF"]]],
+  ["Tunisia","TUN",74,"#E70013",5,"AFR",[]],
+  ["Haiti","HAI",66,"#00209F",5,"LAT",[]],
+  ["England","ENG",87,"#FFFFFF",6,"ANG",[["J. Bellingham","MF"],["H. Kane","FW"]]],
+  ["Ecuador","ECU",78,"#FFD100",6,"LAT",[["M. Caicedo","MF"],["P. Hincapié","DF"]]],
+  ["Austria","AUT",78,"#ED2939",6,"EUR",[["D. Alaba","DF"],["M. Sabitzer","MF"]]],
+  ["Saudi Arabia","KSA",72,"#006C35",6,"ASI",[["S. Al-Dawsari","FW"]]],
+  ["Brazil","BRA",85,"#FFDF00",7,"LAT",[["Vinícius Jr","FW"],["Raphinha","FW"]]],
+  ["Türkiye","TUR",79,"#E30A17",7,"EUR",[["A. Güler","MF"],["H. Çalhanoğlu","MF"]]],
+  ["Ghana","GHA",74,"#006B3F",7,"AFR",[["M. Kudus","MF"]]],
+  ["Curaçao","CUW",67,"#002B7F",7,"LAT",[]],
+  ["Portugal","POR",86,"#006600",8,"EUR",[["C. Ronaldo","FW"],["B. Fernandes","MF"]]],
+  ["Colombia","COL",81,"#FCD116",8,"LAT",[["L. Díaz","FW"],["J. Durán","FW"]]],
+  ["Australia","AUS",74,"#FFCD00",8,"ANG",[]],
+  ["Bolivia","BOL",68,"#007934",8,"LAT",[]],
+  ["Germany","GER",85,"#DD0000",9,"EUR",[["J. Musiala","MF"],["F. Wirtz","MF"]]],
+  ["Uruguay","URU",81,"#5CBFEB",9,"LAT",[["F. Valverde","MF"],["D. Núñez","FW"]]],
+  ["South Africa","RSA",72,"#007A4D",9,"AFR",[]],
+  ["Costa Rica","CRC",71,"#CE1126",9,"LAT",[]],
+  ["Netherlands","NED",84,"#FF6600",10,"EUR",[["C. Gakpo","FW"],["V. van Dijk","DF"]]],
+  ["Morocco","MAR",81,"#C1272D",10,"AFR",[["A. Hakimi","DF"],["Y. En-Nesyri","FW"]]],
+  ["Poland","POL",76,"#DC143C",10,"EUR",[["R. Lewandowski","FW"],["P. Zieliński","MF"]]],
+  ["Iran","IRN",76,"#239F40",10,"ASI",[["M. Taremi","FW"],["S. Azmoun","FW"]]],
+  ["Belgium","BEL",82,"#ED2939",11,"EUR",[["K. De Bruyne","MF"],["J. Doku","FW"]]],
+  ["Norway","NOR",81,"#BA0C2F",11,"EUR",[["E. Haaland","FW"],["M. Ødegaard","MF"]]],
+  ["Japan","JPN",80,"#BC002D",11,"ASI",[["T. Kubo","MF"],["K. Mitoma","FW"]]],
+  ["Scotland","SCO",75,"#005EB8",11,"EUR",[["S. McTominay","MF"],["A. Robertson","DF"]]],
+];
+const WC_GROUPS = "ABCDEFGHIJKL";
+const WC_ROUND_NAMES = ["Round of 32", "Round of 16", "Quarter-final", "Semi-final", "FINAL"];
+const WC_DATES = ["Fri 12 Jun 2026", "Thu 18 Jun 2026", "Wed 24 Jun 2026",
+                  "Tue 30 Jun 2026", "Sat 4 Jul 2026", "Thu 9 Jul 2026", "Tue 14 Jul 2026", "Sun 19 Jul 2026"];
+
+let APP_MODE = "career"; // "career" | "wc"
+let WCS = null;          // the World Cup state — saved separately from the career
+
+function saveWC() { try { localStorage.setItem("touchline_wc", JSON.stringify(WCS)); } catch (e) {} }
+function loadWC() {
+  try { WCS = JSON.parse(localStorage.getItem("touchline_wc") || "null"); } catch (e) { WCS = null; }
+  return !!(WCS && WCS.squads);
+}
+
+let wcPid = 0;
+function wcGenSquad(ti) {
+  const [, short, base, , , region, stars] = WC_TEAMS[ti];
+  const squad = [];
+  const pool = region === "EUR" ? EURO_NAMES : WC_NAME_POOLS[region];
+  const used = new Set((stars || []).map(s => s[0]));
+  const filler = () => {
+    for (let i = 0; i < 40; i++) {
+      const n = "ABCDEFGHIJLMNPRSTV"[Math.floor(rnd() * 18)] + ". " + pool[Math.floor(rnd() * pool.length)];
+      if (!used.has(n)) { used.add(n); return n; }
+    }
+    return "A. " + pool[0];
+  };
+  const mk = (nm, pos, rating) => {
+    const age = 22 + Math.floor(rnd() * 11);
+    return { id: 800000 + (wcPid++), name: nm, pos, rating, pot: rating, age,
+      wage: 1, years: 1, fitness: 100, form: 0, injury: 0, ban: 0, yellows: 0, goals: 0, assists: 0, apps: 0 };
+  };
+  const counts = { GK: 2, DF: 6, MF: 6, FW: 4 };
+  const starBy = { GK: [], DF: [], MF: [], FW: [] };
+  for (const [nm, pos] of (stars || [])) starBy[pos].push(nm);
+  for (const pos of ["GK", "DF", "MF", "FW"]) {
+    starBy[pos].forEach(nm => squad.push(mk(nm, pos, base + 4 + Math.floor(rnd() * 3))));
+    for (let i = starBy[pos].length; i < counts[pos]; i++) {
+      squad.push(mk(filler(), pos, base - 4 + Math.floor(rnd() * 8)));
+    }
+  }
+  assignRoles(squad);
+  return squad;
+}
+
+function wcEnter() {
+  APP_MODE = "wc";
+  if (!loadWC()) WCS = { stage: "pick" };
+  render();
+}
+function wcExit() { APP_MODE = "career"; render(); }
+function wcReset() {
+  if (typeof confirm === "function" && !confirm("Abandon this World Cup and start over?")) return;
+  localStorage.removeItem("touchline_wc");
+  WCS = { stage: "pick" };
+  render();
+}
+
+function wcNew(ti) {
+  wcPid = 0;
+  WCS = {
+    myTeam: ti, stage: "group", md: 0,
+    squads: WC_TEAMS.map((_, i) => wcGenSquad(i)),
+    results: [],            // group stage: per matchday, list of {a, b, ag, bg, events}
+    ko: null,               // { round, ties: [[a,b]...], log: [] }
+    tac: Object.assign({}, aiTacticsByBase(WC_TEAMS[ti][2]), { ment: "Balanced" }),
+    lastMatch: null, champion: null, honoured: false,
+  };
+  saveWC(); render();
+}
+
+function wcAiTac(ti) { return Object.assign({}, aiTacticsByBase(WC_TEAMS[ti][2]), { ment: "Balanced" }); }
+
+function wcSimMatch(ai, bi) {
+  const tA = ai === WCS.myTeam ? WCS.tac : wcAiTac(ai);
+  const tB = bi === WCS.myTeam ? WCS.tac : wcAiTac(bi);
+  const sqA = WCS.squads[ai], sqB = WCS.squads[bi];
+  const A = teamNumbers(sqA, bestXI(sqA, tA.form), tA.ment, tA.form, tA.style, "clear");
+  const B = teamNumbers(sqB, bestXI(sqB, tB.form), tB.ment, tB.form, tB.style, "clear");
+  const ag = poisson(expGoals(A, B, false));   // neutral venues — no home boost
+  const bg = poisson(expGoals(B, A, false));
+  const events = [];
+  for (let i = 0; i < ag; i++) { const e = makeGoalEvent(A, ai); e.min = 3 + Math.floor(rnd() * 88); events.push(e); }
+  for (let i = 0; i < bg; i++) { const e = makeGoalEvent(B, bi); e.min = 3 + Math.floor(rnd() * 88); events.push(e); }
+  for (const [T, idx] of [[A, ai], [B, bi]]) {
+    if (rnd() < 0.5) {
+      const p = pickScorer(T);
+      const k = Math.floor(rnd() * CHANCE_LINES.length);
+      events.push({ min: 5 + Math.floor(rnd() * 85), type: "chance", clubIdx: idx, who: p.name,
+                    text: p.name + " " + CHANCE_LINES[k], zh: p.name + " " + CHANCE_LINES_ZH[k] });
+    }
+    if (rnd() < 0.18) {
+      const p = T.xi[Math.floor(rnd() * T.xi.length)];
+      events.push({ min: 10 + Math.floor(rnd() * 80), type: "yellow", clubIdx: idx, who: p.name,
+                    text: p.name + " goes into the book.", zh: p.name + " 食黃牌，俾球證記咗名。" });
+    }
+  }
+  events.sort((x, y) => x.min - y.min);
+  return { a: ai, b: bi, ag, bg, events };
+}
+
+function wcShootout(ai, bi) { // same probabilities as the club shootout engine
+  const xi = ti => bestXI(WCS.squads[ti], "4-4-2").map(id => WCS.squads[ti].find(p => p.id === id)).filter(Boolean);
+  const A = xi(ai), B = xi(bi);
+  const takers = side => side.filter(p => p.pos !== "GK").sort((x, y) => y.rating - x.rating);
+  const gk = side => side.find(p => p.pos === "GK") || side[0];
+  const tA = takers(A), tB = takers(B), gA = gk(A), gB = gk(B);
+  let aS = 0, bS = 0;
+  const kicks = [];
+  const kick = (mine) => {
+    const t = mine ? tA[kicks.filter(k => k.mine).length % tA.length] : tB[kicks.filter(k => !k.mine).length % tB.length];
+    const keeper = mine ? gB : gA;
+    const scored = rnd() < Math.max(0.55, Math.min(0.92, 0.76 + (t.rating - keeper.rating) * 0.004));
+    if (scored) { if (mine) aS++; else bS++; }
+    kicks.push({ mine, name: t.name, scored, aS, bS });
+  };
+  let settled = false;
+  for (let r = 0; r < 5 && !settled; r++) {
+    kick(true);
+    if (aS > bS + (5 - r) || bS > aS + (4 - r)) { settled = true; break; }
+    kick(false);
+    if (aS > bS + (4 - r) || bS > aS + (4 - r)) settled = true;
+  }
+  let sd = 0;
+  while (aS === bS && sd++ < 30) { kick(true); kick(false); }
+  if (aS === bS) aS++;
+  return { winA: aS > bS, aS, bS, kicks };
+}
+
+function wcGroupTeams(g) { return WC_TEAMS.map((t, i) => i).filter(i => WC_TEAMS[i][4] === g); }
+function wcGroupFixtures(g, md) {
+  const [a, b, c, d] = wcGroupTeams(g);
+  return [[[a, b], [c, d]], [[a, c], [b, d]], [[d, a], [b, c]]][md];
+}
+function wcGroupTable(g) {
+  const rows = wcGroupTeams(g).map(i => ({ i, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0 }));
+  const by = {}; rows.forEach(r => by[r.i] = r);
+  for (const mdRes of WCS.results) for (const m of mdRes) {
+    if (!(m.a in by) || !(m.b in by)) continue;
+    const A = by[m.a], B = by[m.b];
+    A.p++; B.p++; A.gf += m.ag; A.ga += m.bg; B.gf += m.bg; B.ga += m.ag;
+    if (m.ag > m.bg) { A.w++; B.l++; A.pts += 3; }
+    else if (m.ag < m.bg) { B.w++; A.l++; B.pts += 3; }
+    else { A.d++; B.d++; A.pts++; B.pts++; }
+  }
+  return rows.sort((x, y) => y.pts - x.pts || (y.gf - y.ga) - (x.gf - x.ga) || y.gf - x.gf || WC_TEAMS[x.i][0].localeCompare(WC_TEAMS[y.i][0]));
+}
+
+function wcBuildR32() {
+  const winners = [], runners = [], thirds = [];
+  for (let g = 0; g < 12; g++) {
+    const t = wcGroupTable(g);
+    winners.push(t[0].i); runners.push(t[1].i); thirds.push(t[2]);
+  }
+  thirds.sort((x, y) => y.pts - x.pts || (y.gf - y.ga) - (x.gf - x.ga) || y.gf - x.gf);
+  const bestThirds = thirds.slice(0, 8).map(r => r.i);
+  const ties = [];
+  for (let i = 0; i < 8; i++) ties.push([winners[i], bestThirds[i]]);            // 8 ties: W vs best 3rd
+  for (let i = 8; i < 12; i++) ties.push([winners[i], runners[(i - 8 + 2) % 12]]); // 4 ties: W vs RU (other group)
+  const usedR = new Set([runners[2], runners[3], runners[4], runners[5]]);
+  const restR = runners.filter(r => !usedR.has(r));                               // remaining 8 runners pair up
+  for (let i = 0; i < 4; i++) ties.push([restR[i], restR[i + 4]]);
+  return { round: 0, ties, log: [] };
+}
+
+function wcPlayNext() {
+  if (!WCS || WCS.stage === "pick" || WCS.stage === "done") return;
+  if (WCS.stage === "group") {
+    const mdRes = [];
+    for (let g = 0; g < 12; g++) for (const [a, b] of wcGroupFixtures(g, WCS.md)) mdRes.push(wcSimMatch(a, b));
+    WCS.results.push(mdRes);
+    WCS.lastMatch = mdRes.find(m => m.a === WCS.myTeam || m.b === WCS.myTeam) || null;
+    WCS.md++;
+    if (WCS.md >= 3) { WCS.ko = wcBuildR32(); WCS.stage = "ko"; }
+  } else if (WCS.stage === "ko") {
+    const survivors = [], roundLog = [];
+    for (const [a, b] of WCS.ko.ties) {
+      const m = wcSimMatch(a, b);
+      let note = "";
+      let winner = m.ag > m.bg ? a : m.bg > m.ag ? b : null;
+      if (winner === null) {
+        const so = wcShootout(a, b);
+        winner = so.winA ? a : b;
+        note = " (" + so.aS + "–" + so.bS + " pens)";
+        m.pens = so;
+      }
+      m.note = note; m.winner = winner;
+      roundLog.push(m);
+      survivors.push(winner);
+      if (a === WCS.myTeam || b === WCS.myTeam) WCS.lastMatch = m;
+    }
+    WCS.ko.log.push({ round: WCS.ko.round, matches: roundLog });
+    if (survivors.length === 1) {
+      WCS.champion = survivors[0];
+      WCS.stage = "done";
+      // a World Cup win goes into your CAREER Hall of Fame, if a career exists
+      if (WCS.champion === WCS.myTeam && G && G.honours && !WCS.honoured) {
+        G.honours.push("Season " + G.season + ": 🌎 WORLD CUP 2026 winners with " + WC_TEAMS[WCS.myTeam][0]);
+        WCS.honoured = true;
+        save();
+      }
+    } else {
+      WCS.ko.round++;
+      WCS.ko.ties = [];
+      for (let i = 0; i < survivors.length; i += 2) WCS.ko.ties.push([survivors[i], survivors[i + 1]]);
+    }
+  }
+  saveWC(); render();
+}
+
+function wcSetTac(key, val) { WCS.tac[key] = val; saveWC(); render(); }
+function wcCrest(ti, size) { return crest(WC_TEAMS[ti][1], WC_TEAMS[ti][3], size || 18); }
+function wcAlive() {
+  if (WCS.stage === "group") return true;
+  if (WCS.stage === "ko") return WCS.ko.ties.some(([a, b]) => a === WCS.myTeam || b === WCS.myTeam);
+  return false;
+}
+function wcMyNextOpp() {
+  if (WCS.stage === "group") {
+    for (const [a, b] of wcGroupFixtures(WC_TEAMS[WCS.myTeam][4], WCS.md)) {
+      if (a === WCS.myTeam) return b;
+      if (b === WCS.myTeam) return a;
+    }
+  }
+  if (WCS.stage === "ko") {
+    for (const [a, b] of WCS.ko.ties) {
+      if (a === WCS.myTeam) return b;
+      if (b === WCS.myTeam) return a;
+    }
+  }
+  return null;
+}
+function wcDateLabel() {
+  return WCS.stage === "group" ? WC_DATES[WCS.md] : WC_DATES[3 + (WCS.ko ? WCS.ko.round : 0)];
+}
+
+function wcFeedHtml(m) {
+  if (!m) return "";
+  return `<ul class="events">` + m.events.map(e => `<li class="ev-${e.type === "goal" ? "goal" : "other"}">
+    <span class="min">${e.min}'</span> ${evIcon(e.type)} <b>${WC_TEAMS[e.clubIdx][1]}</b> — ${esc(evText(e))}</li>`).join("") + `</ul>`;
+}
+function wcScoreLine(m) {
+  return `${wcCrest(m.a, 22)}${esc(WC_TEAMS[m.a][0])} <b>${m.ag}</b><span class="vs">–</span><b>${m.bg}</b> ${esc(WC_TEAMS[m.b][0])}${wcCrest(m.b, 22).replace("margin-right: 6px", "")}${m.note ? `<div class="note" style="font-size:13px">${m.note}</div>` : ""}`;
+}
+function wcGroupTableHtml(g, compact) {
+  return `<table><thead><tr><th>#</th><th>Team</th><th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th><th class="num">GD</th><th class="num">Pts</th></tr></thead><tbody>` +
+    wcGroupTable(g).map((r, i) => `<tr${r.i === WCS.myTeam ? ' class="me"' : ""}>
+      <td class="num">${i + 1}</td><td>${wcCrest(r.i, 15)}${esc(WC_TEAMS[r.i][0])}</td>
+      <td class="num">${r.p}</td><td class="num">${r.w}</td><td class="num">${r.d}</td><td class="num">${r.l}</td>
+      <td class="num">${r.gf - r.ga}</td><td class="num"><b>${r.pts}</b></td></tr>`).join("") + `</tbody></table>
+    <p class="note">Top two qualify; the eight best third-placed teams across all groups also reach the Round of 32.</p>`;
+}
+
+function renderWC() {
+  if (!WCS || WCS.stage === "pick") {
+    return `<div class="panel"><h2>🌎 World Cup 2026 — pick your nation</h2>
+      <p class="note">48 nations · 12 groups · the new Round of 32 · final at MetLife on Sun 19 Jul 2026.
+      A separate tournament save — your club career is untouched.
+      <button class="ghost" onclick="wcExit()">← Back</button></p>` +
+      WC_GROUPS.split("").map((L, g) => `<h3>Group ${L}</h3><div class="club-grid">` +
+        wcGroupTeams(g).map(i => `<div class="club-card" onclick="wcNew(${i})">
+          <div class="cname">${wcCrest(i, 22)}${esc(WC_TEAMS[i][0])}</div>
+          <div class="cinfo"><span class="stars-bar">${starBar(WC_TEAMS[i][2] + 3)}</span> strength ${WC_TEAMS[i][2]}</div>
+          <div class="cstars">${(WC_TEAMS[i][6] || []).map(s => esc(s[0])).join(" · ") || "no famous names — a true underdog"}</div>
+        </div>`).join("") + `</div>`).join("") + `</div>`;
+  }
+  const my = WCS.myTeam, myName = WC_TEAMS[my][0];
+  let html = `<div class="panel"><h2>🌎 World Cup 2026 — ${wcCrest(my, 24)}${esc(myName)}</h2>`;
+  if (WCS.stage === "done") {
+    const champs = WCS.champion === my;
+    html += `<div class="banner"><h2>${champs ? "🏆 WORLD CHAMPIONS! 🏆" : "The tournament is over"}</h2>
+      <p>${champs ? esc(myName) + " have won the World Cup! Immortality." :
+        esc(WC_TEAMS[WCS.champion][0]) + " lift the trophy at MetLife." +
+        (WCS.honoured ? "" : " Your run is over — but there is always 2030.")}</p>
+      ${champs && WCS.honoured ? `<p class="note">🏛 Added to your career Hall of Fame.</p>` : ""}</div>`;
+  } else {
+    const opp = wcMyNextOpp();
+    html += `<p class="note">📅 ${wcDateLabel()} · ${WCS.stage === "group"
+      ? "Group " + WC_GROUPS[WC_TEAMS[my][4]] + " — matchday " + (WCS.md + 1) + " of 3"
+      : WC_ROUND_NAMES[WCS.ko.round]}</p>`;
+    if (opp !== null) {
+      const stars = (WC_TEAMS[opp][6] || []).map(s => esc(s[0])).join(", ");
+      html += `<div class="score-line">${wcCrest(my, 24)}${esc(myName)}<span class="vs">vs</span>${wcCrest(opp, 24)}${esc(WC_TEAMS[opp][0])}</div>
+        <p class="note" style="text-align:center"><span class="stars-bar">${starBar(WC_TEAMS[opp][2] + 3)}</span> strength ${WC_TEAMS[opp][2]}${stars ? " · Danger: " + stars : ""}</p>
+        <div class="row">
+          <label>Formation <select onchange="wcSetTac('form', this.value)">${Object.keys(FORMATIONS).map(f => `<option${f === WCS.tac.form ? " selected" : ""}>${f}</option>`).join("")}</select></label>
+          <label>Mentality <select onchange="wcSetTac('ment', this.value)">${MENTALITIES.map(m => `<option${m === WCS.tac.ment ? " selected" : ""}>${m}</option>`).join("")}</select></label>
+          <label>Style <select onchange="wcSetTac('style', this.value)">${Object.keys(STYLES).map(st => `<option${st === WCS.tac.style ? " selected" : ""}>${st}</option>`).join("")}</select></label>
+        </div>
+        <div class="row"><button class="action" onclick="wcPlayNext()">▶ Play ${WCS.stage === "group" ? "matchday " + (WCS.md + 1) : WC_ROUND_NAMES[WCS.ko.round]}</button></div>`;
+    } else {
+      html += `<p class="note">⛔ ${esc(myName)} are out of the tournament. You can still watch how it ends.</p>
+        <div class="row"><button class="action" onclick="wcPlayNext()">▶ Continue — ${WCS.stage === "group" ? "matchday " + (WCS.md + 1) : WC_ROUND_NAMES[WCS.ko.round]}</button></div>`;
+    }
+  }
+  if (WCS.lastMatch) {
+    html += `<h3>Your last match</h3><div class="score-line">${wcScoreLine(WCS.lastMatch)}</div>
+      <details class="fold"><summary>📋 Match timeline</summary>${wcFeedHtml(WCS.lastMatch)}</details>`;
+  }
+  if (WCS.stage === "group" || WCS.results.length) {
+    html += `<details class="fold"${WCS.stage === "group" ? " open" : ""}><summary>Group ${WC_GROUPS[WC_TEAMS[my][4]]} table</summary>${wcGroupTableHtml(WC_TEAMS[my][4])}</details>`;
+  }
+  if (WCS.ko && WCS.ko.log.length) {
+    html += `<details class="fold" open><summary>🏆 Knockout results</summary>` +
+      WCS.ko.log.map(rd => `<h3>${WC_ROUND_NAMES[rd.round]}</h3><p class="note">` +
+        rd.matches.map(m => `${wcCrest(m.a, 14)}${esc(WC_TEAMS[m.a][0])} <b>${m.ag}–${m.bg}</b> ${esc(WC_TEAMS[m.b][0])}${wcCrest(m.b, 14).replace("margin-right: 6px", "")}${m.note || ""}`).join("<br>")
+      + `</p>`).join("") + `</details>`;
+  }
+  // tournament golden boot
+  const boot = [];
+  WCS.squads.forEach((sq, ti) => sq.forEach(p => { if (p.goals > 0) boot.push({ p, ti }); }));
+  boot.sort((x, y) => y.p.goals - x.p.goals);
+  if (boot.length) {
+    html += `<details class="fold"><summary>👟 Golden Boot race</summary><p class="note">` +
+      boot.slice(0, 10).map((s, i) => `${i + 1}. ${esc(s.p.name)} (${WC_TEAMS[s.ti][1]}) — ${s.p.goals}`).join("<br>") + `</p></details>`;
+  }
+  html += `<div class="row" style="margin-top:12px">
+    <button class="ghost" onclick="wcExit()">← Back to your career</button>
+    <button class="ghost" onclick="wcReset()">Start a new World Cup</button>
+  </div></div>`;
+  return html;
 }
 
 /* ---------------- Boot ---------------- */
