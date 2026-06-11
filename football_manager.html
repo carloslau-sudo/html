@@ -3990,27 +3990,33 @@ function validateLineup() {
   const squad = G.squads[G.myClub];
   const f = FORMATIONS[G.formation];
   const need = { GK: 1, DF: f.DF, MF: f.MF, FW: f.FW };
-  const chosen = [];
+  const chosen = []; // exactly 11 entries, in slot order (GK, DF…, MF…, FW…)
+  const used = new Set(); // also guards against duplicate ids in an old lineup
   const lineup = (G.lineup || []).map(id => squad.find(p => p.id === id)).filter(Boolean);
   for (const pos of ["GK", "DF", "MF", "FW"]) {
-    const ok = lineup.filter(p => p.pos === pos && available(p)).slice(0, need[pos]);
-    chosen.push(...ok.map(p => p.id));
-    let missing = need[pos] - ok.length;
-    if (missing > 0) {
-      const subs = squad.filter(p => p.pos === pos && available(p) && !chosen.includes(p.id))
-                        .sort((a, b) => effRating(b) - effRating(a)).slice(0, missing);
-      chosen.push(...subs.map(p => p.id));
-      missing -= subs.length;
+    const slot = [];
+    for (const p of lineup) {
+      if (p.pos === pos && available(p) && !used.has(p.id) && slot.length < need[pos]) {
+        used.add(p.id); slot.push(p.id);
+      }
     }
-  }
-  if (chosen.length < 11) {
-    for (const p of squad.filter(p => available(p) && !chosen.includes(p.id))
-                         .sort((a, b) => effRating(b) - effRating(a))) {
-      chosen.push(p.id);
-      if (chosen.length === 11) break;
+    if (slot.length < need[pos]) {
+      const subs = squad.filter(p => p.pos === pos && available(p) && !used.has(p.id))
+                        .sort((a, b) => effRating(b) - effRating(a))
+                        .slice(0, need[pos] - slot.length);
+      for (const p of subs) { used.add(p.id); slot.push(p.id); }
     }
+    while (slot.length < need[pos]) slot.push(null); // a hole — filled in place below
+    chosen.push(...slot);
   }
-  return chosen.slice(0, 11);
+  // injury crisis: out-of-position stand-ins go INTO the empty slot itself,
+  // so the lineup array always lines up with the formation's slot grid
+  const reserves = squad.filter(p => available(p) && !used.has(p.id))
+                        .sort((a, b) => effRating(b) - effRating(a));
+  for (let i = 0; i < chosen.length; i++) {
+    if (chosen[i] === null && reserves.length) chosen[i] = reserves.shift().id;
+  }
+  return chosen.filter(id => id !== null).slice(0, 11);
 }
 
 /* ---------------- Rendering ---------------- */
@@ -4483,8 +4489,14 @@ function renderTactics() {
       // unavailable men stay visible — greyed out with the reason — so a new
       // signing who arrived injured/suspended can always be located
       const out = squad.filter(p => p.pos === pos && !available(p));
+      // an out-of-position stand-in (injury crisis) is shown as this slot's
+      // occupant under his real position, never silently swapped for the
+      // first name in the list
+      const curP = squad.find(p => p.id === current);
+      const standIn = curP && curP.pos !== pos
+        ? `<option value="${curP.id}" selected>${esc(curP.name)} (${curP.pos} filling in · ${Math.round(effRating(curP))})</option>` : "";
       html += `<div class="slot"><label class="pos-${pos}">${pos}${count > 1 ? k + 1 : ""}</label>
-        <select onchange="swapSlot(${slotIdx}, parseInt(this.value))">` +
+        <select onchange="swapSlot(${slotIdx}, parseInt(this.value))">` + standIn +
         options.map(p => `<option value="${p.id}"${p.id === current ? " selected" : ""}>${esc(p.name)} (${Math.round(effRating(p))}${p.fitness < 70 ? " · " + p.fitness + "%" : ""})${G.lineup.includes(p.id) && p.id !== current ? " — starting" : ""}</option>`).join("") +
         out.map(p => `<option disabled>${esc(p.name)} — ${p.loan ? "on loan at " + esc(p.loan) : p.injury ? "🚑 injured (" + p.injury + " wk)" : "⛔ suspended (" + p.ban + ")"}</option>`).join("") +
         `</select></div>`;
