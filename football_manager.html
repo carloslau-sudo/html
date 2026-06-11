@@ -929,6 +929,7 @@ function applyDecay(snapshot) {
 }
 
 function commitWeek(weekResults, myResult, snapshot) {
+  ghQueueSync();
   if (myResult) myResult.dateMs = matchDateMs("league", G.week);
   applyDecay(snapshot);
   G.results.push(weekResults);
@@ -2076,6 +2077,7 @@ function cupOppIdx(fix) {
 }
 
 function commitCup(fix, r, pens) {
+  ghQueueSync();
   r.dateMs = matchDateMs(fix.cupKey, G.week);
   const c = G.cups[fix.cupKey];
   const myG = fix.home ? r.hg : r.ag, opG = fix.home ? r.ag : r.hg;
@@ -2356,6 +2358,7 @@ function simEuroKORound(E, ids) {
 }
 
 function commitEuro(fix, r, pens) {
+  ghQueueSync();
   const E = G.euro;
   r.dateMs = matchDateMs(E.comp, G.week, E.played);
   const myG = fix.home ? r.hg : r.ag, opG = fix.home ? r.ag : r.hg;
@@ -3486,6 +3489,7 @@ function topScorers(n) {
 /* ---------------- Season transition ---------------- */
 
 function nextSeason(newClub) {
+  ghQueueSync();
   // European qualification comes from this season's final table (before the league swap)
   const finalT = tableStats();
   const myFinalPos = finalT.findIndex(r => r.i === G.myClub) + 1;
@@ -3656,7 +3660,7 @@ function nextSeason(newClub) {
 /* ---------------- Persistence ---------------- */
 
 function save() {
-  try { localStorage.setItem("touchline_save", JSON.stringify({ ...G, nextId })); } catch (e) {}
+  try { if (G) G.savedAt = Date.now(); localStorage.setItem("touchline_save", JSON.stringify({ ...G, nextId })); } catch (e) {}
 }
 function load() {
   try {
@@ -3838,8 +3842,18 @@ function ghSaveCfgFromUI() {
   const token = (document.getElementById("gh-token").value || "").trim();
   if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { ghStatus("Repository should look like: yourname/football-manager", false); return; }
   if (!token) { ghStatus("Paste your access token first.", false); return; }
-  localStorage.setItem("touchline_gh", JSON.stringify({ repo, token }));
-  ghStatus("Settings saved ✓ — you can back up now.", true);
+  const prev = ghCfg();
+  localStorage.setItem("touchline_gh", JSON.stringify({ repo, token, auto: prev ? !!prev.auto : true }));
+  ghStatus("Settings saved ✓ — press “Back up to GitHub now” to test the connection.", true);
+  render(); // reflect the auto-sync checkbox state
+}
+function ghSetAuto(on) {
+  const cfg = ghCfg();
+  if (!cfg) { ghStatus("Save your repository and token first — then turn on auto-sync.", false); render(); return; }
+  cfg.auto = !!on;
+  localStorage.setItem("touchline_gh", JSON.stringify(cfg));
+  ghStatus(on ? "Auto-sync ON ✓ — every match result is backed up, and the game checks the cloud at startup." : "Auto-sync off — use the manual buttons.", true);
+  if (on) ghQueueSync();
 }
 function ghHeaders(cfg) {
   return { "Authorization": "Bearer " + cfg.token, "Accept": "application/vnd.github+json" };
@@ -3847,12 +3861,27 @@ function ghHeaders(cfg) {
 function ghUrl(cfg) {
   return "https://api.github.com/repos/" + cfg.repo + "/contents/football-manager-save.json";
 }
-async function ghBackup() {
+let ghSyncTimer = null;
+let ghLastSync = null; // { ok, msg, t } — session-only, never saved
+
+function ghSyncNote(msg, good) {
+  ghLastSync = { ok: !!good, msg, t: Date.now() };
+  ghStatus(msg, good);
+  const note = document.getElementById("cloud-note"); // footer line on the main screen
+  if (note) note.textContent = "☁ " + msg;
+}
+function ghQueueSync() { // debounced: a burst of results becomes one commit
+  const cfg = ghCfg();
+  if (!cfg || !cfg.auto || !G) return;
+  if (ghSyncTimer) clearTimeout(ghSyncTimer);
+  ghSyncTimer = setTimeout(() => { ghSyncTimer = null; ghBackup(true); }, 2500);
+}
+async function ghBackup(silent) {
   const cfg = ghCfg();
   if (!cfg) { ghStatus("Enter your repository and token first, then press Save settings.", false); return; }
   if (!G) return;
   save();
-  ghStatus("Backing up…", true);
+  if (!silent) ghStatus("Backing up…", true);
   try {
     let sha;
     const probe = await fetch(ghUrl(cfg), { headers: ghHeaders(cfg) });
@@ -3861,16 +3890,37 @@ async function ghBackup() {
       method: "PUT",
       headers: ghHeaders(cfg),
       body: JSON.stringify({
-        message: "Career backup — season " + G.season + ", week " + G.week + " (" + CLUBS[G.myClub].name + ")",
+        message: "Career backup — " + seasonYears(G.season) + ", week " + G.week + " (" + CLUBS[G.myClub].name + ")",
         content: b64encode(localStorage.getItem("touchline_save")),
         sha,
       }),
     });
     if (!res.ok) throw new Error("HTTP " + res.status);
-    ghStatus("✓ Backed up to GitHub — season " + G.season + ", week " + G.week + ".", true);
+    ghSyncNote("✓ Backed up to GitHub — " + seasonYears(G.season) + ", matchweek " + Math.min(G.week + 1, G.fixtures.length) + ".", true);
   } catch (e) {
-    ghStatus("Backup failed (" + e.message + "). Check the repository name and that the token has Contents read & write access.", false);
+    ghSyncNote("Backup failed (" + e.message + ")." + (silent ? " Auto-sync will retry after your next match." : " Check the repository name and that the token has Contents read & write access."), false);
   }
+}
+/* At startup: if a NEWER save exists in the cloud (e.g. you played on another
+   device), offer to pick it up. Local-only progress is never overwritten silently. */
+async function ghStartupCheck() {
+  const cfg = ghCfg();
+  if (!cfg || !cfg.auto) return;
+  try {
+    const res = await fetch(ghUrl(cfg), { headers: ghHeaders(cfg) });
+    if (!res.ok) return;
+    const txt = b64decode((await res.json()).content);
+    const remote = JSON.parse(txt);
+    if (!remote || typeof remote.ver !== "number") return;
+    const newer = (remote.savedAt || 0) > ((G && G.savedAt) || 0) + 1500;
+    if (!newer) { if (G) ghSyncNote("✓ Cloud save is in sync.", true); return; }
+    const who = CLUBS[remote.myClub] ? CLUBS[remote.myClub].name : "your club";
+    if (!G || confirm("☁ A newer cloud save was found:\n" + who + " — " + seasonYears(remote.season) +
+                      ", matchweek " + Math.min((remote.week || 0) + 1, 38) +
+                      "\n\nLoad it here? (Cancel keeps this device's game.)")) {
+      if (importSaveText(txt)) ghSyncNote("✓ Cloud save loaded.", true);
+    }
+  } catch (e) {}
 }
 async function ghRestore() {
   const cfg = ghCfg();
@@ -3899,18 +3949,29 @@ function renderCloud() {
       <input id="gh-token" type="password" placeholder="github_pat_…" value="${esc(cfg.token)}" size="28"></label>
       <button class="ghost" onclick="ghSaveCfgFromUI()">Save settings</button></div>
     <div class="row">
+      <label style="display:flex;align-items:center;gap:6px">
+        <input type="checkbox" ${cfg.auto ? "checked" : ""} onchange="ghSetAuto(this.checked)">
+        <b>Auto-sync</b> — back up after every match result, and check the cloud for a newer save whenever the game opens
+      </label>
+    </div>
+    <div class="row">
       <button class="action" onclick="ghBackup()">☁⬆ Back up to GitHub now</button>
       <button class="ghost" onclick="ghRestore()">⬇ Restore from GitHub</button>
     </div>
-    <p class="note" id="gh-status"></p>
+    <p class="note" id="gh-status">${ghLastSync ? (ghLastSync.ok ? "☁ " : "⚠ ") + esc(ghLastSync.msg) : ""}</p>
     <h3>One-time setup (5 minutes)</h3>
     <p class="note">
-      1. On GitHub: your avatar → <b>Settings</b> → <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.<br>
-      2. Name it "football manager save". Under <b>Repository access</b> choose <b>Only select repositories</b> and pick your game repo.<br>
-      3. Under <b>Permissions → Repository permissions</b>, set <b>Contents</b> to <b>Read and write</b>. Generate, then copy the token (it's shown only once).<br>
-      4. Paste repository (like <b>carloslau-sudo/football-manager</b>) and token above, press Save settings, then Back up.<br><br>
+      <b>Step 1 — a repository for your saves.</b> On github.com press <b>+</b> (top right) → <b>New repository</b>.
+      Name it <b>football-manager</b>, choose <b>Private</b> (recommended — your career stays yours), press <b>Create repository</b>. If you already keep the game in a repo, you can reuse that one.<br><br>
+      <b>Step 2 — an access key for the game.</b> Your avatar → <b>Settings</b> → <b>Developer settings</b> (bottom of the left menu) → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.<br>
+      · Name: <i>football manager save</i> · Expiration: <b>1 year</b><br>
+      · <b>Repository access</b>: choose <b>Only select repositories</b> and pick the repo from Step 1<br>
+      · <b>Permissions → Repository permissions → Contents: Read and write</b> (leave everything else as No access)<br>
+      · Press <b>Generate token</b> and COPY it now — GitHub shows it only once.<br><br>
+      <b>Step 3 — connect the game.</b> Above: type the repository as <b>yourname/football-manager</b>, paste the token, press <b>Save settings</b>.<br>
+      <b>Step 4 — test it.</b> Press <b>☁⬆ Back up to GitHub now</b> — you should see a green ✓. From then on auto-sync does the rest: play anywhere, and each device offers to pick up your newest save.<br><br>
       🔒 The token stays in this browser only — it is never put inside save files or the game file, so sharing those is safe.
-      Set the token's expiry to a year, and you can revoke it any time on GitHub.</p>
+      You can revoke it any time on GitHub (Developer settings → your token → Delete).</p>
   </div>`;
 }
 
@@ -4293,7 +4354,7 @@ function renderMain() {
       <input type="file" id="save-file-input" accept=".json,application/json" style="display:none" onchange="importSave(this)">
       <button class="ghost" onclick="resetGame()">New game</button>
     </div>
-    <p class="note" style="text-align:center">The game autosaves in this browser after every action. Use 💾 Save to file for backups or to continue on another device.</p>`;
+    <p class="note" style="text-align:center" id="cloud-note">${(ghCfg() && ghCfg().auto) ? "☁ Auto-sync to GitHub is ON — every result is backed up." : "The game autosaves in this browser after every action. Use 💾 Save to file for backups, or turn on ☁ auto-sync in the Cloud tab."}</p>`;
 }
 
 function euroLeagueTableHtml(compact) {
@@ -4934,6 +4995,7 @@ if (load()) {
   }
 }
 render();
+ghStartupCheck();
 </script>
 </body>
 </html>
