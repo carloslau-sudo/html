@@ -696,7 +696,23 @@ function wageCap() {
   if (!G.wcap) setWageCap();
   return G.wcap;
 }
+/* 💬 Wage talks: YOU name the figure; the player can refuse a lowball.
+   He'll accept down to ~10% under his demand (mood-dependent); aging players
+   (30+) accept sensible cuts, so renewals no longer ratchet upward forever. */
+function negotiateWage(name, demand) {
+  if (typeof prompt !== "function") return demand;
+  const txt = prompt(name + " asks £" + demand + "M/yr. Your offer (£M per year):", demand);
+  if (txt === null) return null; // you walked away
+  const offer = Math.round((parseFloat(txt) || 0) * 10) / 10;
+  const floor = Math.round(demand * (0.88 + rnd() * 0.12) * 10) / 10;
+  if (offer >= floor) return Math.max(0.3, offer);
+  if (typeof alert === "function")
+    alert(name + " REFUSES £" + offer + "M/yr. \"Insulting.\" He won't go below about £" + floor + "M — try again or walk away.");
+  return null;
+}
 function renewDemand(p) {
+  if (p.age >= 30) return Math.max(0.3, Math.round(wageFor(p.rating, p.age) * 0.9 * 10) / 10); // veterans accept less
+
   return Math.round(wageFor(p.rating, p.age) * (p.form >= 1 ? 1.15 : 1.05) * 10) / 10;
 }
 function renewContract(pid) {
@@ -707,8 +723,10 @@ function renewContract(pid) {
     if (typeof alert === "function") alert("The wage budget can't take it — his demand of £" + demand + "M/yr would push the bill past your £" + wageCap() + "M cap. Sell or release someone first.");
     return;
   }
-  if (typeof confirm === "function" && !confirm("Offer " + p.name + " a new 3-year contract at £" + demand + "M/yr (currently £" + (p.wage || 0) + "M)?")) return;
-  p.wage = demand;
+  const agreed = negotiateWage(p.name, demand);
+  if (agreed === null) return;
+  if (wageBill() - (p.wage || 0) + agreed > wageCap()) { if (typeof alert === "function") alert("That offer would burst the wage cap."); return; }
+  p.wage = agreed;
   p.years = 3;
   G.deals = G.deals || [];
   G.deals.unshift("✍ " + p.name + " signed a new 3-year deal at £" + demand + "M/yr");
@@ -1726,8 +1744,13 @@ function boardBump(n) {
 }
 
 function checkSack() {
-  if (!G.board || G.week <= (G.board.grace || 6)) return false;
-  if (G.board.conf > 5) return false;
+  // patience scales with stature: elite boards pull the trigger far sooner,
+  // and promising the moon at the meeting shortens the rope further
+  const base = CLUBS[G.myClub].base;
+  const graceCut = base >= 84 ? 2 : base >= 79 ? 1 : 0;
+  if (!G.board || G.week <= Math.max(3, (G.board.grace || 6) - graceCut)) return false;
+  const threshold = 5 + (base >= 84 ? 8 : base >= 79 ? 4 : 0) + (G.board.choice === "ambitious" ? 4 : 0);
+  if (G.board.conf > threshold) return false;
   // dismissed — struggling clubs come calling
   const t = tableStats();
   const strugglers = t.slice(10).map(r => r.i).filter(i => i !== G.myClub);
@@ -1966,6 +1989,22 @@ function rejectOffer(pid) {
   save(); render();
 }
 
+function requestFunds() {
+  if (G.fundKey === G.season || !G.board) return;
+  G.fundKey = G.season;
+  const conf = G.board.conf;
+  if (rnd() * 100 < conf) { // the chairman opens the chequebook — and expects results
+    const amount = 10 + Math.round(conf / 8) + Math.round(rnd() * 8);
+    G.budget += amount;
+    boardBump(-4);
+    G.eventNews = "💷 The board grants you an extra £" + amount + "M. \"Spend it well — we'll be watching.\" (−4 confidence: expectations just rose.)";
+  } else {
+    boardBump(-2);
+    G.eventNews = "🚪 \"The cupboard is bare.\" The board refuses your request — and didn't love being asked. (−2 confidence.)";
+  }
+  save(); render();
+}
+
 function buyPlayer(clubIdx, pid) {
   if (G.challenge === "youth") return; // transfer ban
   if (!windowOpen() || clubIdx === G.myClub || clubIdx === EURO_SLOT) return;
@@ -1975,9 +2014,12 @@ function buyPlayer(clubIdx, pid) {
   const price = askPrice(clubIdx, p);
   if (price > G.budget || G.squads[G.myClub].length >= 25) return;
   if (wageBill() + wageFor(p.rating, p.age) > wageCap()) return;
+  const wAgreed = negotiateWage(p.name, wageFor(p.rating, p.age));
+  if (wAgreed === null) return;
+  if (wageBill() + wAgreed > wageCap()) { if (typeof alert === "function") alert("That wage would burst your cap."); return; }
   G.squads[clubIdx] = seller.filter(x => x.id !== pid);
   p.fitness = 100; p.form = 0;
-  p.wage = wageFor(p.rating, p.age); p.years = 3;
+  p.wage = wAgreed; p.years = 3;
   G.squads[G.myClub].push(p);
   G.budget -= price;
   G.deals.unshift("✍ You signed " + p.name + " from " + CLUBS[clubIdx].name + " for £" + price + "M" +
@@ -2056,9 +2098,12 @@ function buyForeign(key) {
   const price = foreignAsk(s);
   if (price > G.budget) return;
   if (wageBill() + wageFor(s.rating, s.age) > wageCap()) return;
+  const wAgreed = negotiateWage(s.name, wageFor(s.rating, s.age));
+  if (wAgreed === null) return;
+  if (wageBill() + wAgreed > wageCap()) { if (typeof alert === "function") alert("That wage would burst your cap."); return; }
   const p = makePlayer(s.name, s.pos, s.rating, s.age);
   p.role = s.role || roleFor(s.pos, G.squads[G.myClub]);
-  p.wage = wageFor(s.rating, s.age); p.years = 3;
+  p.wage = wAgreed; p.years = 3;
   G.squads[G.myClub].push(p);
   G.budget -= price;
   G.signedStars = G.signedStars || [];
@@ -2080,6 +2125,11 @@ function renderTransfers() {
     return html + `</div>`;
   }
   ensureWindowDeals();
+  // 🤲 once a season, you can go to the board cap-in-hand
+  if (G.fundKey !== G.season) {
+    html += `<p><button class="ghost" onclick="requestFunds()">🤲 Ask the board for more transfer funds</button>
+      <span class="note">One request per season. Your odds ride on board confidence (${Math.round(G.board ? G.board.conf : 0)}%).</span></p>`;
+  }
   // 🚨 deadline day: the January window's final week goes feral
   if (G.week === 22 && G.dlKey !== G.season) {
     G.dlKey = G.season;
