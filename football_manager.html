@@ -108,6 +108,14 @@ input[type="text"], input[type="password"], input:not([type]) {
 .formbar { font-family: var(--mono); font-size: 12px; letter-spacing: 1px; }
 .formbar .W { color: var(--pitch); } .formbar .D { color: var(--ink-soft); } .formbar .L { color: var(--red); }
 th.sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.plink { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 2px; }
+.plink:hover { color: #fff; }
+.overlay { position: fixed; inset: 0; background: rgba(8,12,16,.6); z-index: 60;
+  display: flex; align-items: center; justify-content: center; padding: 16px; }
+.pcard { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px;
+  max-width: 400px; width: 100%; padding: 18px 20px; max-height: 88vh; overflow-y: auto; }
+.pcard h3 { margin: 0 0 4px; }
+.pcard table td { padding: 3px 6px; }
 th.sortable:hover { color: #fff; text-decoration: underline; }
 details.fold { border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin: 10px 0; background: var(--panel-2); }
 details.fold summary { cursor: pointer; color: var(--ink-soft); font-weight: 600; font-size: 13px; user-select: none; }
@@ -198,6 +206,7 @@ footer { text-align: center; color: var(--ink-soft); font-size: 12px; padding: 2
   <span id="week-badge"></span>
 </header>
 <main id="app"></main>
+<div id="modal"></div>
 <footer>Football Manager · a one-file football management game · unofficial fan project, not affiliated with the Premier League, UEFA, or Sports Interactive · squad data approximate (2025/26 season)</footer>
 
 <script>
@@ -803,6 +812,7 @@ function newGame(clubIdx) {
     screen: "main", tab: "squad", lastMatch: null,
   };
   G.lineup = bestXI(squads[clubIdx], G.formation);
+  genMissions();
   initEuro(SEASON1_EURO[clubIdx] || null);
   G.euroRivals = Object.entries(SEASON1_EURO).filter(([i]) => +i !== clubIdx)
     .map(([i, c]) => ({ i: +i, comp: c, done: null }));
@@ -1118,6 +1128,17 @@ function mulberry32(seed) {
 }
 
 function startChallenge(kind) {
+  if (kind === "survival") {
+    let weak = 0;
+    for (let i = 1; i < PL_SIZE; i++) if (CLUBS[i].base < CLUBS[weak].base) weak = i;
+    newGame(weak);
+    G.challenge = "survival";
+    G.board = { conf: 55, exp: 17, grace: 6, chosen: true, choice: "survival" };
+    G.budget = Math.max(10, Math.round(G.budget * 0.6));
+    genMissions();
+    save(); render();
+    return;
+  }
   if (kind === "daily") {
     const ds = new Date().toISOString().slice(0, 10);
     const seed = strHash("FM-" + ds);
@@ -1197,6 +1218,14 @@ function challengeVerdict(myPos) { // called at season end; returns banner line 
     if (myPos <= 6) return done("Youth Project — top six with a transfer ban");
     if (G.season >= 3) return fail("three seasons without cracking the top six. The project ends.");
     return `<p class="note">🎖 Youth Project: top six needed within ${3 - G.season} more season${3 - G.season > 1 ? "s" : ""}. Academy and loans only.</p>`;
+  }
+  if (G.challenge === "survival") {
+    G.challenge = null;
+    if (myPos <= 17) {
+      G.honours.push("Season " + G.season + ": 🎖 Survival Season — kept " + CLUBS[G.myClub].name + " up against the odds");
+      return `<p style="color:var(--pitch)"><b>🎖 SURVIVAL SEASON COMPLETE — ${esc(CLUBS[G.myClub].name)} stay up (#${myPos})!</b> Into the Hall of Fame it goes.</p>`;
+    }
+    return `<p style="color:var(--red)"><b>🎖 Survival Season failed — relegated in #${myPos}.</b> The weakest squad proved too weak this time.</p>`;
   }
   if (G.challenge === "daily") {
     G.challenge = null;
@@ -1609,6 +1638,52 @@ function expectationText(e) {
          e <= 12 ? "a solid top-half finish" :
          e <= 16 ? "comfortable mid-table safety" : "avoid relegation at all costs";
 }
+/* ---------------- Season missions ----------------
+   Two side-quests beside the board objective, scaled to the club's stature.
+   Completed missions pay +£8M each into next season's budget; a survival
+   mission completed from the drop zone at Christmas earns the Great Escape. */
+function genMissions() {
+  const exp = expectedPos(G.myClub);
+  const ms = [];
+  if (exp >= 15) ms.push({ k: "survive", text: "🛡 Win the relegation battle — finish 17th or higher" });
+  else if (exp >= 7) ms.push({ k: "tophalf", text: "📈 Finish in the top half" });
+  else ms.push({ k: "trophy", text: "🏆 Win at least one trophy" });
+  ms.push({ k: "giantkill", text: "⚔ Beat one of the giants (squad strength 84+)" });
+  ms.push({ k: "cuprun", text: "🏆 Reach a domestic cup quarter-final" });
+  G.missions = ms;
+}
+function missionDone(m) {
+  const t = tableStats();
+  const pos = t.findIndex(r => r.i === G.myClub) + 1;
+  switch (m.k) {
+    case "survive": return pos > 0 && pos <= 17;
+    case "tophalf": return pos > 0 && pos <= 10;
+    case "trophy": return (G.honours || []).some(h => h.startsWith("Season " + G.season + ":"));
+    case "giantkill":
+      for (const wk of G.results) for (const r of wk) {
+        let gf = null, ga, opp;
+        if (r.h === G.myClub) { gf = r.hg; ga = r.ag; opp = r.a; }
+        else if (r.a === G.myClub) { gf = r.ag; ga = r.hg; opp = r.h; }
+        if (gf !== null && gf > ga && CLUBS[opp] && CLUBS[opp].base >= 84) return true;
+      }
+      return false;
+    case "cuprun":
+      return ["lc", "fa"].some(key => {
+        const c = G.cups && G.cups[key];
+        if (!c || !c.rounds) return false;
+        const reached = c.alive === "won" ? c.rounds.length : c.r;
+        return reached >= c.rounds.length - 3;
+      });
+    default: return false;
+  }
+}
+function missionsLine() { // live status for the main screen
+  if (!(G.missions || []).length) return "";
+  return `<p class="note" style="margin:0 0 10px">📋 Missions: ` +
+    G.missions.map(m => `${missionDone(m) ? "✅" : "⏳"} ${esc(m.text)}`).join(" · ") +
+    ` <span class="note">(+£8M next season each)</span></p>`;
+}
+
 function boardBump(n) {
   if (!G.board) return;
   G.board.conf = Math.max(0, Math.min(100, G.board.conf + n));
@@ -1652,6 +1727,7 @@ function takeJob(clubIdx) {
   G.lineup = bestXI(G.squads[clubIdx], G.formation);
   delete G.offers;
   G.screen = "main"; G.tab = "squad";
+  genMissions();
   save(); render();
 }
 
@@ -1995,7 +2071,7 @@ function renderTransfers() {
         <td><span class="tag">on loan at ${esc(p.loan)}</span></td></tr>`;
       const ok = canLeave(G.myClub, p);
       const loanable = canLoanOut(p);
-      return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${esc(p.name)}</td>
+      return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${plink(G.myClub, p)}</td>
         <td class="num">${p.age}</td><td class="num">${p.rating}</td><td class="num">£${playerValue(p)}M</td>
         <td>${ok ? `<button class="ghost" onclick="sellPlayer(${p.id})">Sell £${Math.round(playerValue(p) * 0.9)}M</button>`
                  : `<span class="note" title="Selling would leave the squad too thin">—</span>`}
@@ -2022,12 +2098,35 @@ function renderTransfers() {
     name: r => r.p.name, club: r => CLUBS[r.club].short, age: r => r.p.age,
     rating: r => r.p.rating, pot: r => r.p.pot || 0, ask: r => askPrice(r.club, r.p),
   };
-  const sortedMarket = sortRows(market, "market", MARKET_COLS, r => r.p);
+  // why can't I buy? — count the gates so the answer is visible, not a tooltip
+  const myFull = G.squads[G.myClub].length >= 25;
+  let affordable = 0;
+  for (const r of market) {
+    if (!myFull && canLeave(r.club, r.p) && askPrice(r.club, r.p) <= G.budget
+        && wageBill() + wageFor(r.p.rating, r.p.age) <= wageCap()) affordable++;
+  }
+  const headroom = +(wageCap() - wageBill()).toFixed(1);
+  html += myFull
+    ? `<p style="color:var(--red)"><b>⛔ Your squad is full (25/25)</b> — sell or loan out before you can sign anyone.</p>`
+    : affordable === 0
+    ? `<p style="color:var(--red)"><b>⛔ No one on the market fits right now</b> — budget £${G.budget}M, wage headroom £${headroom}M/yr. Sell a player or trim the wage bill to make room.</p>`
+    : `<p class="note">✅ <b>${affordable}</b> of ${market.length} players on the market are within your budget and wage room${G.tfAfford ? "" : " — tick the box below or sort by Ask to find them"}.</p>
+       <p class="note"><label><input type="checkbox" ${G.tfAfford ? "checked" : ""} onchange="G.tfAfford=this.checked;save();render()"> Show only players you can sign</label></p>`;
+  let pool = market;
+  if (G.tfSearch) pool = pool.filter(r => r.p.name.toLowerCase().includes(G.tfSearch.toLowerCase()));
+  if (G.tfAfford && !myFull) {
+    pool = market.filter(r => canLeave(r.club, r.p) && askPrice(r.club, r.p) <= G.budget
+      && wageBill() + wageFor(r.p.rating, r.p.age) <= wageCap());
+  }
+  const sortedMarket = sortRows(pool, "market", MARKET_COLS, r => r.p);
   html += `<h3>Buy players</h3>
     <div class="row"><label>Position
       <select onchange="G.tfFilter=this.value;save();render()">` +
       ["All", "GK", "DF", "MF", "FW"].map(f => `<option${filter === f ? " selected" : ""}>${f}</option>`).join("") +
-    `</select></label><span class="note">Top 50 shown · click a column heading to sort · clubs demand a premium for their star player</span></div>
+    `</select></label>
+    <label>🔎 <input type="search" placeholder="player name…" value="${esc(G.tfSearch || "")}" size="14"
+      onchange="G.tfSearch=this.value;save();render()"></label>
+    <span class="note">Top 50 shown · click a column heading to sort · clubs demand a premium for their star player</span></div>
     <table><thead><tr>${thSort("market","pos","Pos")}${thSort("market","name","Name")}${thSort("market","club","Club")}${thSort("market","age","Age",1)}${thSort("market","rating","Rating",1,"","Rat")}${thSort("market","pot","Pot",1,"m-hide")}${thSort("market","ask","Ask",1)}<th></th></tr></thead><tbody>` +
     sortedMarket.slice(0, 50).map(({ p, club }) => {
       const price = askPrice(club, p);
@@ -2035,16 +2134,20 @@ function renderTransfers() {
       const sellerOk = canLeave(club, p);
       const wageOk = wageBill() + wDemand <= wageCap();
       const can = sellerOk && price <= G.budget && G.squads[G.myClub].length < 25 && wageOk;
-      const why = !sellerOk ? "Their squad is too thin to sell" : price > G.budget ? "Beyond your budget" : !wageOk ? "His wages don't fit your wage budget" : G.squads[G.myClub].length >= 25 ? "Your squad is full" : "";
-      return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${esc(p.name)}${p.injury ? ` <span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}</td><td>${CLUBS[club].short}</td>
+      const why = !sellerOk ? "not for sale" : G.squads[G.myClub].length >= 25 ? "squad full" : price > G.budget ? "over budget" : !wageOk ? "wages too high" : "";
+      return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${plink(club, p)}${p.injury ? ` <span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}</td><td>${CLUBS[club].short}</td>
         <td class="num">${p.age}</td><td class="num">${p.rating}</td>
         <td class="num stars-bar m-hide">${potStars(p)}</td><td class="num">£${price}M<br><span class="note">£${wDemand}M/yr</span></td>
-        <td>${can ? `<button class="ghost" onclick="buyPlayer(${club},${p.id})">Buy</button>` : `<span class="note" title="${why}">—</span>`}</td></tr>`;
+        <td>${can ? `<button class="ghost" onclick="buyPlayer(${club},${p.id})">Buy</button>` : `<span class="note" style="font-size:11px">${why}</span>`}</td></tr>`;
     }).join("") + `</tbody></table>`;
   // ---- world stars (European clubs) ----
   const STAR_COLS = { name: x => x.name, club: x => x.club, age: x => x.age, rating: x => x.rating, ask: x => foreignAsk(x) };
-  const world = sortRows(foreignStars().filter(s => filter === "All" || s.pos === filter),
-                         "stars", STAR_COLS, x => x).slice(0, 40);
+  let starPool = foreignStars().filter(s => filter === "All" || s.pos === filter);
+  if (G.tfSearch) starPool = starPool.filter(x => x.name.toLowerCase().includes(G.tfSearch.toLowerCase()));
+  if (G.tfAfford && !myFull) {
+    starPool = starPool.filter(s => foreignAsk(s) <= G.budget && wageBill() + wageFor(s.rating, s.age) <= wageCap());
+  }
+  const world = sortRows(starPool, "stars", STAR_COLS, x => x).slice(0, 40);
   html += `<h3>🌍 World stars — Europe's elite (35% world-record premium)</h3>
     <table><thead><tr>${thSort("stars","pos","Pos")}${thSort("stars","name","Name")}${thSort("stars","club","Club")}${thSort("stars","age","Age",1)}${thSort("stars","rating","Rating",1,"","Rat")}${thSort("stars","ask","Ask",1)}<th></th></tr></thead><tbody>` +
     world.map(s => {
@@ -2055,7 +2158,7 @@ function renderTransfers() {
       return `<tr><td class="pos-${s.pos}" title="${s.pos}">${s.role || s.pos}</td><td>${esc(s.name)}</td>
         <td>${crest(s.short, s.col, 15)}${esc(s.club)}</td>
         <td class="num">${s.age}</td><td class="num">${s.rating}</td><td class="num">£${price}M<br><span class="note">£${wDemand}M/yr</span></td>
-        <td>${can ? `<button class="ghost" onclick="buyForeign('${s.key.replace(/'/g, "\\'")}')">Buy</button>` : `<span class="note" title="${price > G.budget ? "Beyond your budget" : !wageOk ? "His wages don't fit your wage budget" : "Your squad is full"}">—</span>`}</td></tr>`;
+        <td>${can ? `<button class="ghost" onclick="buyForeign('${s.key.replace(/'/g, "\\'")}')">Buy</button>` : `<span class="note" style="font-size:11px">${G.squads[G.myClub].length >= 25 ? "squad full" : price > G.budget ? "over budget" : "wages too high"}</span>`}</td></tr>`;
     }).join("") + `</tbody></table>`;
   if ((G.deals || []).length) {
     html += `<h3>Done deals this window</h3><p class="note">${G.deals.map(esc).join("<br>")}</p>`;
@@ -2294,6 +2397,18 @@ function renderHall() {
     ${motm.length
       ? `<p class="note">${motm.map(m => esc(withYears(m))).join("<br>")}</p>`
       : `<p class="note">None yet — string four big results together.</p>`}
+    ${(() => {
+      const R = G.records;
+      if (!R || (!R.biggestWin && !R.seasonScorer)) return "";
+      const top = Object.entries(R.allGoals || {}).sort((x, y) => y[1] - x[1]).slice(0, 5);
+      return `<h3>📜 Manager records</h3><table><tbody>
+        ${R.biggestWin ? `<tr><td>Biggest win</td><td class="num"><b>${R.biggestWin.score}</b> v ${esc(R.biggestWin.opp)} <span class="note">(${seasonYears(R.biggestWin.season)})</span></td></tr>` : ""}
+        ${R.worstLoss ? `<tr><td>Heaviest defeat</td><td class="num"><b>${R.worstLoss.score}</b> v ${esc(R.worstLoss.opp)} <span class="note">(${seasonYears(R.worstLoss.season)})</span></td></tr>` : ""}
+        ${R.unbeaten ? `<tr><td>Longest unbeaten run</td><td class="num"><b>${R.unbeaten}</b> league games <span class="note">(${seasonYears(R.unbeatenSeason)})</span></td></tr>` : ""}
+        ${R.seasonScorer ? `<tr><td>Best season by a striker</td><td class="num"><b>${esc(R.seasonScorer.name)}</b> — ${R.seasonScorer.goals} goals <span class="note">(${seasonYears(R.seasonScorer.season)})</span></td></tr>` : ""}
+        ${top.length ? `<tr><td>All-time scorers under you</td><td class="num">${top.map(([n, g]) => esc(n) + " " + g).join(" · ")}</td></tr>` : ""}
+      </tbody></table>`;
+    })()}
     <h3>Career history</h3>
     ${car.length
       ? `<table><thead><tr><th>Season</th><th>Club</th><th class="num">Finish</th><th>Silverware</th></tr></thead><tbody>` +
@@ -3583,15 +3698,63 @@ function tableStats() {
 
 function topScorers(n) {
   const all = [];
-  G.league.forEach(ci => G.squads[ci].forEach(p => { if (p.goals > 0) all.push({ p, club: CLUBS[ci].short }); }));
+  G.league.forEach(ci => G.squads[ci].forEach(p => { if (p.goals > 0) all.push({ p, ci, club: CLUBS[ci].short }); }));
   all.sort((a, b) => b.p.goals - a.p.goals || a.p.name.localeCompare(b.p.name));
   return all.slice(0, n);
 }
 
 /* ---------------- Season transition ---------------- */
 
+/* ---------------- All-time manager records (Hall of Fame) ---------------- */
+function updateRecords() {
+  G.records = G.records || { biggestWin: null, worstLoss: null, unbeaten: 0, unbeatenSeason: null, seasonScorer: null, allGoals: {} };
+  const R = G.records;
+  let run = 0, best = 0;
+  for (const wk of G.results) for (const m of wk) {
+    let gf, ga, opp;
+    if (m.h === G.myClub) { gf = m.hg; ga = m.ag; opp = m.a; }
+    else if (m.a === G.myClub) { gf = m.ag; ga = m.hg; opp = m.h; }
+    else continue;
+    const diff = gf - ga;
+    if (diff >= 0) { run++; if (run > best) best = run; } else run = 0;
+    if (diff > 0 && (!R.biggestWin || diff > R.biggestWin.diff))
+      R.biggestWin = { diff, score: gf + "–" + ga, opp: CLUBS[opp].name, season: G.season };
+    if (diff < 0 && (!R.worstLoss || diff < R.worstLoss.diff))
+      R.worstLoss = { diff, score: gf + "–" + ga, opp: CLUBS[opp].name, season: G.season };
+  }
+  if (best > (R.unbeaten || 0)) { R.unbeaten = best; R.unbeatenSeason = G.season; }
+  for (const p of G.squads[G.myClub]) {
+    if (!p.goals) continue;
+    R.allGoals[p.name] = (R.allGoals[p.name] || 0) + p.goals;
+    if (!R.seasonScorer || p.goals > R.seasonScorer.goals)
+      R.seasonScorer = { name: p.name, goals: p.goals, season: G.season };
+  }
+}
+
 function nextSeason(newClub) {
+  // a relegated manager must pick his new club BEFORE anything is committed —
+  // otherwise a blocked call would still push career/records entries
+  if ((G.relegated || []).includes(G.myClub)) {
+    const nl = G.league.map(i => {
+      const k = (G.relegated || []).indexOf(i);
+      return k >= 0 ? (G.promoted || [])[k] : i;
+    });
+    if (typeof newClub !== "number" || !nl.includes(newClub)) return;
+  }
   ghQueueSync();
+  updateRecords();
+  delete G.approach;
+  // mission rewards: banked into the new season's budget below
+  const missionsWon = (G.missions || []).filter(m => missionDone(m)).length;
+  // the Great Escape: a survival mission completed from the drop zone at Christmas
+  if ((G.missions || []).some(m => m.k === "survive" && missionDone(m))) {
+    const hist = myLeagueHistory();
+    if (hist.length >= 19 && hist[18].pos >= 18) {
+      G.honours.push("Season " + G.season + ": 🎖 The Great Escape — bottom three at Christmas, safe in May");
+      boardBump(8);
+    }
+  }
+  // training focus only carries for players still here and still young
   // European qualification comes from this season's final table (before the league swap)
   const finalT = tableStats();
   const myFinalPos = finalT.findIndex(r => r.i === G.myClub) + 1;
@@ -3637,7 +3800,7 @@ function nextSeason(newClub) {
   } else if (movedClub) {
     G.sponsor = null; G.sponsorOffers = null; G.sponsorNews = null;
   }
-  G.budget = Math.round((movedClub ? 0 : (G.budget || 0) * 0.5) + 20 + (CLUBS[G.myClub].base - 70) * 8 + (movedClub ? 0 : leaguePrize + euroPrize + sponsorIncome));
+  G.budget = Math.round((movedClub ? 0 : (G.budget || 0) * 0.5) + 20 + (CLUBS[G.myClub].base - 70) * 8 + (movedClub ? 0 : leaguePrize + euroPrize + sponsorIncome) + missionsWon * 8);
   resolveEuroRivals();
   initEuro(movedClub ? null : myFinalPos <= 4 ? "UCL" : myFinalPos === 5 ? "UEL" : myFinalPos === 6 ? "UECL" : null);
   assignEuroRivals(finalT);
@@ -3645,6 +3808,7 @@ function nextSeason(newClub) {
   const newExp = expectedPos(G.myClub);
   G.board = { exp: newExp, grace: 6, chosen: false,
     conf: Math.max(30, Math.min(85, movedClub ? 60 : 55 + (G.board ? (G.board.exp - myFinalPos) * 1.5 : 0))) };
+  genMissions();
   // player development, retirements, and academy intakes — the league renews itself
   G.youthNews = [];
   for (let ci = 0; ci < EURO_SLOT; ci++) {
@@ -3663,7 +3827,9 @@ function nextSeason(newClub) {
       } else if (p.rating < p.pot) {
         const appsF = appsBefore >= 25 ? 1.0 : appsBefore >= 10 ? 0.7 : 0.5;
         const youthF = p.age <= 19 ? 3 : p.age <= 21 ? 2.2 : p.age <= 23 ? 1.6 : 1.0;
-        const gain = Math.min(p.pot - p.rating, Math.round(youthF * appsF * (0.6 + rnd() * 0.8)));
+        const focusF = mine && (G.training || []).includes(p.id) ? 1.5 : 1;
+        const gain = Math.min(p.pot - p.rating, Math.round(youthF * appsF * focusF * (0.6 + rnd() * 0.8)));
+        if (mine && focusF > 1 && gain > 0) G.youthNews.push("🎯 " + p.name + " responded to focused coaching (" + p.rating + " → " + (p.rating + gain) + ")");
         if (gain > 0) {
           p.rating += gain;
           if (wasOnLoan) G.youthNews.push("↩ " + p.name + " returns from his loan at " + p.loan + " a better player (" + (p.rating - gain) + " → " + p.rating + ")");
@@ -3729,6 +3895,7 @@ function nextSeason(newClub) {
         G.youthNews.push("🚨 Emergency promotion: " + grad.name + " (" + grad.pos + ", " + grad.age + ") — too many contracts ran out, and the kids must fill the gaps.");
       }
     }
+    if (mine) G.training = (G.training || []).filter(pid => G.squads[ci].some(q => q.id === pid && q.age <= 23));
     // AI clubs trim their squads; you manage your own
     if (!mine) {
       while (G.squads[ci].length > 22) {
@@ -3841,6 +4008,7 @@ function load() {
       if (p.years === undefined) p.years = 1 + Math.floor(Math.random() * 4);
     }
     for (const sq of G.squads) if (sq.some(p => !p.role)) assignRoles(sq);
+    if (!G.missions) genMissions();
     if (!G.wcap) setWageCap();
     if (G.sponsor === undefined) { // older saves get a modest existing deal
       G.sponsor = { name: "Meridian Bank", base: sponsorRep(), winBonus: 0, top4Bonus: 0, trophyBonus: 0, years: 2 };
@@ -4167,6 +4335,7 @@ function starBar(rating) {
 
 function render() {
   const app = $("#app");
+  closeProfile();
   if (APP_MODE === "wc") {
     $("#club-badge").textContent = WCS && WCS.squads ? "World Cup 2026 · " + WC_TEAMS[WCS.myTeam][0] : "World Cup 2026";
     $("#week-badge").textContent = WCS && WCS.squads && WCS.stage !== "done" ? wcDateLabel() : "";
@@ -4201,6 +4370,10 @@ function renderClubSelect() {
       <div class="club-card" onclick="startChallenge('rescue')">
         <div class="cname">🚒 Relegation Rescue</div>
         <div class="cinfo">It's January. The board sacks the manager of the bottom club — and hires you. Half a season to perform a miracle.</div>
+      </div>
+      <div class="club-card" onclick="startChallenge('survival')">
+        <div class="cname">⚔ Survival Season</div>
+        <div class="cinfo">A full season with the league's weakest squad and 60% of its budget. One mission from day one: win the relegation battle.</div>
       </div>
       <div class="club-card" onclick="startChallenge('takeover')">
         <div class="cname">💰 The Takeover</div>
@@ -4498,6 +4671,7 @@ function renderMain() {
     ${eventPanel}
     ${eventNewsLine}
     ${boardLine}
+    ${missionsLine()}
     <div class="tabs">${tabBtn("squad","Squad")}${tabBtn("tactics","Tactics & Lineup")}${tabBtn("fixtures","Fixtures")}${tabBtn("table","Table")}${tabBtn("scorers","Top Scorers")}${tabBtn("form","📊 Form")}${G.euro ? tabBtn("europe","🌍 Europe") : ""}${tabBtn("cups","🏆 Cups")}${tabBtn("transfers", windowOpen() ? "💰 Transfers ●" : "💰 Transfers")}${tabBtn("hall","🏛 Hall of Fame")}${tabBtn("cloud","☁ Cloud")}</div>
     ${body}
     <div class="panel row">
@@ -4575,6 +4749,58 @@ function renderEurope() {
     </div>`;
 }
 
+/* ---------------- Player profile card (tap any underlined name) ---------------- */
+function plink(ci, p, label) {
+  return `<span class="plink" onclick="showProfile(${ci},${p.id})">${esc(label || p.name)}</span>`;
+}
+function showProfile(ci, pid) {
+  const sq = APP_MODE === "wc" ? WCS.squads[ci] : G.squads[ci];
+  const p = sq && sq.find(x => x.id === pid);
+  if (!p) return;
+  const wc = APP_MODE === "wc";
+  const mine = !wc && ci === G.myClub;
+  const clubName = wc ? WC_TEAMS[ci][0] : CLUBS[ci].name;
+  const young = p.age <= 23 && p.rating < (p.pot || p.rating);
+  const focused = mine && (G.training || []).includes(p.id);
+  const focusFull = mine && (G.training || []).length >= 3 && !focused;
+  const row = (k, v) => `<tr><td class="note">${k}</td><td><b>${v}</b></td></tr>`;
+  document.getElementById("modal").innerHTML = `
+  <div class="overlay" onclick="if (event.target === this) closeProfile()">
+    <div class="pcard">
+      <h3>${esc(p.name)} <span class="pos-${p.pos}" style="font-size:13px">${p.role || p.pos}</span></h3>
+      <p class="note" style="margin:0 0 10px">${esc(clubName)}${p.loan ? " · on loan at " + esc(p.loan) : ""}</p>
+      <table><tbody>
+        ${row("Rating", Math.round(effRating(p)) + (p.form ? ` <span class="note">(base ${p.rating}, form ${p.form > 0 ? "+" + p.form : p.form})</span>` : ""))}
+        ${p.pot && p.age <= 23 ? row("Potential", `<span class="stars-bar">${potStars(p)}</span> <span class="note">up to ~${p.pot}</span>`) : ""}
+        ${row("Age", p.age)}
+        ${row("Fitness", p.fitness + "%")}
+        ${row("This season", (p.goals || 0) + " goals · " + (p.assists || 0) + " assists · " + (p.apps || 0) + " apps · " + (p.yellows || 0) + "🟨")}
+        ${!wc ? row("Contract", "£" + (p.wage || 0) + "M/yr · " + (p.years || 0) + " year" + ((p.years || 0) === 1 ? "" : "s") + ((p.years || 0) <= 1 ? ' <span style="color:var(--amber)">EXPIRING</span>' : "")) : ""}
+        ${!wc ? row("Value", "£" + playerValue(p) + "M") : ""}
+        ${p.injury ? row("Injury", `<span style="color:var(--red)">out ${p.injury} wk</span>`) : ""}
+        ${p.ban ? row("Suspended", `<span style="color:var(--red)">${p.ban} match${p.ban > 1 ? "es" : ""}</span>`) : ""}
+      </tbody></table>
+      ${mine ? `<div class="row" style="margin-top:12px">
+        ${(p.years || 0) <= 1 ? `<button class="ghost" onclick="renewContract(${p.id});showProfile(${ci},${p.id})" title="He wants £${renewDemand(p)}M/yr">📄 Renew (£${renewDemand(p)}M/yr)</button>` : ""}
+        ${young ? `<button class="ghost" ${focusFull ? 'disabled title="Only three players can get focused coaching"' : ""} onclick="toggleTraining(${p.id});showProfile(${ci},${p.id})">${focused ? "🎯 Focused coaching ON" : "🎯 Focus his training"}</button>` : ""}
+        ${canLoanOut(p) ? `<button class="ghost" onclick="closeProfile();loanOut(${p.id})">↗ Loan out</button>` : ""}
+        ${windowOpen() && canLeave(G.myClub, p) ? `<button class="ghost" onclick="closeProfile();sellPlayer(${p.id})">💸 Sell £${Math.round(playerValue(p) * 0.9)}M</button>` : ""}
+      </div>` : ""}
+      ${focused ? `<p class="note">🎯 Intensive development: grows ~50% faster at the end of this season.</p>` : ""}
+      <div class="row" style="margin-top:10px"><button class="action" onclick="closeProfile()">Close</button></div>
+    </div>
+  </div>`;
+}
+function closeProfile() { const m = document.getElementById("modal"); if (m) m.innerHTML = ""; }
+
+/* 🎯 Training focus: up to three under-24s develop ~50% faster */
+function toggleTraining(pid) {
+  G.training = G.training || [];
+  if (G.training.includes(pid)) G.training = G.training.filter(x => x !== pid);
+  else if (G.training.length < 3) G.training.push(pid);
+  save(); render();
+}
+
 const SQUAD_COLS = {
   name: p => p.name, rating: p => effRating(p), pot: p => p.pot || 0, age: p => p.age,
   fitness: p => p.fitness, form: p => p.form, goals: p => p.goals, wage: p => p.wage || 0,
@@ -4591,7 +4817,7 @@ function renderSquad() {
     <p class="note">Wage bill: <b style="color:${wageBill() > wageCap() ? "var(--red)" : "var(--pitch)"}">£${wageBill()}M</b> / £${wageCap()}M cap per year</p>
     <table><thead><tr>${thSort("squad","pos","Pos")}${thSort("squad","name","Name")}${thSort("squad","rating","Rating",1,"","Rat")}${thSort("squad","pot","Pot",1,"m-hide")}${thSort("squad","age","Age",1)}${thSort("squad","fitness","Fit",1,"m-hide")}${thSort("squad","form","Form",1,"m-hide")}${thSort("squad","goals","Goals",1,"","Gls")}${thSort("squad","wage","Contract",1,"","£")}<th>Status</th></tr></thead><tbody>` +
     squad.map(p => `<tr${inXI.has(p.id) ? ' class="me"' : ""}>
-      <td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${esc(p.name)}${inXI.has(p.id) ? " <span class='tag'>XI</span>" : ""}</td>
+      <td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${plink(G.myClub, p)}${(G.training || []).includes(p.id) ? " 🎯" : ""}${inXI.has(p.id) ? " <span class='tag'>XI</span>" : ""}</td>
       <td class="num">${Math.round(effRating(p))}</td>
       <td class="num stars-bar m-hide" title="Scouts' view of his ceiling">${potStars(p)}</td>
       <td class="num">${p.age}</td>
@@ -4717,7 +4943,7 @@ function renderScorers() {
   const top = topScorers(15);
   return `<div class="panel"><h2>Golden Boot race</h2>
     <table><thead><tr><th>#</th><th>Player</th><th>Club</th><th class="num">Goals</th><th class="num">Assists</th><th class="num">Apps</th></tr></thead><tbody>` +
-    (top.length ? top.map((s, i) => `<tr><td class="num">${i + 1}</td><td>${esc(s.p.name)}</td><td>${s.club}</td>
+    (top.length ? top.map((s, i) => `<tr><td class="num">${i + 1}</td><td>${plink(s.ci, s.p)}</td><td>${s.club}</td>
       <td class="num"><b>${s.p.goals}</b></td><td class="num">${s.p.assists || 0}</td><td class="num">${s.p.apps}</td></tr>`).join("")
       : `<tr><td colspan="6" class="note">No goals yet — play a match!</td></tr>`) +
     `</tbody></table></div>`;
@@ -5172,7 +5398,27 @@ function renderSeasonEnd() {
                myPos === 6 ? " — Conference League football secured." :
                iAmDown ? " — relegated. A dark day at the club." : ".";
   const nextLeague = G.league.map(i => relegated.includes(i) ? promoted[relegated.indexOf(i)] : i);
-  return `
+  // headhunted: overachieve and a bigger club comes calling (decided once, then saved)
+  if (G.approach === undefined) {
+    let appr = null;
+    if (!iAmDown && myPos <= expectedPos(G.myClub) - 4 && rnd() < 0.6) {
+      const bigger = t.filter(r => CLUBS[r.i].base >= CLUBS[G.myClub].base + 3 && !relegated.includes(r.i) && r.i !== G.myClub);
+      if (bigger.length) appr = bigger[Math.floor(rnd() * bigger.length)].i;
+    }
+    G.approach = appr;
+    save();
+  }
+  const approachHtml = (G.approach !== null && G.approach !== undefined) ? `
+    <div class="panel" style="border-color:var(--amber)">
+      <h2>🤝 ${esc(CLUBS[G.approach].name)} want you</h2>
+      <p>Your season turned heads. ${esc(CLUBS[G.approach].name)} (squad strength ${CLUBS[G.approach].base})
+      have made a formal approach — a bigger stage, bigger expectations: ${expectationText(expectedPos(G.approach))}.</p>
+      <div class="row">
+        <button class="action" onclick="nextSeason(${G.approach})">Take the ${esc(CLUBS[G.approach].name)} job →</button>
+        <span class="note">…or simply start next season below to stay loyal.</span>
+      </div>
+    </div>` : "";
+  return approachHtml + `
     <div class="banner">
       <h2>${iWon ? "🏆 CHAMPIONS! 🏆" : "The " + seasonYears(G.season) + " season is complete"}</h2>
       <p>${iWon
@@ -5183,6 +5429,9 @@ function renderSeasonEnd() {
       <p class="note">⬇ Going down: ${relegated.map(i => esc(CLUBS[i].name)).join(", ")}<br>
          ⬆ Coming up from the Championship: ${promoted.map(i => esc(CLUBS[i].name)).join(", ")}</p>
       ${G.board ? `<p class="note">Board verdict: you promised ${expectationText(G.board.exp)} — objective <b style="color:${myPos <= G.board.exp ? "var(--pitch)" : "var(--red)"}">${myPos <= G.board.exp ? "MET ✓" : "MISSED ✗"}</b> (finished #${myPos}, target #${G.board.exp})</p>` : ""}
+      ${(G.missions || []).length ? `<p class="note">📋 Missions: ` +
+        G.missions.map(m => `${missionDone(m) ? "✅" : "❌"} ${esc(m.text)}`).join("<br>　　") +
+        `<br>　　${(G.missions || []).filter(m => missionDone(m)).length} completed — £${(G.missions || []).filter(m => missionDone(m)).length * 8}M added to next season's budget.</p>` : ""}
       ${challengeVerdict(myPos)}
       ${myPos <= 6 ? `<p class="note">Next season in Europe: <b>${myPos <= 4 ? COMP_NAME.UCL : myPos === 5 ? COMP_NAME.UEL : COMP_NAME.UECL}</b></p>` : ""}
       ${(G.honours || []).length ? `<p class="note">Honours board: ${G.honours.map(esc).join(" · ")}</p>` : ""}
@@ -5318,7 +5567,7 @@ function wcEnter() {
   if (!loadWC()) WCS = { stage: "pick" };
   render();
 }
-function wcExit() { APP_MODE = "career"; render(); }
+function wcExit() { wclStop(); WCL = null; SND.stopCrowd(); APP_MODE = "career"; render(); }
 function wcReset() {
   if (typeof confirm === "function" && !confirm("Abandon this World Cup and start over?")) return;
   localStorage.removeItem("touchline_wc");
@@ -5433,11 +5682,12 @@ function wcBuildR32() {
   return { round: 0, ties, log: [] };
 }
 
-function wcPlayNext() {
+function wcPlayNext(preMatch) {
   if (!WCS || WCS.stage === "pick" || WCS.stage === "done") return;
   if (WCS.stage === "group") {
     const mdRes = [];
-    for (let g = 0; g < 12; g++) for (const [a, b] of wcGroupFixtures(g, WCS.md)) mdRes.push(wcSimMatch(a, b));
+    for (let g = 0; g < 12; g++) for (const [a, b] of wcGroupFixtures(g, WCS.md))
+      mdRes.push(preMatch && preMatch.a === a && preMatch.b === b ? preMatch : wcSimMatch(a, b));
     WCS.results.push(mdRes);
     WCS.lastMatch = mdRes.find(m => m.a === WCS.myTeam || m.b === WCS.myTeam) || null;
     WCS.md++;
@@ -5445,7 +5695,7 @@ function wcPlayNext() {
   } else if (WCS.stage === "ko") {
     const survivors = [], roundLog = [];
     for (const [a, b] of WCS.ko.ties) {
-      const m = wcSimMatch(a, b);
+      const m = preMatch && preMatch.a === a && preMatch.b === b ? preMatch : wcSimMatch(a, b);
       let note = "";
       let winner = m.ag > m.bg ? a : m.bg > m.ag ? b : null;
       if (winner === null) {
@@ -5458,6 +5708,17 @@ function wcPlayNext() {
       roundLog.push(m);
       survivors.push(winner);
       if (a === WCS.myTeam || b === WCS.myTeam) WCS.lastMatch = m;
+    }
+    // semi-final losers meet in the third-place playoff before the final
+    if (WCS.ko.ties.length === 2) {
+      WCS.thirdTie = WCS.ko.ties.map((t, i) => t[0] === survivors[i] ? t[1] : t[0]);
+    }
+    if (WCS.ko.ties.length === 1 && WCS.thirdTie) {
+      const tp = wcSimMatch(WCS.thirdTie[0], WCS.thirdTie[1]);
+      if (tp.ag === tp.bg) { const so = wcShootout(tp.a, tp.b); tp.note = " (" + so.aS + "–" + so.bS + " pens)"; tp.winner = so.winA ? tp.a : tp.b; }
+      else tp.winner = tp.ag > tp.bg ? tp.a : tp.b;
+      WCS.ko.log.push({ round: -1, label: "Third-place playoff", matches: [tp] });
+      WCS.thirdTie = null;
     }
     WCS.ko.log.push({ round: WCS.ko.round, matches: roundLog });
     if (survivors.length === 1) {
@@ -5477,6 +5738,126 @@ function wcPlayNext() {
   }
   saveWC(); render();
 }
+
+/* --- World Cup LIVE: a compact live viewer on the same maths & sounds --- */
+let WCL = null, wclTimer = null;
+function wcStartLive() {
+  if (!WCS || WCL) return;
+  let fx = null;
+  if (WCS.stage === "group") fx = wcGroupFixtures(WC_TEAMS[WCS.myTeam][4], WCS.md).find(([x, y]) => x === WCS.myTeam || y === WCS.myTeam);
+  else if (WCS.stage === "ko") fx = WCS.ko.ties.find(([x, y]) => x === WCS.myTeam || y === WCS.myTeam);
+  if (!fx) return;
+  const [a, b] = fx;
+  const tA = a === WCS.myTeam ? WCS.tac : wcAiTac(a);
+  const tB = b === WCS.myTeam ? WCS.tac : wcAiTac(b);
+  const sqA = WCS.squads[a], sqB = WCS.squads[b];
+  const xiA = bestXI(sqA, tA.form), xiB = bestXI(sqB, tB.form);
+  const dots = (sq, xi, home) => {
+    const ps = xi.map(id => sq.find(q => q.id === id)).filter(Boolean);
+    const out = [];
+    const ord = { L: 0, C: 1, R: 2 };
+    for (const pos of ["GK", "DF", "MF", "FW"]) {
+      const line = ps.filter(q => q.pos === pos).sort((m, n) => (ord[(ROLES[m.role] || {}).side] ?? 1) - (ord[(ROLES[n.role] || {}).side] ?? 1));
+      line.forEach((q, i) => out.push({ x: home ? LINE_X[pos] : 1 - LINE_X[pos], y: 0.12 + 0.76 * ((i + 1) / (line.length + 1)) }));
+    }
+    return out;
+  };
+  let colA = WC_TEAMS[a][3], colB = WC_TEAMS[b][3];
+  const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const [r1, g1, b1] = rgb(colA), [r2, g2, b2] = rgb(colB);
+  if (Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2) < 150) colB = r1 + g1 + b1 > 460 ? "#22303B" : "#F5F5F5";
+  WCL = { a, b, colA, colB,
+    H: teamNumbers(sqA, xiA, tA.ment, tA.form, tA.style, "clear"),
+    W: teamNumbers(sqB, xiB, tB.ment, tB.form, tB.style, "clear"),
+    dotsA: dots(sqA, xiA, true), dotsB: dots(sqB, xiB, false),
+    minute: 0, ag: 0, bg: 0, ball: { x: 0.5, y: 0.5 },
+    events: [{ min: 0, type: "info", text: "Kick-off!", zh: "開波！" }],
+    endMin: 91 + Math.floor(rnd() * 4), phase: "live", speed: "normal", flash: null };
+  render();
+  wclStart();
+  SND.startCrowd(); SND.whistle(1);
+}
+function wclStart() { wclStop(); if (WCL) wclTimer = setInterval(wclTick, SPEEDS[WCL.speed] || 180); }
+function wclStop() { if (wclTimer) { clearInterval(wclTimer); wclTimer = null; } }
+function wclTick() {
+  const L = WCL;
+  if (!L || L.phase !== "live") { wclStop(); return; }
+  L.minute++;
+  let news = false;
+  for (const [T, O, idx, sideA] of [[L.H, L.W, L.a, true], [L.W, L.H, L.b, false]]) {
+    if (rnd() < expGoals(T, O, false) / 93) {
+      const e = makeGoalEvent(T, idx); e.min = L.minute; L.events.push(e);
+      if (sideA) L.ag++; else L.bg++;
+      L.ball = { x: sideA ? 0.96 : 0.04, y: 0.42 + rnd() * 0.16 };
+      L.flash = { text: (LANG === "zh" ? "入咗呀！" : "GOAL! ") + e.who, until: Date.now() + 1900 };
+      SND.roar(idx === WCS.myTeam);
+      news = true;
+    } else if (rnd() < 0.035) {
+      const q = pickScorer(T);
+      const k = Math.floor(rnd() * CHANCE_LINES.length);
+      L.events.push({ min: L.minute, type: "chance", clubIdx: idx, who: q.name,
+                      text: q.name + " " + CHANCE_LINES[k], zh: q.name + " " + CHANCE_LINES_ZH[k] });
+      SND.ooh(); news = true;
+    }
+  }
+  if (SND.crowd) SND.setExcite(0.25 + L.minute / 320 + (Math.abs(L.ag - L.bg) <= 1 && L.minute > 70 ? 0.18 : 0));
+  if (L.minute === 45) { L.events.push({ min: 45, type: "info", text: "Half-time.", zh: "半場。" }); SND.whistle(2); news = true; }
+  if (L.minute >= L.endMin) {
+    L.phase = "ft";
+    L.events.push({ min: L.endMin, type: "info", text: "Full time!", zh: "完場！" });
+    wclStop(); SND.whistle(3); SND.stopCrowd();
+    render(); return;
+  }
+  if (rnd() < 0.5) { L.ball = { x: Math.max(0.05, Math.min(0.95, 0.5 + (rnd() - 0.5) * 0.9)), y: 0.12 + 0.76 * rnd() }; }
+  wclDraw();
+  const elMin = document.getElementById("wcl-min");
+  if (elMin) elMin.textContent = fmtMin(L.minute) + "'";
+  if (news) {
+    const sc = document.getElementById("wcl-score"), fd = document.getElementById("wcl-feed");
+    if (sc) sc.innerHTML = wclScoreHtml();
+    if (fd) fd.innerHTML = wclFeedHtml();
+  }
+}
+function wclDraw() {
+  const c = document.getElementById("wc-pitch");
+  if (!c || !c.getContext) return;
+  const x = c.getContext("2d");
+  const W = c.width, H = c.height, M = 22;
+  paintPitchBG(x, W, H, M);
+  const px = nx => M + nx * (W - 2 * M), py = ny => M + ny * (H - 2 * M);
+  const t = Date.now() / 900;
+  const draw = (ds, col) => { for (let i = 0; i < ds.length; i++) {
+    const d = ds[i];
+    x.beginPath(); x.arc(px(d.x + Math.sin(t + i) * 0.012 + (WCL.ball.x - d.x) * 0.18), py(d.y + Math.cos(t + i) * 0.014 + (WCL.ball.y - d.y) * 0.18), 8, 0, 6.29);
+    x.fillStyle = col; x.fill(); x.lineWidth = 1.6; x.strokeStyle = "#FFFFFF"; x.stroke();
+  } };
+  draw(WCL.dotsA, WCL.colA); draw(WCL.dotsB, WCL.colB);
+  x.beginPath(); x.arc(px(WCL.ball.x), py(WCL.ball.y), 4.6, 0, 6.29);
+  x.fillStyle = "#FFFFFF"; x.fill(); x.lineWidth = 1.2; x.strokeStyle = "#1F1B16"; x.stroke();
+  if (WCL.flash && Date.now() < WCL.flash.until) {
+    x.fillStyle = "rgba(16,24,31,0.55)"; x.fillRect(0, H / 2 - 34, W, 68);
+    x.font = "bold 34px 'Segoe UI', sans-serif"; x.textAlign = "center"; x.textBaseline = "middle";
+    x.fillStyle = "#2EAE6A"; x.fillText(WCL.flash.text, W / 2, H / 2);
+  }
+}
+function wclScoreHtml() {
+  return `${wcCrest(WCL.a, 22)}${esc(WC_TEAMS[WCL.a][0])} <b>${WCL.ag}</b><span class="vs">–</span><b>${WCL.bg}</b> ${esc(WC_TEAMS[WCL.b][0])}`;
+}
+function wclFeedHtml() {
+  return [...WCL.events].sort((m, n) => n.min - m.min).map(e => `<li class="ev-${e.type === "goal" ? "goal" : "other"}">
+    <span class="min">${fmtMin(e.min)}'</span> ${evIcon(e.type)} ${e.clubIdx !== undefined ? `<b>${WC_TEAMS[e.clubIdx][1]}</b> — ` : ""}${esc(evText(e))}</li>`).join("");
+}
+function wclSpeed(sp) { if (WCL) { WCL.speed = sp; if (wclTimer) wclStart(); render(); } }
+function wclToggle() { if (wclTimer) { wclStop(); } else wclStart(); render(); }
+function wclSkip() { let g = 0; while (WCL && WCL.phase === "live" && g++ < 160) wclTick(); }
+function wclFinish() {
+  const L = WCL;
+  if (!L || L.phase !== "ft") return;
+  const m = { a: L.a, b: L.b, ag: L.ag, bg: L.bg, events: L.events.filter(e => e.type !== "info") };
+  WCL = null;
+  wcPlayNext(m);
+}
+function wclAbandon() { wclStop(); WCL = null; SND.stopCrowd(); render(); }
 
 function wcSetTac(key, val) { WCS.tac[key] = val; saveWC(); render(); }
 function wcCrest(ti, size) { return crest(WC_TEAMS[ti][1], WC_TEAMS[ti][3], size || 18); }
@@ -5507,7 +5888,7 @@ function wcDateLabel() {
 function wcFeedHtml(m) {
   if (!m) return "";
   return `<ul class="events">` + m.events.map(e => `<li class="ev-${e.type === "goal" ? "goal" : "other"}">
-    <span class="min">${e.min}'</span> ${evIcon(e.type)} <b>${WC_TEAMS[e.clubIdx][1]}</b> — ${esc(evText(e))}</li>`).join("") + `</ul>`;
+    <span class="min">${e.min}'</span> ${evIcon(e.type)} ${e.clubIdx !== undefined && WC_TEAMS[e.clubIdx] ? `<b>${WC_TEAMS[e.clubIdx][1]}</b> — ` : ""}${esc(evText(e))}</li>`).join("") + `</ul>`;
 }
 function wcScoreLine(m) {
   return `${wcCrest(m.a, 22)}${esc(WC_TEAMS[m.a][0])} <b>${m.ag}</b><span class="vs">–</span><b>${m.bg}</b> ${esc(WC_TEAMS[m.b][0])}${wcCrest(m.b, 22).replace("margin-right: 6px", "")}${m.note ? `<div class="note" style="font-size:13px">${m.note}</div>` : ""}`;
@@ -5535,6 +5916,28 @@ function renderWC() {
         </div>`).join("") + `</div>`).join("") + `</div>`;
   }
   const my = WCS.myTeam, myName = WC_TEAMS[my][0];
+  if (WCL) { // a live match is in progress
+    const running = wclTimer != null;
+    return `<div class="panel">
+      <h2>🌎 ${WCS.stage === "group" ? "Group " + WC_GROUPS[WC_TEAMS[my][4]] : WC_ROUND_NAMES[WCS.ko.round]} — Live</h2>
+      <div class="score-line" id="wcl-score">${wclScoreHtml()}</div>
+      <div class="minute-badge" id="wcl-min">${WCL.phase === "ft" ? (LANG === "zh" ? "完場" : "FULL TIME") : fmtMin(WCL.minute) + "'"}</div>
+      <div class="pitch-wrap">
+        <canvas id="wc-pitch" width="760" height="498"></canvas>
+        <button class="snd-btn" id="snd-btn" onclick="toggleSound()" title="Crowd sound on/off">${SND.on ? "🔊" : "🔇"}</button>
+        ${langBtn("right:56px")}
+      </div>
+      ${WCL.phase === "ft"
+        ? `<div class="row" style="justify-content:center"><button class="action" onclick="wclFinish()">Continue → result &amp; the other matches</button></div>`
+        : `<div class="row" style="justify-content:center">
+            <button class="${!running && WCL.minute === 0 ? "action" : "ghost"}" onclick="wclToggle()">${running ? "⏸ Pause" : "▶ Play"}</button>` +
+            ["slow", "normal", "fast"].map(sp => `<button class="ghost${WCL.speed === sp ? " speed-on" : ""}" onclick="wclSpeed('${sp}')">${sp}</button>`).join("") +
+            `<button class="ghost" onclick="wclSkip()">⏭ Full time</button>
+            <button class="ghost" onclick="wclAbandon()" title="Abandon — nothing is recorded">✕</button>
+          </div>`}
+      <ul class="events" id="wcl-feed">${wclFeedHtml()}</ul>
+    </div>`;
+  }
   let html = `<div class="panel"><h2>🌎 World Cup 2026 — ${wcCrest(my, 24)}${esc(myName)}</h2>`;
   if (WCS.stage === "done") {
     const champs = WCS.champion === my;
@@ -5557,7 +5960,10 @@ function renderWC() {
           <label>Mentality <select onchange="wcSetTac('ment', this.value)">${MENTALITIES.map(m => `<option${m === WCS.tac.ment ? " selected" : ""}>${m}</option>`).join("")}</select></label>
           <label>Style <select onchange="wcSetTac('style', this.value)">${Object.keys(STYLES).map(st => `<option${st === WCS.tac.style ? " selected" : ""}>${st}</option>`).join("")}</select></label>
         </div>
-        <div class="row"><button class="action" onclick="wcPlayNext()">▶ Play ${WCS.stage === "group" ? "matchday " + (WCS.md + 1) : WC_ROUND_NAMES[WCS.ko.round]}</button></div>`;
+        <div class="row">
+          <button class="action" onclick="wcStartLive()">▶ Kick off — watch LIVE</button>
+          <button class="ghost" onclick="wcPlayNext()" title="Instant result">Quick sim ${WCS.stage === "group" ? "matchday " + (WCS.md + 1) : WC_ROUND_NAMES[WCS.ko.round]}</button>
+        </div>`;
     } else {
       html += `<p class="note">⛔ ${esc(myName)} are out of the tournament. You can still watch how it ends.</p>
         <div class="row"><button class="action" onclick="wcPlayNext()">▶ Continue — ${WCS.stage === "group" ? "matchday " + (WCS.md + 1) : WC_ROUND_NAMES[WCS.ko.round]}</button></div>`;
@@ -5572,7 +5978,7 @@ function renderWC() {
   }
   if (WCS.ko && WCS.ko.log.length) {
     html += `<details class="fold" open><summary>🏆 Knockout results</summary>` +
-      WCS.ko.log.map(rd => `<h3>${WC_ROUND_NAMES[rd.round]}</h3><p class="note">` +
+      WCS.ko.log.map(rd => `<h3>${rd.label || WC_ROUND_NAMES[rd.round]}</h3><p class="note">` +
         rd.matches.map(m => `${wcCrest(m.a, 14)}${esc(WC_TEAMS[m.a][0])} <b>${m.ag}–${m.bg}</b> ${esc(WC_TEAMS[m.b][0])}${wcCrest(m.b, 14).replace("margin-right: 6px", "")}${m.note || ""}`).join("<br>")
       + `</p>`).join("") + `</details>`;
   }
