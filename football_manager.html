@@ -1030,7 +1030,7 @@ function applyDecay(snapshot) {
 
 function commitWeek(weekResults, myResult, snapshot) {
   ghQueueSync();
-  if (myResult) myResult.dateMs = matchDateMs("league", G.week);
+  if (myResult) { myResult.dateMs = matchDateMs("league", G.week); addDramaEvents(myResult); }
   applyDecay(snapshot);
   G.results.push(weekResults);
   G.week++;
@@ -1047,7 +1047,8 @@ function commitWeek(weekResults, myResult, snapshot) {
     const t = tableStats();
     const p = t.findIndex(r => r.i === G.myClub) + 1;
     const drift = Math.max(-1.5, Math.min(1.5, (G.board.exp - p) * 0.15));
-    boardBump((win ? 2 : draw ? 0.5 : -2.5) + drift);
+    const derbyX = isDerby(myResult.h, myResult.a) ? 2 : 1;
+    boardBump((win ? 2 : draw ? 0.5 : -2.5) * derbyX + drift);
   }
   // Manager of the Month: best league record over each four-week block
   if (G.week % 4 === 0 && G.week <= 36 && G.results.length >= G.week) {
@@ -1638,6 +1639,41 @@ function expectationText(e) {
          e <= 12 ? "a solid top-half finish" :
          e <= 16 ? "comfortable mid-table safety" : "avoid relegation at all costs";
 }
+/* 🔥 Derby days: rivalries with double stakes and a hotter crowd */
+const DERBIES = [["ARS","TOT"],["LIV","EVE"],["MUN","MCI"],["MUN","LIV"],["CHE","FUL"],["WHU","TOT"],["NEW","SUN"],["AVL","WOL"],["BRE","FUL"],["CRY","BHA"],["SHU","LEE"],["BIR","AVL"]];
+function isDerby(h, a) {
+  const x = CLUBS[h] && CLUBS[h].short, y = CLUBS[a] && CLUBS[a].short;
+  return DERBIES.some(([m, n]) => (m === x && n === y) || (m === y && n === x));
+}
+/* 🎙 drama pass: hat-tricks, last-gasp winners, momentum bursts */
+function addDramaEvents(r) {
+  if (!r || !r.events) return;
+  const goals = r.events.filter(e => e.type === "goal").sort((m, n) => m.min - n.min);
+  const byWho = {};
+  for (const e of goals) {
+    byWho[e.who] = (byWho[e.who] || 0) + 1;
+    if (byWho[e.who] === 3) r.events.push({ min: e.min, type: "info",
+      text: "🎩 A HAT-TRICK for " + e.who + " — he takes the match ball home!",
+      zh: "🎩 " + e.who + " 大演帽子戲法——皮球袋住走！" });
+  }
+  const last = goals[goals.length - 1];
+  if (last && last.min >= 88 && Math.abs(r.hg - r.ag) === 1) {
+    const winSide = r.hg > r.ag ? r.h : r.a;
+    if (last.clubIdx === winSide) r.events.push({ min: last.min, type: "info",
+      text: "⚡ AT THE DEATH! " + last.who + " wins it in the dying seconds — scenes!",
+      zh: "⚡ 絕殺！" + last.who + " 最後關頭一錘定音——全場瘋咗！" });
+  }
+  for (let i = 1; i < goals.length; i++) {
+    if (goals[i].clubIdx === goals[i-1].clubIdx && goals[i].min - goals[i-1].min <= 5) {
+      r.events.push({ min: goals[i].min, type: "info",
+        text: "🔥 Two in five minutes — the momentum is unstoppable!",
+        zh: "🔥 五分鐘內連入兩球——勢不可擋！" });
+      break;
+    }
+  }
+  r.events.sort((m, n) => m.min - n.min);
+}
+
 /* ---------------- Season missions ----------------
    Two side-quests beside the board objective, scaled to the club's stature.
    Completed missions pay +£8M each into next season's budget; a survival
@@ -1863,6 +1899,7 @@ function ensureWindowDeals() {
   if (G.dealsKey === key) return;
   G.dealsKey = key;
   G.deals = [];
+  G.tfSearch = ""; G.tfAfford = false; G.tfFilter = "All"; // a new window starts with clean filters
   // AI clubs trade among themselves to keep the market alive
   const pool = CLUBS.map((c, i) => i).filter(i => i !== G.myClub && i !== EURO_SLOT);
   for (let n = 0; n < 9; n++) {
@@ -2043,6 +2080,26 @@ function renderTransfers() {
     return html + `</div>`;
   }
   ensureWindowDeals();
+  // 🚨 deadline day: the January window's final week goes feral
+  if (G.week === 22 && G.dlKey !== G.season) {
+    G.dlKey = G.season;
+    const pool = CLUBS.map((c, i) => i).filter(i => i !== G.myClub && i !== EURO_SLOT);
+    for (let n = 0; n < 4; n++) {
+      const from = pool[Math.floor(rnd() * pool.length)], to = pool[Math.floor(rnd() * pool.length)];
+      if (from === to) continue;
+      const p = G.squads[from].filter(q => canLeave(from, q))[0];
+      if (!p) continue;
+      G.squads[from] = G.squads[from].filter(q => q.id !== p.id); G.squads[to].push(p);
+      G.deals.unshift("🚨 DEADLINE: " + p.name + " — " + CLUBS[from].short + " → " + CLUBS[to].short + " (£" + playerValue(p) + "M)");
+    }
+    const tgt = [...G.squads[G.myClub]].filter(q => !q.loan).sort((x, y) => playerValue(y) - playerValue(x))[0];
+    if (tgt && rnd() < 0.7) {
+      G.offersIn = (G.offersIn || []).concat([{ pid: tgt.id, fee: Math.round(playerValue(tgt) * 1.45),
+        buyer: { name: "Paris Saint-Germain", short: "PSG", col: "#004170" } }]);
+    }
+    save();
+  }
+  if (G.week === 22) html += `<p style="color:var(--amber)"><b>🚨 DEADLINE DAY</b> — the window slams shut after this matchweek. Panic money is flying.</p>`;
   // ---- incoming offers for your players ----
   const offers = (G.offersIn || []).filter(o => G.squads[G.myClub].some(p => p.id === o.pid));
   if (offers.length) {
@@ -2119,6 +2176,11 @@ function renderTransfers() {
       && wageBill() + wageFor(r.p.rating, r.p.age) <= wageCap());
   }
   const sortedMarket = sortRows(pool, "market", MARKET_COLS, r => r.p);
+  if (!sortedMarket.length && market.length) {
+    html += `<p style="color:var(--amber)"><b>⚠ Your filters are hiding all ${market.length} players</b>
+      (search: "${esc(G.tfSearch || "")}" · position: ${esc(filter)} · affordable-only: ${G.tfAfford ? "ON" : "off"})
+      <button class="ghost" onclick="G.tfSearch='';G.tfAfford=false;G.tfFilter='All';save();render()">Clear all filters</button></p>`;
+  }
   html += `<h3>Buy players</h3>
     <div class="row"><label>Position
       <select onchange="G.tfFilter=this.value;save();render()">` +
@@ -2280,6 +2342,7 @@ function cupOppIdx(fix) {
 
 function commitCup(fix, r, pens) {
   ghQueueSync();
+  addDramaEvents(r);
   r.dateMs = matchDateMs(fix.cupKey, G.week);
   const c = G.cups[fix.cupKey];
   const myG = fix.home ? r.hg : r.ag, opG = fix.home ? r.ag : r.hg;
@@ -2430,6 +2493,13 @@ function renderCups() {
         (c.opp ? ` vs <b>${esc(c.opp.name)}</b> ${c.opp.home ? "(H)" : "(A)"}${c.opp.kind === "minnow" ? " — lower-league opposition" : ""}` : " (draw to be made)") +
         ` · ${(c.remaining || []).length} clubs left in the hat`;
     html += `<h3>${CUP_NAME[key]}</h3><p>${status}</p>`;
+    // your ties this season, explicit and always visible
+    if ((c.results || []).length) {
+      html += `<table><tbody>` + c.results.map(r =>
+        `<tr class="me"><td>${esc(r.label)}</td><td>${r.home ? "vs" : "at"} ${esc(r.opp)}</td>
+         <td class="num"><b>${r.myG} – ${r.opG}</b></td><td class="note">${esc(r.note || "")}</td></tr>`).join("") +
+        `</tbody></table>`;
+    }
     // round-by-round bracket results, newest first
     for (const rd of [...(c.history || [])].reverse()) {
       const shown = rd.ties.slice(0, 8);
@@ -2574,6 +2644,7 @@ function simEuroKORound(E, ids) {
 
 function commitEuro(fix, r, pens) {
   ghQueueSync();
+  addDramaEvents(r);
   const E = G.euro;
   r.dateMs = matchDateMs(E.comp, G.week, E.played);
   const myG = fix.home ? r.hg : r.ag, opG = fix.home ? r.ag : r.hg;
@@ -2704,10 +2775,13 @@ function startEuroLive() {
 /* ---------------- Penalty shootouts ---------------- */
 /* Drawn knockout ties are settled kick by kick, not by a coin. */
 
-function simShootoutClubs(myIdx, oppIdx, myXIids, oppXIids) {
+function simShootoutClubs(myIdx, oppIdx, myXIids, oppXIids, plan) {
   const xiOf = (ci, ids) => (ids || bestXI(G.squads[ci], "4-4-2")).map(id => G.squads[ci].find(p => p.id === id)).filter(Boolean);
   const myXI = xiOf(myIdx, myXIids), opXI = xiOf(oppIdx, oppXIids);
-  const takers = xi => [...xi].filter(p => p.pos !== "GK").sort((a, b) => b.rating - a.rating);
+  const takers = side => { const out = side.filter(p => p.pos !== "GK");
+    return plan === "fw"
+      ? out.sort((a, b) => (b.pos === "FW" ? 1 : 0) - (a.pos === "FW" ? 1 : 0) || b.rating - a.rating)
+      : out.sort((a, b) => b.rating - a.rating); };
   const keeper = xi => { const g = xi.find(p => p.pos === "GK"); return g ? g.rating : 70; };
   const myT = takers(myXI), opT = takers(opXI);
   const myGK = keeper(myXI), opGK = keeper(opXI);
@@ -3631,10 +3705,13 @@ function finishLiveMatch() {
   // a drawn knockout tie goes to penalties — live and kick by kick
   const isKO = !!L.cupFix || (L.euro && L.fix && L.fix.kind !== "league");
   if (hg === ag && isKO && !L.pens) {
+    // your call: coolest heads or the forwards who live for this
+    L.pensPlan = (typeof confirm === "function" && !confirm("PENALTIES.\nOK = your highest-rated players take them.\nCancel = forwards first."))
+      ? "fw" : "best";
     const myIds = G.myClub === L.h ? L.hXI : L.aXI;
     const opIds = G.myClub === L.h ? L.aXI : L.hXI;
     const oppClub = G.myClub === L.h ? L.a : L.h;
-    L.pens = { so: simShootoutClubs(G.myClub, oppClub, myIds, opIds), shown: 0 };
+    L.pens = { so: simShootoutClubs(G.myClub, oppClub, myIds, opIds, L.pensPlan), shown: 0 };
     L.phase = "pens";
     if (V) V.flash = { text: LANG === "zh" ? "互射十二碼" : "PENALTIES", color: "#E8B33C", until: performance.now() + 2000 };
     save(); render(); startPensTimer();
@@ -5077,6 +5154,25 @@ function renderLive() {
         : (pensTimer ? "" : `<button class="action" onclick="startPensTimer()">▶ Continue the shootout</button>`)}
     </div>`;
   }
+  if (!L.euro && !L.cupFix && G.week === G.fixtures.length - 1) {
+    const t0 = tableStats();
+    const add = {};
+    const live = [{ h: L.h, a: L.a, hg: liveGoals(L, L.h, L.minute), ag: liveGoals(L, L.a, L.minute) }]
+      .concat(L.otherResults.map(o => ({ h: o.r.h, a: o.r.a,
+        hg: o.r.events.filter(e => e.type === "goal" && e.clubIdx === o.r.h && e.min <= L.minute).length,
+        ag: o.r.events.filter(e => e.type === "goal" && e.clubIdx === o.r.a && e.min <= L.minute).length })));
+    for (const m of live) {
+      add[m.h] = { pts: m.hg > m.ag ? 3 : m.hg === m.ag ? 1 : 0, gd: m.hg - m.ag };
+      add[m.a] = { pts: m.ag > m.hg ? 3 : m.hg === m.ag ? 1 : 0, gd: m.ag - m.hg };
+    }
+    const rows = t0.map(r => ({ i: r.i, name: r.name,
+      pts: r.pts + (add[r.i] ? add[r.i].pts : 0), gd: r.gf - r.ga + (add[r.i] ? add[r.i].gd : 0) }))
+      .sort((x, y) => y.pts - x.pts || y.gd - x.gd);
+    html += `<h3>⏱ AS IT STANDS — final day</h3><table><tbody>` +
+      rows.map((r, i) => (i < 4 || i >= rows.length - 3 || r.i === G.myClub)
+        ? `<tr${r.i === G.myClub ? ' class="me"' : ""}><td class="num">${i + 1}</td><td>${esc(r.name)}</td><td class="num">${r.gd > 0 ? "+" + r.gd : r.gd}</td><td class="num"><b>${r.pts}</b></td></tr>` : "").join("") +
+      `</tbody></table>`;
+  }
   html += `<ul class="events" id="live-feed">${liveFeedHtml(L)}</ul>` +
     (L.otherResults.length ? `<h3>Around the grounds — live</h3>
     <table><tbody id="live-grounds">${liveGroundsHtml(L)}</tbody></table>` : "") +
@@ -5140,7 +5236,7 @@ function renderPreMatch() {
     const formStr = row => row.form.slice(-5).map(x => `<span class="${x}">${x}</span>`).join("") || "—";
     fixtureHtml = `<h2>Matchweek ${G.week + 1} · ${matchDateStr("league", G.week)}</h2>
       <div class="score-line">${clubCrest(myFix[0], 24)}${esc(CLUBS[myFix[0]].name)}<span class="vs">vs</span>${clubCrest(myFix[1], 24)}${esc(CLUBS[myFix[1]].name)}</div>
-      <p class="note" style="text-align:center">${home ? "At home — the crowd is behind you." : "Away from home."}</p>`;
+      <p class="note" style="text-align:center">${isDerby(myFix[0], myFix[1]) ? "🔥 <b>DERBY DAY.</b> Bragging rights and double the board's judgement at stake. " : ""}${home ? "At home — the crowd is behind you." : "Away from home."}</p>`;
     const oppT = aiTactics(oppIdx);
     scoutHtml = `<h3>Scouting report — ${esc(CLUBS[oppIdx].name)}</h3>
       <p>League position: <b>#${t.indexOf(oppRow) + 1}</b> (you: #${t.indexOf(myRow) + 1}) ·
@@ -5168,7 +5264,8 @@ function renderMatchResult() {
   const others = G.lastMatchEuro ? [] : (G.results[G.results.length - 1] || []).filter(x => x !== r);
   const myWin = (r.h === G.myClub && r.hg > r.ag) || (r.a === G.myClub && r.ag > r.hg);
   const draw = r.hg === r.ag;
-  const verdict = myWin ? "A fine win!" : draw ? "Honours even." : G.lastMatchEuro ? "A tough European night." : "A tough afternoon.";
+  const derby = !G.lastMatchEuro && isDerby(r.h, r.a);
+  const verdict = (derby ? (myWin ? "🔥 DERBY WON — the city is yours! " : draw ? "🔥 Derby honours shared. " : "🔥 A derby defeat. Stay indoors a few days. ") : "") + (myWin ? "A fine win!" : draw ? "Honours even." : G.lastMatchEuro ? "A tough European night." : "A tough afternoon.");
   const wxTag = r.weather && r.weather !== "clear" && WEATHER[r.weather]
     ? " · " + WEATHER[r.weather].icon + " " + WEATHER[r.weather].name : "";
   // who scored — the headline facts stay visible; everything else folds away
@@ -5432,6 +5529,30 @@ function renderSeasonEnd() {
       ${(G.missions || []).length ? `<p class="note">📋 Missions: ` +
         G.missions.map(m => `${missionDone(m) ? "✅" : "❌"} ${esc(m.text)}`).join("<br>　　") +
         `<br>　　${(G.missions || []).filter(m => missionDone(m)).length} completed — £${(G.missions || []).filter(m => missionDone(m)).length * 8}M added to next season's budget.</p>` : ""}
+      ${(() => {
+        const all = [];
+        G.league.forEach(ci => G.squads[ci].forEach(p => all.push({ p, ci })));
+        const score = x => x.p.goals * 2 + (x.p.assists || 0);
+        const potsA = [...all].sort((x, y) => score(y) - score(x) || y.p.rating - x.p.rating);
+        const pots = potsA[0];
+        const yng = potsA.filter(x => x.p.age <= 21)[0];
+        const bestDef = [...t].sort((x, y) => x.ga - y.ga)[0];
+        const glove = G.squads[bestDef.i].filter(p => p.pos === "GK").sort((x, y) => y.apps - x.apps)[0];
+        const assistK = [...all].sort((x, y) => (y.p.assists || 0) - (x.p.assists || 0))[0];
+        const tagP = x => x ? esc(x.p.name) + " (" + CLUBS[x.ci].short + ")" + (x.ci === G.myClub ? " ⭐YOURS" : "") : "—";
+        const tots = [].concat(
+          all.filter(x => x.p.pos === "GK").sort((x, y) => y.p.apps - x.p.apps || y.p.rating - x.p.rating).slice(0, 1),
+          all.filter(x => x.p.pos === "DF").sort((x, y) => y.p.rating + score(y) - (x.p.rating + score(x))).slice(0, 4),
+          all.filter(x => x.p.pos === "MF").sort((x, y) => score(y) - score(x)).slice(0, 4),
+          all.filter(x => x.p.pos === "FW").sort((x, y) => score(y) - score(x)).slice(0, 2));
+        return `<div style="text-align:left;border-top:1px solid var(--line);margin-top:10px;padding-top:8px">
+          <p><b>🏅 AWARDS NIGHT</b><br>
+          🏆 Player of the Season: <b>${tagP(pots)}</b> — ${pots.p.goals}g ${pots.p.assists || 0}a<br>
+          🌟 Young Player (U21): <b>${tagP(yng)}</b><br>
+          🧤 Golden Glove: <b>${glove ? esc(glove.name) + " (" + CLUBS[bestDef.i].short + ")" + (bestDef.i === G.myClub ? " ⭐YOURS" : "") : "—"}</b> — best defence (${bestDef.ga} conceded)<br>
+          🅰 Playmaker of the Season: <b>${tagP(assistK)}</b> — ${assistK.p.assists || 0} assists<br>
+          🛡 Team of the Season: ${tots.map(x => esc(x.p.name) + (x.ci === G.myClub ? "⭐" : "")).join(" · ")}</p></div>`;
+      })()}
       ${challengeVerdict(myPos)}
       ${myPos <= 6 ? `<p class="note">Next season in Europe: <b>${myPos <= 4 ? COMP_NAME.UCL : myPos === 5 ? COMP_NAME.UEL : COMP_NAME.UECL}</b></p>` : ""}
       ${(G.honours || []).length ? `<p class="note">Honours board: ${G.honours.map(esc).join(" · ")}</p>` : ""}
@@ -5981,6 +6102,15 @@ function renderWC() {
       WCS.ko.log.map(rd => `<h3>${rd.label || WC_ROUND_NAMES[rd.round]}</h3><p class="note">` +
         rd.matches.map(m => `${wcCrest(m.a, 14)}${esc(WC_TEAMS[m.a][0])} <b>${m.ag}–${m.bg}</b> ${esc(WC_TEAMS[m.b][0])}${wcCrest(m.b, 14).replace("margin-right: 6px", "")}${m.note || ""}`).join("<br>")
       + `</p>`).join("") + `</details>`;
+  }
+  if ((WCS.results || []).length) {
+    html += `<details class="fold"><summary>📋 All group-stage results (${WCS.results.length * 24} matches)</summary>` +
+      WCS.results.map((mdRes, md) => `<h3>Matchday ${md + 1} · ${WC_DATES[md]}</h3><p class="note">` +
+        WC_GROUPS.split("").map((L, g) => {
+          const ms = mdRes.filter(m => WC_TEAMS[m.a][4] === g);
+          return `<b>Group ${L}:</b> ` + ms.map(m =>
+            `${esc(WC_TEAMS[m.a][1])} ${m.ag}–${m.bg} ${esc(WC_TEAMS[m.b][1])}`).join(" · ");
+        }).join("<br>") + `</p>`).join("") + `</details>`;
   }
   // tournament golden boot
   const boot = [];
