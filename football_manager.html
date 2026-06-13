@@ -468,7 +468,7 @@ const CLUBS = [
     ["L. Krejčí","DF",76,26],["E. Agbadou","DF",76,26],["S. Bueno","DF",75,26],["M. Doherty","DF",74,33],["Toti","DF",74,26],["H. Bueno","DF",73,22],
     ["João Gomes","MF",79,24],["André","MF",78,24],["J. Bellegarde","MF",76,27],["S. Arias","MF",76,27],["M. Munetsi","MF",75,29],["J. Tchatchoua","MF",74,23],
     ["J. Strand Larsen","FW",77,25],["H. Hwang","FW",75,29],["T. Arokodare","FW",74,24],["Fer López","FW",73,21]]},
-  /* ---- Championship pool (indices 20+): promotion candidates ---- */
+  /* ---- Championship pool (indices 20+): the full 24-club second tier; 3 join the Premier League each season ---- */
   { name: "Leicester City", short: "LEI", base: 73, squad: [
     ["J. Stolarczyk","GK",72,27],["D. Iversen","GK",70,28],
     ["W. Faes","DF",74,27],["R. Pereira","DF",74,32],["C. Okoli","DF",72,24],["J. Vestergaard","DF",72,33],["C. Coady","DF",72,32],["L. Thomas","DF",70,24],
@@ -499,6 +499,96 @@ const CLUBS = [
     ["L. Cacace","DF",70,24],["C. Doyle","DF",70,21],["M. Cleworth","DF",68,23],["T. O'Connor","DF",68,26],["E. O'Connell","DF",68,29],["L. Brunt","DF",67,24],
     ["J. Windass","MF",71,31],["N. Broadhead","MF",71,27],["E. Lee","MF",70,30],["G. Dobson","MF",69,27],["O. Rathbone","MF",69,27],["R. Longman","MF",68,24],
     ["K. Moore","FW",72,33],["S. Smith","FW",69,27],["R. Hardie","FW",69,28],["J. Bickerstaff","FW",66,23]]},
+  { name: "West Bromwich Albion", short: "WBA", base: 71, squad: [
+    ["J. Griffiths","GK",72,24],["T. Cann","GK",64,24],
+    ["T. Heggem","DF",71,26],["D. Furlong","DF",70,30],["N. Phillips","DF",70,28],["M. Holgate","DF",69,29],["C. Taylor","DF",67,22],["Z. Ashworth","DF",65,22],
+    ["J. Wallace","MF",72,31],["J. Swift","MF",71,30],["A. Mowatt","MF",70,30],["J. Molumby","MF",70,26],["I. Price","MF",69,22],["O. Diakite","MF",68,25],
+    ["A. Armstrong","FW",73,28],["J. Maja","FW",72,27],["T. Fellows","FW",71,22],["A. Heggebo","FW",67,24]]},
+  { name: "Middlesbrough", short: "MID", base: 72, squad: [
+    ["S. Dieng","GK",71,31],["S. Brynn","GK",66,25],
+    ["D. Fry","DF",71,28],["D. Lenihan","DF",70,31],["N. Borges","DF",69,27],["G. Edmundson","DF",68,28],["M. Targett","DF",68,30],["L. Ayling","DF",66,34],
+    ["H. Hackney","MF",76,23],["A. Morris","MF",71,24],["R. McGree","MF",71,27],["D. Barlaser","MF",69,28],["M. Hamilton","MF",67,21],["L. McCabe","MF",65,19],
+    ["M. Whittaker","FW",73,24],["T. Conway","FW",72,23],["D. Burgzorg","FW",70,27],["K. Sene","FW",68,24]]},
+  { name: "Coventry City", short: "COV", base: 73, squad: [
+    ["C. Rushworth","GK",72,24],["B. Collins","GK",67,29],
+    ["M. van Ewijk","DF",72,25],["B. Thomas","DF",71,24],["L. Binks","DF",70,24],["K. Kesler-Hayden","DF",69,22],["J. Latibeaudiere","DF",68,25],["J. Bidwell","DF",68,32],
+    ["J. Rudoni","MF",75,24],["B. Sheaf","MF",72,27],["V. Torp","MF",71,25],["T. Sakamoto","MF",71,29],["J. Eccles","MF",70,25],["J. Allen","MF",68,30],
+    ["H. Wright","FW",73,27],["E. Simms","FW",72,24],["B. Thomas-Asante","FW",71,26],["N. Bassette","FW",67,21]]},
+  { name: "Stoke City", short: "STO", base: 71, squad: [
+    ["V. Johansson","GK",73,27],["J. Bonham","GK",66,31],
+    ["B. Wilmot","DF",70,26],["B. Gibson","DF",68,32],["J. Tchamadeu","DF",68,22],["A. Phillips","DF",67,20],["E. Bocat","DF",67,26],["L. Gooch","DF",66,29],
+    ["S. Thomas","MF",70,26],["M. Manhoef","MF",70,23],["L. Baker","MF",68,30],["B. Lawal","MF",68,22],["J. Thompson","MF",67,28],["T. Sparrow","MF",64,22],
+    ["D. Mubama","FW",68,21],["A. Vidigal","FW",67,27],["N. Lowe","FW",66,20],["E. Tezgel","FW",65,20]]},
+  { name: "Millwall", short: "MLW", base: 71, squad: [
+    ["L. Roberts","GK",67,30],["L. Jensen","GK",65,26],
+    ["J. Cooper","DF",68,30],["J. Tanganga","DF",68,26],["M. Wallace","DF",66,32],["D. McNamara","DF",66,26],["J. Bryan","DF",66,31],["W. Harding","DF",65,28],
+    ["G. Saville","MF",67,32],["C. de Norre","MF",67,28],["F. Azeez","MF",67,24],["G. Honeyman","MF",67,30],["B. Mitchell","MF",66,24],["C. Neghli","MF",66,23],
+    ["M. Ivanovic","FW",68,21],["J. Coburn","FW",67,22],["M. Langstaff","FW",66,28],["A. Emakhu","FW",65,21]]},
+  { name: "Norwich City", short: "NOR", base: 70, squad: [
+    ["A. Gunn","GK",71,29],["G. Long","GK",64,31],
+    ["J. Cordoba","DF",70,24],["J. Stacey","DF",68,29],["S. Duffy","DF",67,33],["D. Giannoulis","DF",67,29],["K. Fisher","DF",67,21],["B. Chrisene","DF",65,21],
+    ["K. McLean","MF",70,33],["C. Fassnacht","MF",69,31],["O. Forson","MF",68,21],["J. Sorensen","MF",68,27],["A. Slimane","MF",67,24],["O. Schwartau","MF",65,19],
+    ["J. Sargent","FW",73,25],["G. Sainz","FW",71,24],["A. Crnac","FW",69,21],["M. Kvistgaarden","FW",68,23]]},
+  { name: "Watford", short: "WAT", base: 70, squad: [
+    ["D. Bachmann","GK",69,31],["E. Selvik","GK",65,26],
+    ["R. Porteous","DF",70,26],["F. Sierralta","DF",69,28],["J. Ngakia","DF",67,25],["M. Pollock","DF",67,21],["C. Wiley","DF",67,20],["J. Abankwah","DF",66,21],
+    ["G. Chakvetadze","MF",71,26],["I. Louza","MF",70,26],["E. Kayembe","MF",69,27],["H. Kyprianou","MF",68,24],["O. Maamma","MF",67,20],["R. Vata","MF",67,20],
+    ["V. Bayo","FW",70,27],["M. Rajovic","FW",68,26],["K. Baah","FW",68,22],["R. Healey","FW",66,31]]},
+  { name: "Swansea City", short: "SWA", base: 70, squad: [
+    ["L. Vigouroux","GK",68,32],["A. Fisher","GK",65,27],
+    ["H. Darling","DF",68,26],["B. Cabango","DF",68,25],["J. Tymon","DF",67,26],["J. Key","DF",66,26],["B. Cooper","DF",65,25],["M. Sorinola","DF",65,24],
+    ["M. Grimes","MF",69,30],["L. O'Brien","MF",68,26],["G. Franco","MF",67,24],["Eom Ji-sung","MF",67,24],["E. Galbraith","MF",66,24],["J. Fulton","MF",66,31],
+    ["L. Cullen","FW",67,26],["Z. Vipotnik","FW",67,23],["Ronald","FW",66,24],["F. Bianchini","FW",65,24]]},
+  { name: "Bristol City", short: "BRC", base: 70, squad: [
+    ["M. O'Leary","GK",67,29],["S. Bajic","GK",65,24],
+    ["R. Dickie","DF",67,29],["Z. Vyner","DF",67,28],["K. Naismith","DF",66,33],["C. Pring","DF",66,27],["G. Tanner","DF",65,26],["H. Roberts","DF",65,23],
+    ["J. Knight","MF",69,24],["S. Twine","MF",69,26],["A. Mehmeti","MF",68,24],["M. Bird","MF",67,25],["J. Williams","MF",66,27],["M. McGuane","MF",66,26],
+    ["M. Sykes","FW",67,28],["N. Wells","FW",66,35],["S. Armstrong","FW",66,22],["F. Mayulu","FW",66,23]]},
+  { name: "Preston North End", short: "PNE", base: 70, squad: [
+    ["F. Woodman","GK",70,28],["D. Cornell","GK",64,34],
+    ["J. Storey","DF",68,26],["L. Lindsay","DF",67,29],["J. Whatmough","DF",66,28],["A. Hughes","DF",66,32],["L. Gibson","DF",66,25],["T. Mawene","DF",64,20],
+    ["B. Whiteman","MF",68,29],["A. McCann","MF",68,26],["M. Frokjaer","MF",68,26],["R. Brady","MF",67,33],["S. Thordarson","MF",67,26],["R. Ledson","MF",66,28],
+    ["S. Greenwood","FW",70,23],["E. Riis","FW",68,27],["M. Osmajic","FW",68,26],["W. Keane","FW",67,32]]},
+  { name: "Derby County", short: "DER", base: 69, squad: [
+    ["J. Zetterstrom","GK",67,27],["J. Vickers","GK",66,30],
+    ["M. Clarke","DF",67,29],["S. Langas","DF",66,25],["C. Nelson","DF",66,32],["R. Nyambe","DF",66,27],["K. Wilson","DF",66,25],["J. Ward","DF",66,29],
+    ["E. Adams","MF",67,29],["C. Blackett-Taylor","MF",67,27],["B. Osborn","MF",66,31],["D. Ozoh","MF",66,20],["H. Armstrong","MF",66,19],["L. Thompson","MF",65,23],
+    ["C. Morris","FW",69,29],["P. Agyemang","FW",68,24],["J. Yates","FW",67,28],["N. Mendez-Laing","FW",67,33]]},
+  { name: "Hull City", short: "HUL", base: 69, squad: [
+    ["I. Pandur","GK",68,25],["M. Ingram","GK",64,32],
+    ["R. Giles","DF",69,25],["J. Egan","DF",68,32],["L. Coyle","DF",68,30],["C. Hughes","DF",68,21],["M. Drameh","DF",67,23],["S. McLoughlin","DF",67,28],
+    ["A. Kamara","MF",70,22],["M. Belloumi","MF",69,23],["M. Mehlem","MF",69,27],["K. Palmer","MF",68,28],["R. Slater","MF",68,25],["S. Alzate","MF",67,26],
+    ["J. Gelhardt","FW",68,23],["K. Joseph","FW",67,24],["M. Burstow","FW",66,22],["J. Ndala","FW",66,21]]},
+  { name: "Queens Park Rangers", short: "QPR", base: 69, squad: [
+    ["P. Nardi","GK",67,31],["J. Walsh","GK",64,23],
+    ["J. Dunne","DF",67,27],["J. Clarke-Salter","DF",67,27],["S. Cook","DF",66,34],["K. Paal","DF",66,28],["L. Morrison","DF",65,22],["H. Ashby","DF",65,23],
+    ["I. Chair","MF",71,27],["K. Dembele","MF",69,22],["S. Field","MF",68,27],["N. Madsen","MF",67,25],["J. Varane","MF",66,24],["J. Colback","MF",65,35],
+    ["K. Saito","FW",67,24],["M. Frey","FW",66,31],["Z. Celar","FW",66,26],["R. Kolli","FW",65,20]]},
+  { name: "Blackburn Rovers", short: "BLB", base: 69, squad: [
+    ["A. Pears","GK",67,27],["B. Toth","GK",66,28],
+    ["C. Brittain","DF",68,27],["D. Hyam","DF",67,29],["H. Carter","DF",66,25],["S. Wharton","DF",66,28],["O. Beck","DF",66,22],["D. Batth","DF",65,34],
+    ["T. Cantwell","MF",69,27],["L. Travis","MF",67,28],["A. Kargbo","MF",67,26],["R. Hedges","MF",66,30],["S. Tronstad","MF",66,30],["A. Weimann","MF",66,34],
+    ["M. Gueye","FW",67,27],["Y. Ohashi","FW",66,29],["N. Ennis","FW",65,26],["H. Leonard","FW",64,22]]},
+  { name: "Portsmouth", short: "POM", base: 69, squad: [
+    ["N. Schmid","GK",68,26],["W. Norris","GK",66,32],
+    ["C. Shaughnessy","DF",67,29],["C. Ogilvie","DF",66,29],["R. Atkinson","DF",66,27],["H. Matthews","DF",65,21],["Z. Swanson","DF",65,25],["T. Devlin","DF",64,22],
+    ["J. Murphy","MF",68,30],["M. Pack","MF",67,34],["C. Lang","MF",67,27],["A. Dozzell","MF",66,26],["A. Aouchiche","MF",66,23],["O. Moxon","MF",65,27],
+    ["C. Bishop","FW",68,29],["A. Segecic","FW",67,21],["M. Ritchie","FW",65,36],["T. Waddingham","FW",63,20]]},
+  { name: "Charlton Athletic", short: "CHA", base: 69, squad: [
+    ["T. Kaminski","GK",68,33],["W. Mannion","GK",66,27],
+    ["J. Edwards","DF",66,26],["L. Jones","DF",66,30],["A. Bell","DF",66,31],["A. Mitchell","DF",65,23],["K. Ramsay","DF",65,25],["T. Watson","DF",64,28],
+    ["G. Docherty","MF",66,29],["A. Campbell","MF",66,27],["C. Coventry","MF",66,25],["S. Carey","MF",66,25],["R. Apter","MF",66,22],["K. Anderson","MF",64,20],
+    ["M. Leaburn","FW",67,22],["C. Kelman","FW",67,24],["M. Godden","FW",66,34],["G. Ahadme","FW",66,25]]},
+  { name: "Oxford United", short: "OXF", base: 68, squad: [
+    ["J. Cumming","GK",67,26],["C. Trueman","GK",63,29],
+    ["M. Helik","DF",68,30],["E. Moore","DF",66,28],["C. Brown","DF",66,27],["H. ter Avest","DF",65,28],["G. Leigh","DF",65,30],["S. Long","DF",65,30],
+    ["C. Brannagan","MF",68,29],["T. Goodrham","MF",67,22],["L. Sibley","MF",66,24],["B. De Keersmaecker","MF",66,25],["F. Krastev","MF",66,23],["S. Mills","MF",65,22],
+    ["M. Harris","FW",66,26],["M. Phillips","FW",66,34],["D. Scarlett","FW",66,21],["P. Placheta","FW",65,27]]},
+  { name: "Sheffield Wednesday", short: "SHW", base: 67, squad: [
+    ["J. Dawson","GK",67,31],["P. Charles","GK",65,20],
+    ["D. Iorfa","DF",67,30],["Y. Valery","DF",66,26],["M. Lowe","DF",66,28],["L. Palmer","DF",66,34],["M. Ihiekwe","DF",65,33],["G. Otegbayo","DF",63,21],
+    ["B. Bannan","MF",70,36],["D. Gassama","MF",67,22],["S. Ingelsson","MF",66,27],["W. Vaulks","MF",66,31],["R. Shipston","MF",63,20],["S. Fusire","MF",62,20],
+    ["A. Musaba","FW",67,24],["J. Lowe","FW",66,31],["B. Cadamarteri","FW",65,20],["C. McNeill","FW",63,22]]},
 ];
 const PL_SIZE = 20;
 
@@ -584,6 +674,9 @@ const KIT = {
   LEE: "#FFCD00", LIV: "#C8102E", MCI: "#6CABDD", MUN: "#DA291C", NEW: "#2B2B2B",
   NFO: "#DD0000", SUN: "#EB172B", TOT: "#F5F5F5", WHU: "#7A263A", WOL: "#FDB913",
   LEI: "#003090", SOU: "#D71920", IPS: "#3A64A3", SHU: "#EE2737", BIR: "#1B4D9C", WRX: "#AD1C23",
+  WBA: "#122F67", MID: "#DC1F29", COV: "#78D0F5", STO: "#E03A3E", MLW: "#001D5E", NOR: "#FFF200",
+  WAT: "#FBEE23", SWA: "#F5F5F5", BRC: "#E21A23", PNE: "#F5F5F5", DER: "#F5F5F5", HUL: "#F5A12D",
+  QPR: "#005CAB", BLB: "#009EE0", POM: "#001489", CHA: "#D4021D", OXF: "#FDCA30", SHW: "#0066B3",
 };
 function colorOf(i) { return KIT[CLUBS[i].short] || CLUBS[i].col || "#8A98A5"; }
 function shade(hex, amt) {
@@ -850,7 +943,7 @@ function newGame(clubIdx) {
   const squads = CLUBS.map((_, i) => genSquad(i)); // includes the Championship pool
   const league = [...Array(PL_SIZE).keys()];
   G = {
-    ver: 11,
+    ver: 12,
     season: 1, myClub: clubIdx, week: 0,
     league,
     squads,
@@ -1109,7 +1202,7 @@ function commitWeek(weekResults, myResult, snapshot) {
     boardBump((win ? 2 : draw ? 0.5 : -2.5) * derbyX + drift);
   }
   // Manager of the Month: best league record over each four-week block
-  if (G.week % 4 === 0 && G.week <= 36 && G.results.length >= G.week) {
+  if (G.week % 4 === 0 && G.week <= 44 && G.results.length >= G.week) {
     const pts = {}, gd = {};
     for (let wk = G.week - 4; wk < G.week; wk++) {
       for (const r of G.results[wk]) {
@@ -1126,7 +1219,7 @@ function commitWeek(weekResults, myResult, snapshot) {
       if (!best || s > best.s || (s === best.s && d > best.d)) best = { i, s, d };
     }
     if (best && best.i === G.myClub) {
-      const MONTHS = ["August", "September", "October", "November", "December", "January", "February", "March", "April"];
+      const MONTHS = ["August", "September", "October", "November", "December", "January", "February", "March", "April", "May", "June"];
       G.motm = G.motm || [];
       G.motm.push("Season " + G.season + " · " + MONTHS[G.week / 4 - 1] + " (" + best.s + " pts from 4 games)");
       G.motmNews = "🏅 Manager of the Month! Your " + best.s + " points from the last four league games topped the division.";
@@ -1135,20 +1228,26 @@ function commitWeek(weekResults, myResult, snapshot) {
   }
   if (G.week >= G.fixtures.length) {
     G.screen = "seasonEnd";
-    const t = tableStats();
-    if (t[0].i === G.myClub) {
-      G.honours.push("Season " + G.season + ": Premier League champions");
-      boardBump(15);
+    if (G.div === "ch") {
+      // the playoff bracket (3rd to 6th) is settled the moment the league ends;
+      // relegation and promotion settling below is Premier League business only
+      if (!G.choff) G.choff = runChPlayoffs();
+    } else {
+      const t = tableStats();
+      if (t[0].i === G.myClub) {
+        G.honours.push("Season " + G.season + ": Premier League champions");
+        boardBump(15);
+      }
+      // settle promotion & relegation the moment the season ends
+      G.relegated = t.slice(-3).map(row => row.i);
+      const inLeague = new Set(G.league);
+      G.promoted = CLUBS.map((c, i) => i)
+        .filter(i => !inLeague.has(i) && i !== EURO_SLOT)
+        .map(i => ({ i, s: CLUBS[i].base + rnd() * 8 })) // strongest sides most likely to come up
+        .sort((x, y) => y.s - x.s)
+        .slice(0, 3)
+        .map(x => x.i);
     }
-    // settle promotion & relegation the moment the season ends
-    G.relegated = t.slice(-3).map(row => row.i);
-    const inLeague = new Set(G.league);
-    G.promoted = CLUBS.map((c, i) => i)
-      .filter(i => !inLeague.has(i) && i !== EURO_SLOT)
-      .map(i => ({ i, s: CLUBS[i].base + rnd() * 8 })) // strongest sides most likely to come up
-      .sort((x, y) => y.s - x.s)
-      .slice(0, 3)
-      .map(x => x.i);
   } else {
     G.screen = "matchResult";
     if (!checkSack() && !G.event && G.week >= 2 && rnd() < 0.28) generateEvent();
@@ -1698,7 +1797,7 @@ function expectationText(e) {
          e <= 16 ? "comfortable mid-table safety" : "avoid relegation at all costs";
 }
 /* 🔥 Derby days: rivalries with double stakes and a hotter crowd */
-const DERBIES = [["ARS","TOT"],["LIV","EVE"],["MUN","MCI"],["MUN","LIV"],["CHE","FUL"],["WHU","TOT"],["NEW","SUN"],["AVL","WOL"],["BRE","FUL"],["CRY","BHA"],["SHU","LEE"],["BIR","AVL"]];
+const DERBIES = [["ARS","TOT"],["LIV","EVE"],["MUN","MCI"],["MUN","LIV"],["CHE","FUL"],["WHU","TOT"],["NEW","SUN"],["AVL","WOL"],["BRE","FUL"],["CRY","BHA"],["SHU","LEE"],["BIR","AVL"],["SHU","SHW"],["NOR","IPS"],["POM","SOU"],["CHA","MLW"],["BLB","BUR"],["BLB","PNE"],["DER","NFO"],["COV","LEI"],["MID","SUN"],["QPR","FUL"],["WBA","WOL"]];
 function isDerby(h, a) {
   const x = CLUBS[h] && CLUBS[h].short, y = CLUBS[a] && CLUBS[a].short;
   return DERBIES.some(([m, n]) => (m === x && n === y) || (m === y && n === x));
@@ -3913,18 +4012,50 @@ function updateRecords() {
   }
 }
 
+/* The Championship playoffs: 3rd to 6th, two semifinals and a final.
+   Your matches are simulated with your saved lineup and tactics; level
+   ties go to penalties. */
+function runChPlayoffs() {
+  const t = tableStats();
+  if (t.length < 6) return { up: t.slice(0, 3).map(r => r.i), s1: null, s2: null, f: null };
+  const auto = t.slice(0, 2).map(r => r.i);
+  const seed = t.slice(2, 6).map(r => r.i); // 3rd, 4th, 5th, 6th
+  const tie = (h, a) => {
+    const opts = {};
+    if (h === G.myClub || a === G.myClub) {
+      const s = h === G.myClub ? "h" : "a";
+      opts[s + "XI"] = G.lineup; opts[s + "Ment"] = G.mentality; opts[s + "Form"] = G.formation; opts[s + "Style"] = G.style || "Balanced";
+    }
+    let r;
+    try { r = simMatch(h, a, opts); } catch (e) { r = { hg: 1, ag: 0 }; }
+    let winner = r.hg > r.ag ? h : r.ag > r.hg ? a : null, pens = null;
+    if (winner === null) {
+      try { const so = simShootoutClubs(h, a); winner = so.myS > so.opS ? h : a; pens = so.myS + "-" + so.opS; }
+      catch (e) { winner = CLUBS[h].base >= CLUBS[a].base ? h : a; }
+    }
+    return { h, a, hg: r.hg, ag: r.ag, winner, pens };
+  };
+  const s1 = tie(seed[0], seed[3]); // 3rd v 6th
+  const s2 = tie(seed[1], seed[2]); // 4th v 5th
+  const f = tie(s1.winner, s2.winner);
+  return { up: auto.concat([f.winner]), s1, s2, f };
+}
+
 function nextSeason(newClub) {
   // a relegated manager must pick his new club BEFORE anything is committed —
-  // otherwise a blocked call would still push career/records entries
-  if ((G.relegated || []).includes(G.myClub)) {
+  // otherwise a blocked call would still push career/records entries.
+  // Premier League only: in the Championship nobody goes down, so a stale
+  // relegated list must never block the start of the next season.
+  if (G.div !== "ch" && (G.relegated || []).includes(G.myClub)) {
     const nl = G.league.map(i => {
       const k = (G.relegated || []).indexOf(i);
       return k >= 0 ? (G.promoted || [])[k] : i;
     });
     if (newClub !== "CH" && (typeof newClub !== "number" || !nl.includes(newClub))) return;
   }
-  // ⬇⬆ THE CHAMPIONSHIP: a compact second tier — your 3 relegated clubs plus
-  // the 3 pool clubs that missed promotion, 20 rounds, top 2 up + 3rd via playoff.
+  // ⬇⬆ THE CHAMPIONSHIP: the full second tier; every English club outside
+  // next season's Premier League. 24 clubs, 46 rounds, top 2 promoted
+  // automatically, 3rd to 6th into the playoffs.
   const miniAge = () => { for (let ci = 0; ci < EURO_SLOT; ci++) for (const q of G.squads[ci]) {
     q.age++; q.years = Math.max(1, (q.years || 2) - 1);
     q.goals = 0; q.assists = 0; q.apps = 0; q.yellows = 0; q.form = 0; q.fitness = 100; q.injury = 0; q.ban = 0; q.morale = 75; if (ci === G.myClub) q.loan = null;
@@ -3933,12 +4064,11 @@ function nextSeason(newClub) {
                           fa: { alive: "out", rounds: [], results: [], history: [], r: 0, winner: null } });
   if (newClub === "CH" && (G.relegated || []).includes(G.myClub)) {
     updateRecords();
-    const pool = [20, 21, 22, 23, 24, 25].filter(i => !(G.promoted || []).includes(i));
     G.plLeague = G.league.map(i => (G.relegated || []).includes(i) ? G.promoted[(G.relegated || []).indexOf(i)] : i);
-    G.league = (G.relegated || []).concat(pool.slice(0, 3));
-    delete G.relegated; delete G.promoted; delete G.approach;
+    G.league = CLUBS.map((c, i) => i).filter(i => i !== EURO_SLOT && !G.plLeague.includes(i));
+    delete G.relegated; delete G.promoted; delete G.approach; delete G.choff;
     G.div = "ch"; G.season++; G.week = 0; G.results = [];
-    G.fixtures = leagueFixtures(G.league).concat(leagueFixtures(G.league));
+    G.fixtures = G.league.length >= 12 ? leagueFixtures(G.league) : leagueFixtures(G.league).concat(leagueFixtures(G.league));
     G.euro = null; G.cups = noCups(); G.missions = []; G.offersIn = []; G.dealsKey = null;
     G.budget = Math.round((G.budget || 0) * 0.5 + 10);
     G.board = { conf: 60, exp: 2, grace: 6, chosen: true, choice: "championship" };
@@ -3948,12 +4078,16 @@ function nextSeason(newClub) {
   }
   if (G.div === "ch") { // the Championship season just ended
     updateRecords();
+    delete G.relegated; delete G.promoted; // never set in this division; clears any stale state from old saves
     const chT = tableStats();
     const myPos = chT.findIndex(r => r.i === G.myClub) + 1;
-    const up = chT.slice(0, 3).map(r => r.i); // top 2 + playoff winner (3rd)
+    const po = G.choff || runChPlayoffs();
+    delete G.choff;
+    const up = po.up; // top 2 + the playoff final winner
     if (myPos === 1) G.honours.push("Season " + G.season + ": Championship winners");
     // the Premier League season that ran in parallel
-    const okPL = (G.plLeague || []).filter(i => typeof i === "number" && G.squads[i] && G.squads[i].filter(q => available(q)).length >= 11);
+    let okPL = (G.plLeague || []).filter(i => typeof i === "number" && G.squads[i] && G.squads[i].filter(q => available(q)).length >= 11);
+    if (okPL.length < 4) okPL = CLUBS.map((c, i) => i).filter(i => i !== EURO_SLOT && !G.league.includes(i)).slice(0, PL_SIZE);
     const plPts = {}; okPL.forEach(i => plPts[i] = { pts: 0, gd: 0 });
     for (const rd of leagueFixtures(okPL)) for (const [h, a] of rd) {
       try {
@@ -3974,11 +4108,11 @@ function nextSeason(newClub) {
       G.euro = null; initCups();
       G.budget = Math.round(20 + (CLUBS[G.myClub].base - 70) * 8 + 30);
       G.board = { conf: 65, exp: Math.max(17, expectedPos(G.myClub)), grace: 6, chosen: true, choice: "promoted" };
-      G.honours.push("Season " + (G.season - 1) + ": 🎖 Promoted to the Premier League" + (myPos === 3 ? " (via the playoff)" : ""));
+      G.honours.push("Season " + (G.season - 1) + ": 🎖 Promoted to the Premier League" + (myPos > 2 ? " (playoff final winners)" : ""));
     } else { // another year in the trenches
       G.plLeague = newPL;
-      G.league = chT.slice(3).map(r => r.i).concat(plDown);
-      G.fixtures = leagueFixtures(G.league).concat(leagueFixtures(G.league));
+      G.league = CLUBS.map((c, i) => i).filter(i => i !== EURO_SLOT && !newPL.includes(i));
+      G.fixtures = G.league.length >= 12 ? leagueFixtures(G.league) : leagueFixtures(G.league).concat(leagueFixtures(G.league));
       G.cups = noCups(); G.euro = null;
       G.budget = Math.round((G.budget || 0) * 0.5 + 10);
       G.board = { conf: 55, exp: 2, grace: 6, chosen: true, choice: "championship" };
@@ -4220,7 +4354,21 @@ function load() {
       if (data.euro && !data.euro.format) data.euro = { legacyComp: data.euro.comp, legacyStage: data.euro.stage };
     }
     if (data.ver === 10) data.ver = 11; // detailed roles — assigned just below
-    if (data.ver !== 11) return false; // save from an older game version
+    if (data.ver === 11) { // v12: the full 24-club Championship joins the world
+      data.ver = 12;
+      nextId = data.nextId || 1000;
+      const OLD_SLOT = 26; // where the visiting-opposition slot sat before the 18 new clubs arrived
+      if (data.squads.length <= OLD_SLOT + 1) {
+        const guestSq = data.squads[OLD_SLOT] || [];
+        data.squads = data.squads.slice(0, OLD_SLOT);
+        while (data.squads.length < EURO_SLOT) data.squads.push(genSquad(data.squads.length));
+        data.squads.push(guestSq);
+      }
+      data.nextId = nextId;
+      // heal saves stuck on the old Championship season-end bug (4th place or lower)
+      if (data.div === "ch") { delete data.relegated; delete data.promoted; }
+    }
+    if (data.ver !== 12) return false; // save from an older game version
     nextId = data.nextId || 1000;
     delete data.nextId;
     G = data;
@@ -5207,22 +5355,27 @@ function renderFixtures() {
 
 function renderTable() {
   const t = tableStats();
-  return `<div class="panel"><h2>Premier League Table — ${seasonYears(G.season)}</h2>
+  const ch = G.div === "ch";
+  return `<div class="panel"><h2>${ch ? "Championship Table" : "Premier League Table"} — ${seasonYears(G.season)}</h2>
     <table><thead><tr><th>#</th><th>Club</th><th class="num">P</th><th class="num">W</th><th class="num">D</th><th class="num">L</th><th class="num">GF</th><th class="num">GA</th><th class="num">GD</th><th class="num">Pts</th><th>Form</th></tr></thead><tbody>` +
     t.map((row, i) => {
-      const zone = i === 0 ? "champ" : i < 4 ? "ucl" : i === 4 ? "uel" : i === 5 ? "uecl" : i >= t.length - 3 ? "releg" : "";
+      const zone = ch ? (i === 0 ? "champ" : i < 2 ? "ucl" : i < 6 ? "uecl" : "")
+                      : (i === 0 ? "champ" : i < 4 ? "ucl" : i === 4 ? "uel" : i === 5 ? "uecl" : i >= t.length - 3 ? "releg" : "");
       return `<tr class="${row.i === G.myClub ? "me " : ""}${zone}">
       <td class="num">${i + 1}</td><td>${clubCrest(row.i, 15)}${esc(row.name)}</td>
       <td class="num">${row.p}</td><td class="num">${row.w}</td><td class="num">${row.d}</td><td class="num">${row.l}</td>
       <td class="num">${row.gf}</td><td class="num">${row.ga}</td><td class="num">${row.gf - row.ga}</td><td class="num"><b>${row.pts}</b></td>
       <td class="formbar">${row.form.slice(-5).map(x => `<span class="${x}">${x}</span>`).join("")}</td>
     </tr>`; }).join("") + `</tbody></table>
-    <p class="zone-legend">
+    <p class="zone-legend">` + (ch ? `
+      <i style="background:var(--amber)"></i>Champions
+      <i style="background:#3D7DC8"></i>Automatic promotion (1-2)
+      <i style="background:#35B07A"></i>Playoffs (3-6)` : `
       <i style="background:var(--amber)"></i>Champions
       <i style="background:#3D7DC8"></i>Champions League (1–4)
       <i style="background:#E8833C"></i>Europa League (5)
       <i style="background:#35B07A"></i>Conference League (6)
-      <i style="background:var(--red)"></i>Relegation to the Championship (18–20)
+      <i style="background:var(--red)"></i>Relegation to the Championship (18–20)`) + `
     </p></div>`;
 }
 
@@ -5707,10 +5860,27 @@ function renderSeasonEnd() {
   if (G.div === "ch") {
     const t = tableStats();
     const pos = t.findIndex(r => r.i === G.myClub) + 1;
-    return `<div class="banner"><h2>${pos <= 3 ? "🎉 PROMOTED!" : "The Championship season is over"}</h2>
-      <p>You finished <b>#${pos}</b> of 6. ${pos === 1 ? "Champions — straight back up!" : pos === 2 ? "Automatic promotion!" : pos === 3 ? "Up via the playoff final — what a day at Wembley!" : "No way back this year — another season in the trenches."}</p>
-      <table><tbody>${t.map((r, i) => `<tr${r.i === G.myClub ? ' class="me"' : ""}><td class="num">${i + 1}</td><td>${esc(r.name)}</td><td class="num"><b>${r.pts}</b></td></tr>`).join("")}</tbody></table>
-      <div class="row"><button class="action" onclick="nextSeason()">${pos <= 3 ? "⬆ Back to the Premier League →" : "Fight on in the Championship →"}</button></div></div>`;
+    if (!G.choff) { G.choff = runChPlayoffs(); save(); } // loaded saves arrive here without the bracket settled
+    const po = G.choff || { up: t.slice(0, 3).map(r => r.i), s1: null, s2: null, f: null };
+    const promoted = po.up.includes(G.myClub);
+    const inFinal = po.f && (po.f.h === G.myClub || po.f.a === G.myClub);
+    const inSemis = (po.s1 && (po.s1.h === G.myClub || po.s1.a === G.myClub)) || (po.s2 && (po.s2.h === G.myClub || po.s2.a === G.myClub));
+    const line = pos === 1 ? "Champions of the Championship. Straight back up!" :
+                 pos === 2 ? "Runners-up. Automatic promotion!" :
+                 promoted ? "Through the playoffs and up. What a day at Wembley!" :
+                 inFinal ? "Beaten in the playoff final. Wembley heartbreak." :
+                 inSemis ? "Knocked out in the playoff semifinals. So close." :
+                 "No way back this year. Another season in the trenches.";
+    const tieLine = (m, label) => m ? `<p class="note">${label}: ${esc(CLUBS[m.h].name)} ${m.hg}-${m.ag} ${esc(CLUBS[m.a].name)}${m.pens ? ", " + esc(CLUBS[m.winner].short) + " win " + m.pens + " on penalties" : ""}${(m.h === G.myClub || m.a === G.myClub) ? " · YOUR tie" : ""}</p>` : "";
+    const poBlock = po.f ? `<div style="text-align:left;border-top:1px solid var(--line);margin-top:10px;padding-top:8px">
+      <p><b>🏟 THE PLAYOFFS (3rd to 6th)</b></p>` +
+      tieLine(po.s1, "Semifinal") + tieLine(po.s2, "Semifinal") + tieLine(po.f, "Final, Wembley") +
+      `<p class="note">⬆ Going up: ${po.up.map(i => esc(CLUBS[i].name)).join(", ")}</p></div>` : "";
+    return `<div class="banner"><h2>${promoted ? "🎉 PROMOTED!" : "The Championship season is over"}</h2>
+      <p>You finished <b>#${pos}</b> of ${t.length}. ${line}</p>
+      ${poBlock}
+      <div class="row"><button class="action" onclick="nextSeason()">${promoted ? "⬆ Back to the Premier League →" : "Fight on in the Championship →"}</button>
+      <button class="ghost" onclick="resetGame()">New game (different club)</button></div></div>` + renderTable();
   }
   if (!G.relegated || !G.promoted) { // season ended under an older version of the game
     const tt = tableStats();
