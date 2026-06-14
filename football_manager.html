@@ -634,7 +634,7 @@ const CLUBS = [
   { name: "Carlisle United", short: "CAR", base: 58, col: "#003087", squad: [] },
   { name: "Bromley", short: "BRM", base: 58, col: "#FFFFFF", squad: [] },
   { name: "Fleetwood Town", short: "FLE", base: 58, col: "#E2231A", squad: [] },
-  { name: "Forest Green Rovers", short: "FGR", base: 58, col: "#0A6B3B", squad: [] },
+  { name: "Cardiff City", short: "CDF", base: 67, col: "#1F4EA1", squad: [] },
   { name: "Morecambe", short: "MCB", base: 57, col: "#C8102E", squad: [] },
   { name: "Accrington Stanley", short: "ACC", base: 57, col: "#E30613", squad: [] },
   { name: "Sutton United", short: "SUT", base: 57, col: "#F5C518", squad: [] },
@@ -662,6 +662,17 @@ const CLUBS = [
   { name: "Wealdstone", short: "WLD", base: 53, col: "#0033A0", squad: [] },
   { name: "Oxford City", short: "OXC", base: 53, col: "#0A3D7A", squad: [] },
   { name: "Braintree Town", short: "BRT", base: 53, col: "#E2231A", squad: [] },
+  /* Reserve pool: real National League North/South clubs that sit OUTSIDE the
+     playable pyramid. They rotate in and out of the National League each season
+     to emulate relegation to (and promotion from) regional non-league. */
+  { name: "Boston United", short: "BOS", base: 55, col: "#F1B70E", squad: [] },
+  { name: "Chester", short: "CTR", base: 54, col: "#1F5BB5", squad: [] },
+  { name: "Darlington", short: "DAR", base: 54, col: "#2B2B2B", squad: [] },
+  { name: "Southport", short: "STH", base: 53, col: "#E8B007", squad: [] },
+  { name: "Chorley", short: "CHO", base: 53, col: "#3A3A3A", squad: [] },
+  { name: "Spennymoor Town", short: "SPN", base: 52, col: "#5A5A5A", squad: [] },
+  { name: "Brackley Town", short: "BRK", base: 52, col: "#C8102E", squad: [] },
+  { name: "Torquay United", short: "TOR", base: 51, col: "#1B3A6B", squad: [] },
 ];
 const PL_SIZE = 20;
 
@@ -779,7 +790,7 @@ function clubCrest(i, px) { return crest(CLUBS[i].short, colorOf(i), px); }
 
 /* ---------------- Procedural squads for the lower-league clubs ----------------
    Deterministic from the club's short code, so a club's players are stable
-   across reloads, devices and save migrations. 2 GK, 6 DF, 6 MF, 4 FW. */
+   across reloads, devices and save migrations. 2 GK, 8 DF, 8 MF, 4 FW. */
 const LOWER_SURN = ["Smith","Jones","Taylor","Brown","Williams","Wilson","Johnson","Davies","Robinson","Wright",
  "Thompson","Evans","Walker","White","Roberts","Green","Hall","Wood","Harris","Clarke","Jackson","Clark","Turner",
  "Hill","Cooper","Ward","Morris","Moore","Baker","Cox","Richardson","Bell","Murphy","King","Phillips","Carter",
@@ -792,7 +803,7 @@ function fmHash(s) { let h = 2166136261 >>> 0; for (let i = 0; i < s.length; i++
 function fmRng(seed) { let a = seed >>> 0; return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
 function genLowerSquad(base, shortCode) {
   const r = fmRng(fmHash(shortCode) + 99);
-  const plan = [["GK", 2], ["DF", 6], ["MF", 6], ["FW", 4]];
+  const plan = [["GK", 2], ["DF", 8], ["MF", 8], ["FW", 4]];
   const out = [], usedName = new Set();
   const pickName = () => { let nm, g = 0; do { nm = LOWER_INIT[Math.floor(r() * LOWER_INIT.length)] + ". " + LOWER_SURN[Math.floor(r() * LOWER_SURN.length)]; } while (usedName.has(nm) && g++ < 30); usedName.add(nm); return nm; };
   for (const [pos, count] of plan) {
@@ -895,7 +906,7 @@ function wageFor(rating, age) {
 function makePlayer(name, pos, rating, age) {
   return { id: nextId++, name, pos, rating, age, pot: potentialFor(rating, age),
            wage: wageFor(rating, age), years: 2 + Math.floor(Math.random() * 4),
-           fitness: 100, form: 0, injury: 0, ban: 0, yellows: 0, goals: 0, assists: 0, apps: 0 };
+           fitness: 100, morale: 75, form: 0, injury: 0, ban: 0, yellows: 0, goals: 0, assists: 0, apps: 0 };
 }
 function wageBill() {
   return Math.round(G.squads[G.myClub].reduce((s, p) => s + (p.wage || 0), 0) * 10) / 10;
@@ -1021,11 +1032,16 @@ function traitOf(p) {
   return ["leader", "talisman", "ironman", "glass", "hothead"][h % 5];
 }
 function effRating(p) {
-  let r = p.rating + p.form * 1.5 + (((p.morale === undefined ? 75 : p.morale) - 75) * 0.04);
-  if (p.fitness < 60) r -= (60 - p.fitness) * 0.15;
+  let r = p.rating + p.form * 1.5 + (((p.morale === undefined ? 75 : p.morale) - 70) * 0.05);
+  if (p.fitness < 75) r -= (75 - p.fitness) * 0.08; // tired legs underperform; rotation matters
   return r;
 }
 function available(p) { return p.injury === 0 && p.ban === 0 && !p.loan; }
+function moraleFace(m) { m = (m === undefined ? 75 : Math.round(m)); return m >= 85 ? "😀" : m >= 65 ? "🙂" : m >= 55 ? "😐" : "😠"; }
+function condCell(p) {
+  const f = p.fitness, col = f >= 80 ? "var(--pitch)" : f >= 60 ? "var(--amber)" : "var(--red)";
+  return `<span style="color:${col}">${f}%</span> ${moraleFace(p.morale)}`;
+}
 
 function slotLine(formationName, slotIdx) { // which broad line owns slot i
   const f = FORMATIONS[formationName];
@@ -1067,10 +1083,14 @@ function newGame(clubIdx) {
   const tier = tierOfClub(clubIdx, tiers);
   const league = tiers[tier];
   const topFlight = tier === 0;
+  // reserve pool: real clubs that exist but start outside the pyramid; they
+  // rotate in and out of the National League to emulate non-league churn.
+  const inTier = new Set(tiers.flat());
+  const nlPool = []; for (let i = 0; i < EURO_SLOT; i++) if (!inTier.has(i)) nlPool.push(i);
   G = {
-    ver: 13,
+    ver: 14, autoXI: true,
     season: 1, myClub: clubIdx, week: 0,
-    tiers, tier, div: TIERS[tier].key,
+    tiers, tier, div: TIERS[tier].key, nlPool,
     league,
     squads,
     fixtures: leagueFixtures(league),
@@ -1383,7 +1403,7 @@ function quickSim() {
   if (G.week >= G.fixtures.length || G.live || dueEuro() || dueCup()) return;
   defaultExpectation();
   const my = G.myClub;
-  G.lineup = validateLineup();
+  prepMatchLineup();
   const snapshot = snapshotStatuses();
   let myResult = null;
   const weekResults = G.fixtures[G.week].map(([h, a]) => {
@@ -1410,8 +1430,9 @@ function mulberry32(seed) {
 
 function startChallenge(kind) {
   if (kind === "survival") {
-    let weak = 0;
-    for (let i = 1; i < PL_SIZE; i++) if (CLUBS[i].base < CLUBS[weak].base) weak = i;
+    const pl = defaultTiers()[0];
+    let weak = pl[0];
+    for (const i of pl) if (CLUBS[i].base < CLUBS[weak].base) weak = i;
     newGame(weak);
     G.challenge = "survival";
     G.board = { conf: 55, exp: 17, grace: 6, chosen: true, choice: "survival" };
@@ -1425,7 +1446,7 @@ function startChallenge(kind) {
     const seed = strHash("FM-" + ds);
     const realRandom = Math.random;
     Math.random = mulberry32(seed); // deterministic world: same squads, fixtures, draws for everyone today
-    try { newGame(seed % PL_SIZE); } finally { Math.random = realRandom; }
+    try { const pl = defaultTiers()[0]; newGame(pl[seed % pl.length]); } finally { Math.random = realRandom; }
     G.challenge = "daily";
     G.challengeDate = ds;
     G.board.chosen = true; G.board.choice = "daily";
@@ -1461,7 +1482,7 @@ function startChallenge(kind) {
     return;
   }
   if (kind === "takeover") {
-    const candidates = [...Array(PL_SIZE).keys()].filter(i => CLUBS[i].base <= 77);
+    const candidates = defaultTiers()[0].filter(i => CLUBS[i].base <= 77);
     newGame(candidates[Math.floor(Math.random() * candidates.length)]);
     G.challenge = "takeover";
     G.budget = 400;
@@ -2183,6 +2204,7 @@ function askPrice(clubIdx, p) {
   return p.clause && p.clause > 0 ? Math.min(p.clause, ask0) : ask0; // a release clause caps the fee
 }
 function canLeave(clubIdx, p) {
+  if (p.loanFrom !== undefined) return false; // a loanee can't be sold or poached
   const sq = G.squads[clubIdx];
   const cnt = pos => sq.filter(x => x.pos === pos && x.id !== p.id).length;
   const need = { GK: 2, DF: 5, MF: 5, FW: 3 };
@@ -2212,7 +2234,7 @@ function ensureWindowDeals() {
   }
   // ...and sometimes the phone rings about YOUR players
   G.offersIn = [];
-  const candidates = [...G.squads[G.myClub]].filter(p => !p.loan).sort((a, b) => playerValue(b) - playerValue(a)).slice(0, 8);
+  const candidates = [...G.squads[G.myClub]].filter(p => !p.loan && p.loanFrom === undefined).sort((a, b) => playerValue(b) - playerValue(a)).slice(0, 8);
   for (const p of candidates) {
     if (G.offersIn.length >= 3) break;
     const chance = (p.clause && p.clause <= playerValue(p) * 1.2 ? 0.65 : 0) || (p.rating >= 86 ? 0.5 : p.rating >= 80 ? 0.3 : 0.12);
@@ -2306,7 +2328,7 @@ function buyPlayer(clubIdx, pid) {
 /* Loans: send a player out for the season — he plays regular football elsewhere
    and develops as if he'd made 25+ appearances. Returns next summer. */
 function canLoanOut(p) {
-  if (p.loan || !windowOpen()) return false;
+  if (p.loan || p.loanFrom !== undefined || !windowOpen()) return false;
   if (G.squads[G.myClub].filter(x => x.loan).length >= 4) return false;
   const floor = { GK: 2, DF: 5, MF: 5, FW: 3 };
   const availSamePos = G.squads[G.myClub].filter(x => x.pos === p.pos && available(x) && x.id !== p.id).length;
@@ -2322,6 +2344,47 @@ function loanOut(pid) {
   G.lineup = validateLineup();
   G.deals = G.deals || [];
   G.deals.unshift("🤝 " + p.name + " joins " + CLUBS[host].name + " on a season-long loan");
+  save(); render();
+}
+
+/* Loan IN: borrow a young player for the season - no fee, you pay his wage, he
+   counts toward your 25-man squad, and he returns to his parent club next summer.
+   Up to 3 at a time. The lower the division, the bigger the lifeline. */
+function canLoanIn() {
+  return windowOpen()
+    && G.squads[G.myClub].length < 25
+    && G.squads[G.myClub].filter(x => x.loanFrom !== undefined).length < 3;
+}
+function loanTargets() {
+  const myBase = CLUBS[G.myClub].base;
+  const out = [];
+  for (let i = 0; i < EURO_SLOT; i++) {
+    if (i === G.myClub) continue;
+    const sq = G.squads[i]; if (!sq || !sq.length) continue;
+    const topId = [...sq].sort((a, b) => b.rating - a.rating)[0].id; // the club's best man is not loanable
+    for (const p of sq) {
+      if (p.id === topId || p.loan || p.loanFrom !== undefined || !available(p)) continue;
+      if (p.age > 24) continue;                       // loans are for developing players
+      if (p.rating < myBase - 8 || p.rating > myBase + 7) continue;
+      out.push({ p, club: i });
+    }
+  }
+  return out.sort((a, b) => b.p.rating - a.p.rating);
+}
+function loanIn(fromClub, pid) {
+  if (!canLoanIn()) return;
+  const sq = G.squads[fromClub]; if (!sq) return;
+  const p = sq.find(x => x.id === pid);
+  if (!p || p.loan || p.loanFrom !== undefined || !available(p)) return;
+  const wage = p.wage || wageFor(p.rating, p.age);
+  if (wageBill() + wage > wageCap()) { if (typeof alert === "function") alert("That loan wage would burst your cap (£" + wageCap() + "M). Trim wages first."); return; }
+  if (typeof confirm === "function" && !confirm("Take " + p.name + " on a season-long loan from " + CLUBS[fromClub].name + "? You pay his £" + wage + "M/yr wage; he returns to them next summer.")) return;
+  G.squads[fromClub] = sq.filter(x => x.id !== p.id);
+  p.loanFrom = fromClub; p.wage = wage; p.loan = null;
+  G.squads[G.myClub].push(p);
+  G.lineup = validateLineup();
+  G.deals = G.deals || [];
+  G.deals.unshift("🤝 " + p.name + " joins on a season-long loan from " + CLUBS[fromClub].name);
   save(); render();
 }
 
@@ -2448,6 +2511,9 @@ function renderTransfers() {
   html += `<h3>Your squad — sell (you receive 90% of value)</h3>
     <table><thead><tr><th>Pos</th><th>Name</th><th class="num">Age</th><th class="num">Rating</th><th class="num">Value</th><th></th></tr></thead><tbody>` +
     mine.map(p => {
+      if (p.loanFrom !== undefined) return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${esc(p.name)}</td>
+        <td class="num">${p.age}</td><td class="num">${p.rating}</td><td class="num">£${playerValue(p)}M</td>
+        <td><span class="tag" style="color:#3D7DC8">on loan from ${esc(CLUBS[p.loanFrom].short)}</span></td></tr>`;
       if (p.loan) return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${esc(p.name)}</td>
         <td class="num">${p.age}</td><td class="num">${p.rating}</td><td class="num">£${playerValue(p)}M</td>
         <td><span class="tag">on loan at ${esc(p.loan)}</span></td></tr>`;
@@ -2460,6 +2526,26 @@ function renderTransfers() {
             ${loanable && p.rating < p.pot ? `<button class="ghost" onclick="loanOut(${p.id})" title="A season of regular football elsewhere — he develops as a regular starter">Loan out</button>` : ""}</td></tr>`;
     }).join("") + `</tbody></table>
     <p class="note">Loan out fringe youngsters (max 4) — a season of regular football develops them like first-team starters. They return next summer.</p>`;
+  // ---- loan in players ----
+  if (windowOpen()) {
+    const loanedIn = G.squads[G.myClub].filter(x => x.loanFrom !== undefined).length;
+    const targets = loanTargets().slice(0, 40);
+    html += `<h3>🤝 Loan in players</h3>
+      <p class="note">Borrow a young player for the season: no fee, you pay his wage, he counts toward your 25-man squad, and he returns to his club next summer. Max 3 at once (${loanedIn}/3 used).</p>`;
+    if (!targets.length) {
+      html += `<p class="note">No suitable loan targets in the market right now.</p>`;
+    } else {
+      html += `<table><thead><tr><th>Pos</th><th>Name</th><th>From</th><th class="num">Age</th><th class="num">Rating</th><th class="num">Wage</th><th></th></tr></thead><tbody>` +
+        targets.map(({ p, club }) => {
+          const wage = p.wage || wageFor(p.rating, p.age);
+          const can = canLoanIn() && wageBill() + wage <= wageCap();
+          const why = !windowOpen() ? "window closed" : G.squads[G.myClub].length >= 25 ? "squad full" : loanedIn >= 3 ? "3 loans max" : (wageBill() + wage > wageCap()) ? "wages too high" : "";
+          return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${plink(club, p)}</td><td>${CLUBS[club].short}</td>
+            <td class="num">${p.age}</td><td class="num">${staffTier("scout") >= 2 ? p.rating : (Math.floor(p.rating / 4) * 4) + "-" + (Math.floor(p.rating / 4) * 4 + 3)}</td><td class="num">£${wage}M/yr</td>
+            <td>${can ? `<button class="ghost" onclick="loanIn(${club},${p.id})">Loan in</button>` : `<span class="note" style="font-size:11px">${why}</span>`}</td></tr>`;
+        }).join("") + `</tbody></table>`;
+    }
+  }
   // ---- market (buy) ----
   if (G.challenge === "youth") {
     if ((G.deals || []).length) {
@@ -2727,7 +2813,7 @@ function commitCup(fix, r, pens) {
 function playCupQuick() {
   const fix = dueCup();
   if (!fix || G.live || dueEuro()) return;
-  G.lineup = validateLineup();
+  prepMatchLineup();
   const oppIdx = cupOppIdx(fix);
   const h = fix.home ? G.myClub : oppIdx, a = fix.home ? oppIdx : G.myClub;
   const opts = {};
@@ -2739,7 +2825,7 @@ function playCupQuick() {
 function startCupLive() {
   const fix = dueCup();
   if (!fix || G.live || dueEuro()) return;
-  G.lineup = validateLineup();
+  prepMatchLineup();
   const oppIdx = cupOppIdx(fix);
   const h = fix.home ? G.myClub : oppIdx, a = fix.home ? oppIdx : G.myClub;
   const aiXI = bestXI(G.squads[oppIdx], "4-4-2");
@@ -3052,7 +3138,7 @@ function commitEuro(fix, r, pens) {
 function playEuroQuick() {
   const fix = dueEuro();
   if (!fix || G.live) return;
-  G.lineup = validateLineup();
+  prepMatchLineup();
   setEuroGuest(fix.opp);
   const h = fix.home ? G.myClub : EURO_SLOT, a = fix.home ? EURO_SLOT : G.myClub;
   const opts = {};
@@ -3064,7 +3150,7 @@ function playEuroQuick() {
 function startEuroLive() {
   const fix = dueEuro();
   if (!fix || G.live) return;
-  G.lineup = validateLineup();
+  prepMatchLineup();
   setEuroGuest(fix.opp);
   const oppIdx = EURO_SLOT;
   const h = fix.home ? G.myClub : EURO_SLOT, a = fix.home ? EURO_SLOT : G.myClub;
@@ -3392,7 +3478,7 @@ function startMatchday() {
   if (G.week >= G.fixtures.length || G.live || dueEuro() || dueCup()) return;
   defaultExpectation();
   const my = G.myClub;
-  G.lineup = validateLineup();
+  prepMatchLineup();
   const snapshot = snapshotStatuses();
   const fixtures = G.fixtures[G.week];
   let myFix = null;
@@ -4144,13 +4230,22 @@ const TIERS = [
   { key: "ch", name: "Championship",    abbr: "CH", size: 24, autoUp: 2, po: [3, 6], down: 3 },
   { key: "l1", name: "League One",      abbr: "L1", size: 24, autoUp: 2, po: [3, 6], down: 4 },
   { key: "l2", name: "League Two",      abbr: "L2", size: 24, autoUp: 3, po: [4, 7], down: 2 },
-  { key: "nl", name: "National League", abbr: "NL", size: 24, autoUp: 1, po: [2, 5], down: 0 },
+  { key: "nl", name: "National League", abbr: "NL", size: 24, autoUp: 1, po: [2, 5], down: 4 },
 ];
 const TIER_BY_KEY = {}; TIERS.forEach((t, i) => TIER_BY_KEY[t.key] = i);
 function defaultTiers() {
-  const out = []; let n = 0;
-  for (const t of TIERS) { const arr = []; for (let k = 0; k < t.size; k++) arr.push(n++); out.push(arr); }
-  return out;
+  /* 2026-27 English alignment, set after the 2025-26 promotions and relegations.
+     Tiers are lists of club indices looked up by short code, so the CLUBS array
+     order never has to change. Sizes must match TIERS: 20/24/24/24/24. */
+  const T = [
+    ["ARS","AVL","BOU","BRE","BHA","CHE","CRY","EVE","FUL","LEE","LIV","MCI","MUN","NEW","NFO","SUN","TOT","COV","IPS","HUL"],
+    ["SOU","SHU","BIR","WRX","WBA","MID","STO","MLW","NOR","WAT","SWA","BRC","PNE","DER","QPR","BLB","POM","CHA","BUR","WHU","WOL","LIN","BOL","CDF"],
+    ["HUD","BNS","WIG","RDG","STP","PET","LEY","WYC","BLK","MNS","STV","BRD","BRO","BTN","CMB","SHR","CRW","CHL","OXF","LEI","SHW","BRM","MKD","NOT"],
+    ["WIM","GIL","WAL","DON","SLF","CHS","OLD","CRE","TRA","GRM","SWN","COL","NWP","CAR","FLE","MCB","ACC","SUT","EXE","ROT","NPT","PTV","YOR","RCH"],
+    ["SND","BNT","GAT","HTL","SOL","YEO","EAS","HFX","WOK","ALD","ALT","DAG","EBB","KID","MDS","TAM","HER","BRH","MDH","WLD","OXC","BRT","HAR","BRW"],
+  ];
+  const byShort = {}; CLUBS.forEach((c, i) => { byShort[c.short] = i; });
+  return T.map(list => list.map(s => byShort[s]).filter(i => i !== undefined));
 }
 function tierOfClub(ci, tiers) { for (let t = 0; t < tiers.length; t++) if (tiers[t].includes(ci)) return t; return 0; }
 function tierIndex() { return (typeof G.tier === "number") ? G.tier : (TIER_BY_KEY[G.div] !== undefined ? TIER_BY_KEY[G.div] : 0); }
@@ -4243,17 +4338,29 @@ function resolvePyramid() {
     }
     down[ti] = T.down > 0 ? st.slice(-T.down).map(r => r.i) : [];
   }
+  // Bottom-tier revolving door: the National League relegates into regional
+  // non-league (National League North/South), which is not a playable tier.
+  // Relegated clubs swap with an equal number drawn from the reserve pool so the
+  // division stays full. Capped by pool size, so an older save with no pool keeps
+  // the old safe floor (relegates nobody).
+  const lastTi = TIERS.length - 1;
+  const pool = (G.nlPool || []).slice();
+  const nBottom = Math.min(TIERS[lastTi].down, pool.length);
+  down[lastTi] = nBottom > 0 ? standings[lastTi].slice(-nBottom).map(r => r.i) : [];
+  const promotedIn = pool.slice().sort(() => Math.random() - 0.5).slice(0, nBottom);
+  const promotedSet = new Set(promotedIn);
+  const newPool = pool.filter(i => !promotedSet.has(i)).concat(down[lastTi]);
   const newTiers = G.tiers.map((clubs, ti) => {
     const goneUp = new Set(up[ti]), goneDown = new Set(down[ti]);
     const survivors = standings[ti].map(r => r.i).filter(i => !goneUp.has(i) && !goneDown.has(i));
     const fromAbove = ti > 0 ? down[ti - 1] : [];
-    const fromBelow = ti < TIERS.length - 1 ? up[ti + 1] : [];
+    const fromBelow = ti < lastTi ? up[ti + 1] : promotedIn;
     return survivors.concat(fromAbove, fromBelow);
   });
   let playerNewTier = myTier;
   if (up[myTier].includes(G.myClub)) playerNewTier = myTier - 1;
   else if (down[myTier].includes(G.myClub)) playerNewTier = myTier + 1;
-  return { standings, up, down, newTiers, playerNewTier, champions: standings.map(st => st[0] ? st[0].i : null) };
+  return { standings, up, down, newTiers, playerNewTier, promotedIn, newPool, champions: standings.map(st => st[0] ? st[0].i : null) };
 }
 
 function nextSeason(newClub) {
@@ -4262,6 +4369,7 @@ function nextSeason(newClub) {
   if (!G.pyr) G.pyr = resolvePyramid();
   const PY = G.pyr;
   const oldTier = tierIndex();
+  const prevClub = G.myClub;
   const wasRelegated = (PY.down[oldTier] || []).includes(G.myClub);
   const wasPromoted = (PY.up[oldTier] || []).includes(G.myClub);
   // A numeric newClub means the manager is taking a job at a club staying in its
@@ -4269,6 +4377,8 @@ function nextSeason(newClub) {
   // head-hunt approach). With no argument a relegated manager simply goes down
   // with his club, and nothing blocks the start of the next season.
   const takingJob = typeof newClub === "number";
+  // Relegated out of the National League into regional non-league: career over.
+  if (!takingJob && PY.playerNewTier >= TIERS.length) { G.screen = "seasonEnd"; save(); render(); return; }
 
   ghQueueSync();
   updateRecords();
@@ -4299,6 +4409,7 @@ function nextSeason(newClub) {
 
   // commit the new pyramid and the manager's division
   G.tiers = PY.newTiers;
+  if (PY.newPool) G.nlPool = PY.newPool;
   let movedClub = false;
   if (takingJob) { G.myClub = newClub; movedClub = true; }
   G.tier = newTier;
@@ -4358,6 +4469,14 @@ function nextSeason(newClub) {
   }
   genMissions();
   if (G.tier !== 0) G.missions = []; // league missions are a top-flight feature
+  // loaned-in players return to their parent clubs for the summer
+  for (const lp of [...G.squads[prevClub]]) {
+    if (lp.loanFrom !== undefined) {
+      const par = lp.loanFrom; delete lp.loanFrom;
+      G.squads[prevClub] = G.squads[prevClub].filter(x => x.id !== lp.id);
+      if (G.squads[par]) G.squads[par].push(lp);
+    }
+  }
   // player development, retirements, and academy intakes — the league renews itself
   G.youthNews = [];
   for (let ci = 0; ci < EURO_SLOT; ci++) {
@@ -4575,7 +4694,26 @@ function load() {
       delete data.relegated; delete data.promoted; delete data.choff; delete data.pyr;
       if (data.tier !== 0) { data.euro = null; data.cups = noCups(); data.missions = []; }
     }
-    if (data.ver !== 13) return false; // save from an older game version
+    if (data.ver === 13) { // v14: deeper lower-league squads (22) + the loan-in market
+      data.ver = 14;
+      nextId = data.nextId || 1000;
+      for (let i = 44; i < EURO_SLOT; i++) {
+        const sq = data.squads[i]; if (!sq) continue;
+        const need = { GK: 2, DF: 8, MF: 8, FW: 4 }, have = { GK: 0, DF: 0, MF: 0, FW: 0 };
+        sq.forEach(p => { if (have[p.pos] !== undefined) have[p.pos]++; });
+        for (const pos of ["DF", "MF", "GK", "FW"]) {
+          while (have[pos] < need[pos]) {
+            const rating = Math.max(46, Math.min(70, Math.round(CLUBS[i].base - 2 + (Math.random() * 4 - 2))));
+            const nm = "ABCDEFGHJKLMNOPRSTW"[Math.floor(Math.random() * 19)] + ". " + LOWER_SURN[Math.floor(Math.random() * LOWER_SURN.length)];
+            const gp = makePlayer(nm, pos, rating, 18 + Math.floor(Math.random() * 14));
+            gp.role = roleFor(pos, sq);
+            sq.push(gp); have[pos]++;
+          }
+        }
+      }
+      data.nextId = nextId;
+    }
+    if (data.ver !== 14) return false; // save from an older game version
     nextId = data.nextId || 1000;
     delete data.nextId;
     G = data;
@@ -4845,10 +4983,10 @@ function renderCloud() {
       · Press <b>Generate token</b> and COPY it now — GitHub shows it only once.<br><br>
       <b>Step 3 — connect the game.</b> Above: type the repository as <b>yourname/football-manager</b>, paste the token, press <b>Save settings</b>.<br>
       <b>Step 4 — test it.</b> Press <b>☁⬆ Back up to GitHub now</b> — you should see a green ✓. From then on auto-sync does the rest: play anywhere, and each device offers to pick up your newest save.<br><br>
-      <b>📝 Database editor:</b> <button class="ghost" onclick="exportDB()">Export squads JSON</button>
+      <b>📝 Squad / database editor.</b> Exports every club across all five divisions; each club carries a <b>squad</b> list of <code>["Name","POS",rating,age]</code> entries (POS is GK, DF, MF or FW). Edit names, ratings or ages from a source you trust, import the file, then start a NEW game to use it (current saves keep their own world).<br>
+      <button class="ghost" onclick="exportDB()">Export squads JSON</button>
       <button class="ghost" onclick="document.getElementById('db-file').click()">Import edited JSON</button>
-      <input type="file" id="db-file" accept=".json" style="display:none" onchange="importDB(this)">
-      — update player names/ratings for future seasons; applies to NEW games only.<br><br>
+      <input type="file" id="db-file" accept=".json" style="display:none" onchange="importDB(this)"><br><br>
       🔒 The token stays in this browser only — it is never put inside save files or the game file, so sharing those is safe.
       You can revoke it any time on GitHub (Developer settings → your token → Delete).</p>
   </div>`;
@@ -4857,7 +4995,7 @@ function renderCloud() {
 /* 📝 Database editor: export the club/squad data as JSON, edit it anywhere,
    import it back — overrides apply to NEW games (saves keep their own world). */
 function exportDB() {
-  const data = CLUBS.slice(0, 44).map(c => ({ name: c.name, short: c.short, base: c.base, col: c.col, squad: c.squad }));
+  const data = CLUBS.slice(0, EURO_SLOT).map(c => ({ name: c.name, short: c.short, base: c.base, col: c.col, squad: c.squad }));
   const a = document.createElement("a");
   a.href = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 1));
   a.download = "FM-database.json"; document.body.appendChild(a); a.click(); a.remove();
@@ -4868,7 +5006,7 @@ function importDB(input) {
   rd.onload = () => {
     try {
       const d = JSON.parse(rd.result);
-      if (!Array.isArray(d) || d.length !== 44 || !d.every(c => c.name && c.squad)) throw 0;
+      if (!Array.isArray(d) || d.length === 0 || !d.every(c => c.short && Array.isArray(c.squad))) throw 0;
       localStorage.setItem("touchline_db", rd.result);
       applyDB(); alert("Database imported ✓ — applies to NEW games (current saves keep their world).");
     } catch (e) { alert("Not a valid FM database file."); }
@@ -4878,8 +5016,17 @@ function importDB(input) {
 function applyDB() {
   try {
     const d = JSON.parse(localStorage.getItem("touchline_db") || "null");
-    if (!d) return;
-    d.forEach((c, i) => { CLUBS[i].name = c.name; CLUBS[i].short = c.short; CLUBS[i].base = c.base; CLUBS[i].col = c.col || CLUBS[i].col; CLUBS[i].squad = c.squad; });
+    if (!Array.isArray(d)) return;
+    const byShort = {}; CLUBS.forEach((c, i) => { byShort[c.short] = i; });
+    d.forEach((c, i) => {
+      const idx = (c && c.short && byShort[c.short] !== undefined) ? byShort[c.short] : i;
+      if (idx < 0 || idx >= EURO_SLOT || !CLUBS[idx]) return;
+      if (c.name) CLUBS[idx].name = c.name;
+      if (c.short) CLUBS[idx].short = c.short;
+      if (typeof c.base === "number") CLUBS[idx].base = c.base;
+      if (c.col) CLUBS[idx].col = c.col;
+      if (Array.isArray(c.squad)) CLUBS[idx].squad = c.squad;
+    });
   } catch (e) {}
 }
 
@@ -4923,6 +5070,13 @@ function validateLineup() {
     if (chosen[i] === null && reserves.length) chosen[i] = reserves.shift().id;
   }
   return chosen.filter(id => id !== null).slice(0, 11);
+}
+
+/* Before every match: field the strongest available XI by form, position and
+   fitness (auto-pick on, the default), or keep the manager's chosen XI with only
+   injured/suspended men replaced (auto-pick off). */
+function prepMatchLineup() {
+  G.lineup = (G.autoXI === false) ? validateLineup() : bestXI(G.squads[G.myClub], G.formation);
 }
 
 /* ---------------- Rendering ---------------- */
@@ -5003,7 +5157,7 @@ function renderClubSelect() {
       (Tsel.autoUp ? `The top ${Tsel.autoUp} go up automatically` : ``) +
       (Tsel.po ? `${Tsel.autoUp ? `, and places` : `Places`} ${Tsel.po[0]} to ${Tsel.po[1]} fight through the promotion playoffs` : ``) +
       ` to ${TIERS[pickTier - 1] ? TIERS[pickTier - 1].name : ""}. ` +
-      (Tsel.down ? `The bottom ${Tsel.down} drop to ${TIERS[pickTier + 1].name}.` : `Nothing below - this is the foot of the pyramid.`);
+      (Tsel.down ? `The bottom ${Tsel.down} drop to ${TIERS[pickTier + 1] ? TIERS[pickTier + 1].name : "regional non-league"}.` : `Nothing below - this is the foot of the pyramid.`);
   return `<div class="panel">
     <h2>Choose your club — ${esc(Tsel.name)} 2025/26</h2>
     <p class="note">${blurb}</p>
@@ -5479,13 +5633,13 @@ function renderSquad() {
       ` <span class="note">${STAFF[k].desc}</span>`).join("<br>") + `</p></div>`;
   return news + staffHtml + `<div class="panel"><h2>${clubCrest(G.myClub, 28)}Squad — ${esc(CLUBS[G.myClub].name)}</h2>
     <p class="note">Wage bill: <b style="color:${wageBill() > wageCap() ? "var(--red)" : "var(--pitch)"}">£${wageBill()}M</b> / £${wageCap()}M cap per year</p>
-    <table><thead><tr>${thSort("squad","pos","Pos")}${thSort("squad","name","Name")}${thSort("squad","rating","Rating",1,"","Rat")}${thSort("squad","pot","Pot",1,"m-hide")}${thSort("squad","age","Age",1)}${thSort("squad","fitness","Fit",1,"m-hide")}${thSort("squad","form","Form",1,"m-hide")}${thSort("squad","goals","Goals",1,"","Gls")}${thSort("squad","wage","Contract",1,"","£")}<th>Status</th></tr></thead><tbody>` +
+    <table><thead><tr>${thSort("squad","pos","Pos")}${thSort("squad","name","Name")}${thSort("squad","rating","Rating",1,"","Rat")}${thSort("squad","pot","Pot",1,"m-hide")}${thSort("squad","age","Age",1)}${thSort("squad","fitness","Cond",1)}${thSort("squad","form","Form",1,"m-hide")}${thSort("squad","goals","Goals",1,"","Gls")}${thSort("squad","wage","Contract",1,"","£")}<th>Status</th></tr></thead><tbody>` +
     squad.map(p => `<tr${inXI.has(p.id) ? ' class="me"' : ""}>
       <td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${plink(G.myClub, p)}${(G.training || []).includes(p.id) ? " 🎯" : ""}${inXI.has(p.id) ? " <span class='tag'>XI</span>" : ""}</td>
       <td class="num">${Math.round(effRating(p))}</td>
       <td class="num stars-bar m-hide" title="Scouts' view of his ceiling">${potStars(p)}</td>
       <td class="num">${p.age}</td>
-      <td class="num m-hide">${p.fitness}%</td><td class="num m-hide">${p.form > 0 ? "+" + p.form : p.form}</td>
+      <td class="num">${condCell(p)}</td><td class="num m-hide">${p.form > 0 ? "+" + p.form : p.form}</td>
       <td class="num">${p.goals}</td>
       <td class="num">£${p.wage || 0}M·${p.years || 0}y${(p.years || 0) <= 1 ? ` <button class="ghost" style="padding:2px 7px;font-size:11px" onclick="renewContract(${p.id})" title="He wants £${renewDemand(p)}M/yr">Renew</button>` : ""}</td>
       <td>${p.loan ? `<span class="tag">LOAN @${esc(p.loan)}</span>` : ""}${p.injury ? `<span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}${(p.years || 0) <= 1 ? ` <span class="tag" style="color:var(--amber)">EXPIRING</span>` : ""}</td>
@@ -5511,8 +5665,9 @@ function renderTactics() {
         <select onchange="G.style=this.value;save();render()">` +
         Object.keys(STYLES).map(st => `<option${st === (G.style || "Balanced") ? " selected" : ""}>${st}</option>`).join("") +
       `</select></label>
-      <button class="ghost" onclick="G.lineup=bestXI(G.squads[G.myClub],G.formation);save();render()">Auto-pick best XI</button>
+      <button class="ghost" onclick="G.lineup=bestXI(G.squads[G.myClub],G.formation);save();render()">Auto-pick best XI now</button>
     </div>
+    <p class="note"><label><input type="checkbox" ${G.autoXI === false ? "" : "checked"} onchange="G.autoXI=this.checked;if(this.checked)G.lineup=bestXI(G.squads[G.myClub],G.formation);save();render()"> <b>Auto-pick best XI before every match</b></label> - ${G.autoXI === false ? "OFF: your chosen XI is kept; only injured or suspended men are replaced." : "ON: your strongest available XI by form, position and fitness is selected automatically each matchday. Switch off to pick by hand."}</p>
     <p class="note">${esc(STYLES[G.style || "Balanced"].desc)}</p>
     <h3>Starting XI</h3><div class="lineup-grid">`;
   const slotRoles = formSlots(G.formation);
@@ -6106,8 +6261,18 @@ function renderSeasonEnd() {
     const iAmDown = (G.pyr.down[ti0] || []).includes(G.myClub);
     const inFinal = po.f && (po.f.h === G.myClub || po.f.a === G.myClub);
     const inSemis = (po.s1 && (po.s1.h === G.myClub || po.s1.a === G.myClub)) || (po.s2 && (po.s2.h === G.myClub || po.s2.a === G.myClub));
+    if (iAmDown && ti0 === TIERS.length - 1) {
+      const promo = G.pyr.promotedIn || [];
+      return `<div class="banner"><h2>💔 CAREER OVER</h2>
+        <p>You finished <b>#${pos}</b> of ${t.length} and were relegated out of the National League into regional non-league football.</p>
+        <p class="note">There is no division below this in the game, and no way back from here. This is where the journey ends.</p>
+        ${promo.length ? `<p class="note">Up from non-league in your place: ${promo.map(i => esc(CLUBS[i].name)).join(", ")}</p>` : ""}
+        ${(G.honours || []).length ? `<p class="note">Honours board: ${G.honours.map(esc).join(" · ")}</p>` : ""}
+        <div class="row"><button class="action" onclick="resetGame()">Start a new career</button>
+        <button class="ghost" onclick="showSeasonCard()" title="A poster of your season">🖼 Season card</button></div></div>` + renderTable();
+    }
     const upName = TIERS[ti0 - 1] ? TIERS[ti0 - 1].name : "the division above";
-    const downName = TIERS[ti0 + 1] ? TIERS[ti0 + 1].name : "";
+    const downName = TIERS[ti0 + 1] ? TIERS[ti0 + 1].name : "regional non-league";
     const line = pos === 1 ? "Champions of " + T.name + ". Promoted!" :
                  auto ? "Automatic promotion to " + upName + "!" :
                  promoted ? "Up through the playoffs - what a day!" :
@@ -6121,11 +6286,13 @@ function renderSeasonEnd() {
       tieLine(po.s1, "Semifinal") + tieLine(po.s2, "Semifinal") + tieLine(po.f, "Final") +
       `<p class="note">⬆ Going up: ${up.map(i => esc(CLUBS[i].name)).join(", ")}</p></div>` : "";
     const downBlock = (G.pyr.down[ti0] && G.pyr.down[ti0].length) ? `<p class="note">⬇ Relegated to ${downName}: ${G.pyr.down[ti0].map(i => esc(CLUBS[i].name)).join(", ")}</p>` : "";
+    const promoBlock = (ti0 === TIERS.length - 1 && G.pyr.promotedIn && G.pyr.promotedIn.length) ? `<p class="note">⬆ Promoted in from regional non-league: ${G.pyr.promotedIn.map(i => esc(CLUBS[i].name)).join(", ")}</p>` : "";
     const verdict = G.board ? `<p class="note">Board verdict: you promised ${expectationText(G.board.exp)} - <b style="color:${pos <= G.board.exp ? "var(--pitch)" : "var(--red)"}">${pos <= G.board.exp ? "MET ✓" : "MISSED ✗"}</b> (finished #${pos}, target #${G.board.exp})</p>` : "";
     return `<div class="banner"><h2>${promoted ? "🎉 PROMOTED!" : T.name + " - season over"}</h2>
       <p>You finished <b>#${pos}</b> of ${t.length}. ${line}</p>
       ${poBlock}
       ${downBlock}
+      ${promoBlock}
       ${verdict}
       ${(G.honours || []).length ? `<p class="note">Honours board: ${G.honours.map(esc).join(" · ")}</p>` : ""}
       <div class="row"><button class="action" onclick="nextSeason()">${promoted ? "⬆ Up to " + upName + " →" : iAmDown ? "Down to " + downName + " - fight back →" : "Continue to " + seasonYears(G.season + 1) + " →"}</button>
