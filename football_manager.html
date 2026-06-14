@@ -986,7 +986,7 @@ function reconcileRoles() {
   for (let c = 0; c < CLUBS.length && c < G.squads.length; c++) {
     const roster = CLUBS[c] && CLUBS[c].squad, sq = G.squads[c];
     if (!roster || !sq) continue;
-    for (const p of sq) { const row = roster.find(r => r[0] === p.name && r[4]); if (row) p.role = row[4]; }
+    for (const p of sq) { if (p.edited) continue; const row = roster.find(r => r[0] === p.name && r[4]); if (row) p.role = row[4]; }
   }
 }
 
@@ -5940,7 +5940,7 @@ function showProfile(ci, pid) {
         ${windowOpen() && canLeave(G.myClub, p) ? `<button class="ghost" onclick="closeProfile();sellPlayer(${p.id})">💸 Sell £${Math.round(playerValue(p) * 0.9)}M</button>` : ""}
       </div>` : ""}
       ${focused ? `<p class="note">🎯 Intensive development: grows ~50% faster at the end of this season.</p>` : ""}
-      <div class="row" style="margin-top:10px"><button class="action" onclick="closeProfile()">Close</button></div>
+      <div class="row" style="margin-top:10px">${!wc ? `<button class="ghost" onclick="editProfile(${ci},${pid})">\u270e Edit player</button>` : ""}<button class="action" onclick="closeProfile()">Close</button></div>
     </div>
   </div>`;
 }
@@ -5958,6 +5958,61 @@ const SQUAD_COLS = {
   name: p => p.name, rating: p => effRating(p), pot: p => p.pot || 0, age: p => p.age,
   fitness: p => p.fitness, form: p => p.form, goals: p => p.goals, wage: p => p.wage || 0,
 };
+const EDIT_ROLES = {
+  "Goalkeeper": ["GK"],
+  "Defence": ["LB", "LWB", "CB", "RB", "RWB"],
+  "Midfield": ["CDM", "CM", "CAM", "LM", "RM"],
+  "Attack": ["LW", "RW", "ST", "CF", "SS"],
+};
+function bucketForRole(role) {
+  if (EDIT_ROLES["Defence"].includes(role)) return "DF";
+  if (EDIT_ROLES["Midfield"].includes(role)) return "MF";
+  if (EDIT_ROLES["Attack"].includes(role)) return "FW";
+  return "GK";
+}
+function editProfile(ci, pid) {
+  const sq = G.squads[ci], p = sq && sq.find(x => x.id === pid);
+  if (!p) return;
+  const cur = p.role || p.pos;
+  const roleOpts = Object.keys(EDIT_ROLES).map(g =>
+    `<optgroup label="${g}">` + EDIT_ROLES[g].map(r => `<option${r === cur ? " selected" : ""}>${r}</option>`).join("") + `</optgroup>`).join("");
+  document.getElementById("modal").innerHTML = `
+  <div class="overlay" onclick="if (event.target === this) showProfile(${ci},${pid})">
+    <div class="pcard">
+      <h3>Edit player</h3>
+      <div style="display:flex;flex-direction:column;gap:8px;text-align:left">
+        <label class="note">Name<br><input id="ed-name" value="${esc(p.name)}" size="20" style="width:100%"></label>
+        <label class="note">Position<br><select id="ed-role" style="width:100%">${roleOpts}</select></label>
+        <div class="row">
+          <label class="note">Rating<br><input id="ed-rating" type="number" min="30" max="99" value="${p.rating}" style="width:70px"></label>
+          <label class="note">Potential<br><input id="ed-pot" type="number" min="30" max="99" value="${p.pot || p.rating}" style="width:70px"></label>
+          <label class="note">Age<br><input id="ed-age" type="number" min="15" max="45" value="${p.age}" style="width:60px"></label>
+        </div>
+      </div>
+      <p class="note" style="margin:8px 0 0">Position sets his role and which line he is picked in.</p>
+      <div class="row" style="margin-top:12px">
+        <button class="action" onclick="savePlayerEdit(${ci},${pid})">Save</button>
+        <button class="ghost" onclick="showProfile(${ci},${pid})">Cancel</button>
+      </div>
+    </div>
+  </div>`;
+}
+function savePlayerEdit(ci, pid) {
+  const sq = G.squads[ci], p = sq && sq.find(x => x.id === pid);
+  if (!p) return;
+  const g = id => document.getElementById(id);
+  const name = (g("ed-name").value || "").trim();
+  if (name) p.name = name;
+  const role = g("ed-role").value;
+  if (role) { p.role = role; p.pos = bucketForRole(role); }
+  const r = parseInt(g("ed-rating").value); if (!isNaN(r)) p.rating = Math.max(30, Math.min(99, r));
+  const pot = parseInt(g("ed-pot").value); if (!isNaN(pot)) p.pot = Math.max(p.rating, Math.min(99, pot));
+  const a = parseInt(g("ed-age").value); if (!isNaN(a)) p.age = Math.max(15, Math.min(45, a));
+  p.edited = true; // protects the manual change from the load-time role reconciler
+  if (ci === G.myClub) G.lineup = validateLineup(); // a position change may shuffle the XI
+  save(); render(); showProfile(ci, pid);
+}
+
 function renderSquad() {
   const squad = sortRows(G.squads[G.myClub], "squad", SQUAD_COLS, p => p);
   const inXI = new Set(validateLineup());
