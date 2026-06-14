@@ -369,226 +369,226 @@ const STYLES = {
    Each squad: 2 GK, 6 DF, 6 MF, 4 FW — [name, pos, rating, age]. */
 const CLUBS = [
   { name: "Arsenal", short: "ARS", base: 84, squad: [
-    ["D. Raya","GK",87,30],["Kepa","GK",78,31],
-    ["W. Saliba","DF",88,24],["Gabriel","DF",87,27],["J. Timber","DF",83,24],["B. White","DF",82,28],["R. Calafiori","DF",82,23],["M. Lewis-Skelly","DF",79,18],
-    ["D. Rice","MF",88,26],["M. Ødegaard","MF",87,26],["M. Zubimendi","MF",85,26],["E. Eze","MF",84,27],["M. Merino","MF",82,29],["C. Nørgaard","MF",78,31],
-    ["B. Saka","FW",89,24],["V. Gyökeres","FW",86,27],["G. Martinelli","FW",83,24],["L. Trossard","FW",81,30]]},
+    ["D. Raya","GK",87,30,"GK"],["Kepa","GK",78,31,"GK"],
+    ["W. Saliba","DF",88,24,"CB"],["Gabriel","DF",87,27,"CB"],["J. Timber","DF",83,24,"RB"],["B. White","DF",82,28,"RB"],["R. Calafiori","DF",82,23,"LB"],["M. Lewis-Skelly","DF",79,18,"LB"],
+    ["D. Rice","MF",88,26,"CDM"],["M. Ødegaard","MF",87,26,"CM"],["M. Zubimendi","MF",85,26,"CDM"],["E. Eze","MF",84,27,"CAM"],["M. Merino","MF",82,29,"CM"],["C. Nørgaard","MF",78,31,"CDM"],
+    ["B. Saka","FW",89,24,"RW"],["V. Gyökeres","FW",86,27,"ST"],["G. Martinelli","FW",83,24,"LW"],["L. Trossard","FW",81,30,"LW"]]},
   { name: "Aston Villa", short: "AVL", base: 80, squad: [
-    ["E. Martínez","GK",85,33],["M. Bizot","GK",75,34],
-    ["Pau Torres","DF",83,28],["E. Konsa","DF",82,27],["M. Cash","DF",79,28],["L. Digne","DF",78,32],["T. Mings","DF",78,32],["L. Bogarde","DF",74,21],
-    ["M. Rogers","MF",84,23],["Y. Tielemans","MF",83,28],["J. McGinn","MF",81,30],["A. Onana","MF",80,24],["B. Kamara","MF",80,25],["E. Buendía","MF",78,28],
-    ["O. Watkins","FW",84,29],["J. Sancho","FW",80,25],["D. Malen","FW",79,26],["E. Guessand","FW",78,24]]},
+    ["E. Martínez","GK",85,33,"GK"],["M. Bizot","GK",75,34,"GK"],
+    ["Pau Torres","DF",83,28,"CB"],["E. Konsa","DF",82,27,"CB"],["M. Cash","DF",79,28,"RB"],["L. Digne","DF",78,32,"LB"],["T. Mings","DF",78,32,"CB"],["L. Bogarde","DF",74,21,"RB"],
+    ["M. Rogers","MF",84,23,"CAM"],["Y. Tielemans","MF",83,28,"CM"],["J. McGinn","MF",81,30,"LM"],["A. Onana","MF",80,24,"CDM"],["B. Kamara","MF",80,25,"CDM"],["E. Buendía","MF",78,28,"CAM"],
+    ["O. Watkins","FW",84,29,"ST"],["J. Sancho","FW",80,25,"LW"],["D. Malen","FW",79,26,"RW"],["E. Guessand","FW",78,24,"RW"]]},
   { name: "Bournemouth", short: "BOU", base: 77, squad: [
-    ["D. Petrović","GK",80,27],["W. Dennis","GK",71,24],
-    ["M. Senesi","DF",79,28],["A. Truffert","DF",77,23],["B. Diakité","DF",76,22],["A. Smith","DF",76,24],["J. Hill","DF",74,22],["V. Milosavljević","DF",73,21],
-    ["M. Tavernier","MF",78,26],["R. Christie","MF",78,30],["T. Adams","MF",78,29],["L. Cook","MF",77,27],["D. Brooks","MF",76,28],["A. Scott","MF",76,22],
-    ["A. Semenyo","FW",83,25],["J. Kluivert","FW",81,26],["Evanilson","FW",80,26],["E. Kroupi","FW",74,19]]},
+    ["D. Petrović","GK",80,27,"GK"],["W. Dennis","GK",71,24,"GK"],
+    ["M. Senesi","DF",79,28,"CB"],["A. Truffert","DF",77,23,"LB"],["B. Diakité","DF",76,22,"CB"],["A. Smith","DF",76,24,"RB"],["J. Hill","DF",74,22,"CB"],["V. Milosavljević","DF",73,21,"CB"],
+    ["M. Tavernier","MF",78,26,"LM"],["R. Christie","MF",78,30,"CDM"],["T. Adams","MF",78,29,"CDM"],["L. Cook","MF",77,27,"CDM"],["D. Brooks","MF",76,28,"RM"],["A. Scott","MF",76,22,"CAM"],
+    ["A. Semenyo","FW",83,25,"RW"],["J. Kluivert","FW",81,26,"SS"],["Evanilson","FW",80,26,"ST"],["E. Kroupi","FW",74,19,"ST"]]},
   { name: "Brentford", short: "BRE", base: 76, squad: [
-    ["C. Kelleher","GK",80,26],["H. Valdimarsson","GK",72,24],
-    ["N. Collins","DF",79,24],["S. van den Berg","DF",77,23],["E. Pinnock","DF",77,32],["K. Lewis-Potter","DF",77,24],["K. Ajer","DF",76,27],["M. Kayode","DF",76,21],
-    ["M. Damsgaard","MF",78,25],["V. Janelt","MF",77,27],["Y. Yarmoliuk","MF",76,21],["M. Jensen","MF",76,30],["F. Carvalho","MF",76,23],["J. Henderson","MF",75,35],
-    ["I. Thiago","FW",80,24],["D. Ouattara","FW",78,23],["K. Schade","FW",78,23],["A. Milambo","FW",74,20]]},
+    ["C. Kelleher","GK",80,26,"GK"],["H. Valdimarsson","GK",72,24,"GK"],
+    ["N. Collins","DF",79,24,"CB"],["S. van den Berg","DF",77,23,"CB"],["E. Pinnock","DF",77,32,"CB"],["K. Lewis-Potter","DF",77,24,"LB"],["K. Ajer","DF",76,27,"RB"],["M. Kayode","DF",76,21,"RB"],
+    ["M. Damsgaard","MF",78,25,"CAM"],["V. Janelt","MF",77,27,"CM"],["Y. Yarmoliuk","MF",76,21,"CM"],["M. Jensen","MF",76,30,"CM"],["F. Carvalho","MF",76,23,"CAM"],["J. Henderson","MF",75,35,"CDM"],
+    ["I. Thiago","FW",80,24,"ST"],["D. Ouattara","FW",78,23,"ST"],["K. Schade","FW",78,23,"LW"],["A. Milambo","FW",74,20,"CF"]]},
   { name: "Brighton", short: "BHA", base: 77, squad: [
-    ["B. Verbruggen","GK",80,23],["C. Rushworth","GK",73,24],
-    ["J. van Hecke","DF",79,25],["L. Dunk","DF",77,34],["F. Kadıoğlu","DF",77,26],["M. De Cuyper","DF",77,24],["J. Veltman","DF",76,33],["D. Coppola","DF",76,22],
-    ["C. Baleba","MF",81,21],["Y. Minteh","MF",79,21],["Y. Ayari","MF",77,24],["J. Hinshelwood","MF",76,21],["B. Gruda","MF",76,21],["J. Milner","MF",72,39],
-    ["K. Mitoma","FW",81,28],["D. Welbeck","FW",78,35],["G. Rutter","FW",78,23],["S. Tzimas","FW",75,19]]},
+    ["B. Verbruggen","GK",80,23,"GK"],["C. Rushworth","GK",73,24,"GK"],
+    ["J. van Hecke","DF",79,25,"CB"],["L. Dunk","DF",77,34,"CB"],["F. Kadıoğlu","DF",77,26,"RB"],["M. De Cuyper","DF",77,24,"LB"],["J. Veltman","DF",76,33,"RB"],["D. Coppola","DF",76,22,"CB"],
+    ["C. Baleba","MF",81,21,"CDM"],["Y. Minteh","MF",79,21,"RM"],["Y. Ayari","MF",77,24,"CM"],["J. Hinshelwood","MF",76,21,"CDM"],["B. Gruda","MF",76,21,"CAM"],["J. Milner","MF",72,39,"CM"],
+    ["K. Mitoma","FW",81,28,"LW"],["D. Welbeck","FW",78,35,"ST"],["G. Rutter","FW",78,23,"ST"],["S. Tzimas","FW",75,19,"ST"]]},
   { name: "Burnley", short: "BUR", base: 74, squad: [
-    ["M. Dúbravka","GK",76,36],["M. Weiß","GK",73,24],
-    ["K. Walker","DF",76,35],["M. Estève","DF",76,23],["Q. Hartman","DF",75,23],["A. Tuanzebe","DF",74,28],["B. Humphreys","DF",73,22],["J. Worrall","DF",72,28],
-    ["J. Cullen","MF",75,29],["Hannibal","MF",74,22],["Florentino","MF",74,26],["L. Ugochukwu","MF",74,21],["L. Tchaouna","MF",74,22],["J. Laurent","MF",73,31],
-    ["L. Foster","FW",75,25],["J. Anthony","FW",75,25],["Z. Flemming","FW",74,28],["J. Bruun Larsen","FW",74,27]]},
+    ["M. Dúbravka","GK",76,36,"GK"],["M. Weiß","GK",73,24,"GK"],
+    ["K. Walker","DF",76,35,"RB"],["M. Estève","DF",76,23,"CB"],["Q. Hartman","DF",75,23,"LB"],["A. Tuanzebe","DF",74,28,"RB"],["B. Humphreys","DF",73,22,"LB"],["J. Worrall","DF",72,28,"CB"],
+    ["J. Cullen","MF",75,29,"CDM"],["Hannibal","MF",74,22,"CM"],["Florentino","MF",74,26,"CDM"],["L. Ugochukwu","MF",74,21,"CDM"],["L. Tchaouna","MF",74,22,"RM"],["J. Laurent","MF",73,31,"CDM"],
+    ["L. Foster","FW",75,25,"ST"],["J. Anthony","FW",75,25,"LW"],["Z. Flemming","FW",74,28,"ST"],["J. Bruun Larsen","FW",74,27,"ST"]]},
   { name: "Chelsea", short: "CHE", base: 82, squad: [
-    ["R. Sánchez","GK",80,27],["F. Jörgensen","GK",75,23],
+    ["R. Sánchez","GK",80,27,"GK"],["F. Jörgensen","GK",75,23,"GK"],
     ["R. James","DF",84,25,"RB"],["M. Cucurella","DF",83,27,"LB"],["L. Colwill","DF",82,22,"CB"],["M. Gusto","DF",80,22,"RB"],["T. Chalobah","DF",79,26,"CB"],["B. Badiashile","DF",78,24,"CB"],
-    ["C. Palmer","MF",89,23],["M. Caicedo","MF",87,23],["E. Fernández","MF",85,24],["J. Gittens","MF",80,21],["R. Lavia","MF",79,21],["A. Santos","MF",78,21],
-    ["João Pedro","FW",84,23],["P. Neto","FW",82,25],["A. Garnacho","FW",81,21],["L. Delap","FW",80,22]]},
+    ["C. Palmer","MF",89,23,"CAM"],["M. Caicedo","MF",87,23,"CDM"],["E. Fernández","MF",85,24,"CM"],["J. Gittens","MF",80,21,"LM"],["R. Lavia","MF",79,21,"CDM"],["A. Santos","MF",78,21,"CM"],
+    ["João Pedro","FW",84,23,"ST"],["P. Neto","FW",82,25,"ST"],["A. Garnacho","FW",81,21,"LW"],["L. Delap","FW",80,22,"ST"]]},
   { name: "Crystal Palace", short: "CRY", base: 78, squad: [
-    ["D. Henderson","GK",79,28],["R. Matthews","GK",73,20],
-    ["M. Guéhi","DF",83,25],["D. Muñoz","DF",80,29],["M. Lacroix","DF",79,25],["T. Mitchell","DF",79,26],["C. Richards","DF",78,26],["J. Canvot","DF",74,19],
-    ["A. Wharton","MF",81,21],["W. Hughes","MF",78,30],["D. Kamada","MF",78,29],["J. Lerma","MF",76,30],["J. Devenny","MF",74,21],["B. Sosa","MF",74,27],
-    ["J-P. Mateta","FW",82,28],["I. Sarr","FW",80,27],["Y. Pino","FW",78,23],["E. Nketiah","FW",77,26]]},
+    ["D. Henderson","GK",79,28,"GK"],["R. Matthews","GK",73,20,"GK"],
+    ["M. Guéhi","DF",83,25,"CB"],["D. Muñoz","DF",80,29,"RB"],["M. Lacroix","DF",79,25,"CB"],["T. Mitchell","DF",79,26,"LB"],["C. Richards","DF",78,26,"CB"],["J. Canvot","DF",74,19,"CB"],
+    ["A. Wharton","MF",81,21,"CDM"],["W. Hughes","MF",78,30,"CDM"],["D. Kamada","MF",78,29,"CM"],["J. Lerma","MF",76,30,"CDM"],["J. Devenny","MF",74,21,"CAM"],["B. Sosa","MF",74,27,"LM"],
+    ["J-P. Mateta","FW",82,28,"ST"],["I. Sarr","FW",80,27,"RW"],["Y. Pino","FW",78,23,"LW"],["E. Nketiah","FW",77,26,"ST"]]},
   { name: "Everton", short: "EVE", base: 78, squad: [
-    ["J. Pickford","GK",84,31],["M. Travers","GK",75,26],
-    ["J. Branthwaite","DF",83,23],["J. Tarkowski","DF",81,32],["J. O'Brien","DF",78,26],["V. Mykolenko","DF",78,26],["M. Keane","DF",76,32],["S. Coleman","DF",73,36],
-    ["J. Grealish","MF",82,30],["K. Dewsbury-Hall","MF",79,26],["I. Gueye","MF",78,35],["J. Garner","MF",78,24],["C. Alcaraz","MF",77,22],["T. Iroegbunam","MF",75,22],
-    ["I. Ndiaye","FW",81,25],["D. McNeil","FW",79,25],["Beto","FW",78,27],["T. Barry","FW",76,21]]},
+    ["J. Pickford","GK",84,31,"GK"],["M. Travers","GK",75,26,"GK"],
+    ["J. Branthwaite","DF",83,23,"CB"],["J. Tarkowski","DF",81,32,"CB"],["J. O'Brien","DF",78,26,"CB"],["V. Mykolenko","DF",78,26,"LB"],["M. Keane","DF",76,32,"CB"],["S. Coleman","DF",73,36,"RB"],
+    ["J. Grealish","MF",82,30,"LM"],["K. Dewsbury-Hall","MF",79,26,"CM"],["I. Gueye","MF",78,35,"CDM"],["J. Garner","MF",78,24,"CDM"],["C. Alcaraz","MF",77,22,"CAM"],["T. Iroegbunam","MF",75,22,"CDM"],
+    ["I. Ndiaye","FW",81,25,"LW"],["D. McNeil","FW",79,25,"LW"],["Beto","FW",78,27,"ST"],["T. Barry","FW",76,21,"ST"]]},
   { name: "Fulham", short: "FUL", base: 77, squad: [
-    ["B. Leno","GK",80,33],["B. Lecomte","GK",73,34],
-    ["C. Bassey","DF",78,25],["J. Andersen","DF",78,29],["A. Robinson","DF",78,28],["T. Castagne","DF",77,29],["K. Tete","DF",76,29],["I. Diop","DF",75,29],
-    ["A. Pereira","MF",79,29],["A. Iwobi","MF",79,29],["S. Berge","MF",77,27],["S. Lukić","MF",77,29],["H. Wilson","MF",77,28],["T. Cairney","MF",74,34],
-    ["R. Jiménez","FW",78,34],["R. Muniz","FW",78,24],["Kevin","FW",76,22],["A. Traoré","FW",75,29]]},
+    ["B. Leno","GK",80,33,"GK"],["B. Lecomte","GK",73,34,"GK"],
+    ["C. Bassey","DF",78,25,"CB"],["J. Andersen","DF",78,29,"CB"],["A. Robinson","DF",78,28,"LB"],["T. Castagne","DF",77,29,"RB"],["K. Tete","DF",76,29,"RB"],["I. Diop","DF",75,29,"CB"],
+    ["A. Pereira","MF",79,29,"LM"],["A. Iwobi","MF",79,29,"LM"],["S. Berge","MF",77,27,"CDM"],["S. Lukić","MF",77,29,"CDM"],["H. Wilson","MF",77,28,"RM"],["T. Cairney","MF",74,34,"CM"],
+    ["R. Jiménez","FW",78,34,"ST"],["R. Muniz","FW",78,24,"ST"],["Kevin","FW",76,22,"LW"],["A. Traoré","FW",75,29,"CF"]]},
   { name: "Leeds United", short: "LEE", base: 75, squad: [
-    ["L. Perri","GK",76,25],["K. Darlow","GK",72,35],
-    ["J. Bijol","DF",76,26],["P. Struijk","DF",76,26],["J. Rodon","DF",75,28],["G. Gudmundsson","DF",75,27],["J. Justin","DF",75,27],["J. Bogle","DF",74,25],
-    ["E. Ampadu","MF",77,25],["A. Stach","MF",76,27],["A. Tanaka","MF",76,27],["S. Longstaff","MF",75,28],["I. Gruev","MF",75,25],["B. Aaronson","MF",74,25],
-    ["D. Calvert-Lewin","FW",76,28],["N. Okafor","FW",76,25],["J. Piroe","FW",75,26],["L. Nmecha","FW",74,27]]},
+    ["L. Perri","GK",76,25,"GK"],["K. Darlow","GK",72,35,"GK"],
+    ["J. Bijol","DF",76,26,"CB"],["P. Struijk","DF",76,26,"CB"],["J. Rodon","DF",75,28,"CB"],["G. Gudmundsson","DF",75,27,"LB"],["J. Justin","DF",75,27,"RB"],["J. Bogle","DF",74,25,"RB"],
+    ["E. Ampadu","MF",77,25,"CDM"],["A. Stach","MF",76,27,"CDM"],["A. Tanaka","MF",76,27,"CDM"],["S. Longstaff","MF",75,28,"CM"],["I. Gruev","MF",75,25,"CDM"],["B. Aaronson","MF",74,25,"CAM"],
+    ["D. Calvert-Lewin","FW",76,28,"ST"],["N. Okafor","FW",76,25,"ST"],["J. Piroe","FW",75,26,"ST"],["L. Nmecha","FW",74,27,"ST"]]},
   { name: "Liverpool", short: "LIV", base: 85, squad: [
-    ["Alisson","GK",88,33],["G. Mamardashvili","GK",80,25],
-    ["V. van Dijk","DF",89,34],["I. Konaté","DF",85,26],["J. Frimpong","DF",82,24],["A. Robertson","DF",81,31],["M. Kerkez","DF",81,21],["J. Gomez","DF",79,28],
-    ["F. Wirtz","MF",88,22],["A. Mac Allister","MF",86,26],["R. Gravenberch","MF",85,23],["D. Szoboszlai","MF",84,25],["C. Jones","MF",80,24],["W. Endo","MF",77,32],
-    ["M. Salah","FW",90,33],["A. Isak","FW",88,26],["C. Gakpo","FW",84,26],["H. Ekitiké","FW",83,23]]},
+    ["Alisson","GK",88,33,"GK"],["G. Mamardashvili","GK",80,25,"GK"],
+    ["V. van Dijk","DF",89,34,"CB"],["I. Konaté","DF",85,26,"CB"],["J. Frimpong","DF",82,24,"RB"],["A. Robertson","DF",81,31,"LB"],["M. Kerkez","DF",81,21,"LB"],["J. Gomez","DF",79,28,"CB"],
+    ["F. Wirtz","MF",88,22,"CAM"],["A. Mac Allister","MF",86,26,"CM"],["R. Gravenberch","MF",85,23,"CDM"],["D. Szoboszlai","MF",84,25,"CAM"],["C. Jones","MF",80,24,"CAM"],["W. Endo","MF",77,32,"CDM"],
+    ["M. Salah","FW",90,33,"RW"],["A. Isak","FW",88,26,"ST"],["C. Gakpo","FW",84,26,"LW"],["H. Ekitiké","FW",83,23,"ST"]]},
   { name: "Manchester City", short: "MCI", base: 84, squad: [
-    ["G. Donnarumma","GK",89,26],["J. Trafford","GK",78,22],
-    ["R. Dias","DF",86,28],["J. Gvardiol","DF",85,23],["J. Stones","DF",82,31],["N. Aké","DF",80,30],["M. Nunes","DF",79,27],["A. Khusanov","DF",78,21],
-    ["Rodri","MF",89,29],["B. Silva","MF",86,31],["P. Foden","MF",86,25],["T. Reijnders","MF",84,27],["R. Cherki","MF",81,22],["N. González","MF",80,23],
-    ["E. Haaland","FW",91,25],["O. Marmoush","FW",84,26],["J. Doku","FW",84,23],["Savinho","FW",80,21]]},
+    ["G. Donnarumma","GK",89,26,"GK"],["J. Trafford","GK",78,22,"GK"],
+    ["R. Dias","DF",86,28,"CB"],["J. Gvardiol","DF",85,23,"LB"],["J. Stones","DF",82,31,"CB"],["N. Aké","DF",80,30,"CB"],["M. Nunes","DF",79,27,"RB"],["A. Khusanov","DF",78,21,"CB"],
+    ["Rodri","MF",89,29,"CDM"],["B. Silva","MF",86,31,"CM"],["P. Foden","MF",86,25,"CM"],["T. Reijnders","MF",84,27,"CM"],["R. Cherki","MF",81,22,"RM"],["N. González","MF",80,23,"RM"],
+    ["E. Haaland","FW",91,25,"ST"],["O. Marmoush","FW",84,26,"ST"],["J. Doku","FW",84,23,"LW"],["Savinho","FW",80,21,"RW"]]},
   { name: "Manchester United", short: "MUN", base: 81, squad: [
-    ["S. Lammens","GK",78,23],["A. Bayindir","GK",76,27],
-    ["L. Martínez","DF",83,27],["M. de Ligt","DF",83,26],["D. Dalot","DF",81,26],["L. Shaw","DF",80,30],["N. Mazraoui","DF",80,27],["L. Yoro","DF",80,19],
-    ["B. Fernandes","MF",88,31],["Casemiro","MF",82,33],["A. Diallo","MF",82,23],["K. Mainoo","MF",80,20],["M. Ugarte","MF",79,24],["M. Mount","MF",79,26],
-    ["B. Mbeumo","FW",84,26],["M. Cunha","FW",84,26],["B. Šeško","FW",82,22],["J. Zirkzee","FW",78,24]]},
+    ["S. Lammens","GK",78,23,"GK"],["A. Bayindir","GK",76,27,"GK"],
+    ["L. Martínez","DF",83,27,"CB"],["M. de Ligt","DF",83,26,"CB"],["D. Dalot","DF",81,26,"RB"],["L. Shaw","DF",80,30,"CB"],["N. Mazraoui","DF",80,27,"RB"],["L. Yoro","DF",80,19,"CB"],
+    ["B. Fernandes","MF",88,31,"LM"],["Casemiro","MF",82,33,"CDM"],["A. Diallo","MF",82,23,"CM"],["K. Mainoo","MF",80,20,"CM"],["M. Ugarte","MF",79,24,"CDM"],["M. Mount","MF",79,26,"CAM"],
+    ["B. Mbeumo","FW",84,26,"RW"],["M. Cunha","FW",84,26,"LW"],["B. Šeško","FW",82,22,"ST"],["J. Zirkzee","FW",78,24,"ST"]]},
   { name: "Newcastle United", short: "NEW", base: 81, squad: [
-    ["N. Pope","GK",82,33],["O. Vlachodimos","GK",74,31],
-    ["S. Botman","DF",82,25],["L. Hall","DF",81,21],["T. Livramento","DF",81,22],["F. Schär","DF",80,33],["D. Burn","DF",79,33],["K. Trippier","DF",79,35],
-    ["B. Guimarães","MF",86,28],["S. Tonali","MF",85,25],["Joelinton","MF",82,29],["J. Willock","MF",78,26],["J. Ramsey","MF",76,24],["L. Miley","MF",76,19],
-    ["A. Gordon","FW",83,24],["N. Woltemade","FW",82,23],["Y. Wissa","FW",81,29],["H. Barnes","FW",79,27]]},
+    ["N. Pope","GK",82,33,"GK"],["O. Vlachodimos","GK",74,31,"GK"],
+    ["S. Botman","DF",82,25,"CB"],["L. Hall","DF",81,21,"LB"],["T. Livramento","DF",81,22,"RB"],["F. Schär","DF",80,33,"CB"],["D. Burn","DF",79,33,"CB"],["K. Trippier","DF",79,35,"RB"],
+    ["B. Guimarães","MF",86,28,"CM"],["S. Tonali","MF",85,25,"CDM"],["Joelinton","MF",82,29,"CM"],["J. Willock","MF",78,26,"CM"],["J. Ramsey","MF",76,24,"LM"],["L. Miley","MF",76,19,"CM"],
+    ["A. Gordon","FW",83,24,"LW"],["N. Woltemade","FW",82,23,"ST"],["Y. Wissa","FW",81,29,"ST"],["H. Barnes","FW",79,27,"LW"]]},
   { name: "Nottingham Forest", short: "NFO", base: 78, squad: [
-    ["M. Sels","GK",80,33],["J. Victor","GK",73,27],
-    ["Murillo","DF",81,23],["N. Milenković","DF",80,28],["O. Aina","DF",79,29],["N. Williams","DF",77,24],["N. Savona","DF",76,22],["Morato","DF",75,24],
-    ["M. Gibbs-White","MF",82,25],["E. Anderson","MF",79,22],["D. Ndoye","MF",78,24],["I. Sangaré","MF",76,28],["N. Domínguez","MF",76,27],["R. Yates","MF",75,28],
-    ["C. Wood","FW",80,34],["Igor Jesus","FW",77,24],["O. Hutchinson","FW",77,22],["T. Awoniyi","FW",75,28]]},
+    ["M. Sels","GK",80,33,"GK"],["J. Victor","GK",73,27,"GK"],
+    ["Murillo","DF",81,23,"CB"],["N. Milenković","DF",80,28,"CB"],["O. Aina","DF",79,29,"RB"],["N. Williams","DF",77,24,"LB"],["N. Savona","DF",76,22,"RB"],["Morato","DF",75,24,"CB"],
+    ["M. Gibbs-White","MF",82,25,"CAM"],["E. Anderson","MF",79,22,"CDM"],["D. Ndoye","MF",78,24,"LM"],["I. Sangaré","MF",76,28,"CDM"],["N. Domínguez","MF",76,27,"CDM"],["R. Yates","MF",75,28,"CDM"],
+    ["C. Wood","FW",80,34,"ST"],["Igor Jesus","FW",77,24,"ST"],["O. Hutchinson","FW",77,22,"SS"],["T. Awoniyi","FW",75,28,"ST"]]},
   { name: "Sunderland", short: "SUN", base: 76, squad: [
-    ["R. Roefs","GK",76,22],["A. Patterson","GK",74,25],
-    ["N. Mukiele","DF",77,28],["D. Ballard","DF",76,26],["T. Hume","DF",76,23],["O. Alderete","DF",76,29],["Reinildo","DF",75,31],["L. O'Nien","DF",74,31],
-    ["G. Xhaka","MF",80,33],["H. Diarra","MF",77,22],["E. Le Fée","MF",76,25],["C. Rigg","MF",76,18],["N. Talbi","MF",76,22],["N. Sadiki","MF",75,21],
-    ["W. Isidor","FW",76,25],["B. Brobbey","FW",76,23],["S. Adingra","FW",76,24],["E. Mayenda","FW",74,20]]},
+    ["R. Roefs","GK",76,22,"GK"],["A. Patterson","GK",74,25,"GK"],
+    ["N. Mukiele","DF",77,28,"RB"],["D. Ballard","DF",76,26,"CB"],["T. Hume","DF",76,23,"RB"],["O. Alderete","DF",76,29,"CB"],["Reinildo","DF",75,31,"LB"],["L. O'Nien","DF",74,31,"CB"],
+    ["G. Xhaka","MF",80,33,"CDM"],["H. Diarra","MF",77,22,"CM"],["E. Le Fée","MF",76,25,"CM"],["C. Rigg","MF",76,18,"CAM"],["N. Talbi","MF",76,22,"RM"],["N. Sadiki","MF",75,21,"CM"],
+    ["W. Isidor","FW",76,25,"ST"],["B. Brobbey","FW",76,23,"ST"],["S. Adingra","FW",76,24,"RW"],["E. Mayenda","FW",74,20,"ST"]]},
   { name: "Tottenham Hotspur", short: "TOT", base: 81, squad: [
-    ["G. Vicario","GK",84,29],["A. Kinsky","GK",76,22],
-    ["C. Romero","DF",85,27],["M. van de Ven","DF",84,24],["P. Porro","DF",82,26],["D. Udogie","DF",81,22],["K. Danso","DF",78,26],["D. Spence","DF",78,25],
-    ["J. Maddison","MF",84,28],["P. Sarr","MF",81,23],["J. Palhinha","MF",81,30],["R. Bentancur","MF",81,28],["L. Bergvall","MF",80,19],["Y. Bissouma","MF",78,29],
-    ["M. Kudus","FW",83,25],["D. Solanke","FW",81,28],["R. Kolo Muani","FW",81,26],["Richarlison","FW",80,28]]},
+    ["G. Vicario","GK",84,29,"GK"],["A. Kinsky","GK",76,22,"GK"],
+    ["C. Romero","DF",85,27,"CB"],["M. van de Ven","DF",84,24,"CB"],["P. Porro","DF",82,26,"RB"],["D. Udogie","DF",81,22,"LB"],["K. Danso","DF",78,26,"CB"],["D. Spence","DF",78,25,"RB"],
+    ["J. Maddison","MF",84,28,"CM"],["P. Sarr","MF",81,23,"CM"],["J. Palhinha","MF",81,30,"CDM"],["R. Bentancur","MF",81,28,"CDM"],["L. Bergvall","MF",80,19,"CM"],["Y. Bissouma","MF",78,29,"CDM"],
+    ["M. Kudus","FW",83,25,"RW"],["D. Solanke","FW",81,28,"ST"],["R. Kolo Muani","FW",81,26,"ST"],["Richarlison","FW",80,28,"ST"]]},
   { name: "West Ham United", short: "WHU", base: 78, squad: [
-    ["A. Areola","GK",80,32],["M. Hermansen","GK",77,25],
-    ["A. Wan-Bissaka","DF",80,27],["M. Kilman","DF",79,28],["J-C. Todibo","DF",78,25],["K. Mavropanos","DF",77,27],["Emerson","DF",76,31],["E-J. Diouf","DF",75,19],
-    ["L. Paquetá","MF",84,28],["J. Ward-Prowse","MF",79,30],["T. Souček","MF",78,30],["M. Fernandes","MF",76,21],["S. Magassa","MF",75,19],["F. Potts","MF",73,21],
-    ["J. Bowen","FW",84,28],["N. Füllkrug","FW",79,32],["C. Summerville","FW",78,23],["C. Wilson","FW",76,33]]},
+    ["A. Areola","GK",80,32,"GK"],["M. Hermansen","GK",77,25,"GK"],
+    ["A. Wan-Bissaka","DF",80,27,"RB"],["M. Kilman","DF",79,28,"CB"],["J-C. Todibo","DF",78,25,"CB"],["K. Mavropanos","DF",77,27,"CB"],["Emerson","DF",76,31,"LB"],["E-J. Diouf","DF",75,19,"LB"],
+    ["L. Paquetá","MF",84,28,"CM"],["J. Ward-Prowse","MF",79,30,"CM"],["T. Souček","MF",78,30,"CDM"],["M. Fernandes","MF",76,21,"CAM"],["S. Magassa","MF",75,19,"CDM"],["F. Potts","MF",73,21,"CDM"],
+    ["J. Bowen","FW",84,28,"ST"],["N. Füllkrug","FW",79,32,"ST"],["C. Summerville","FW",78,23,"LW"],["C. Wilson","FW",76,33,"ST"]]},
   { name: "Wolves", short: "WOL", base: 75, squad: [
-    ["José Sá","GK",78,32],["S. Johnstone","GK",75,32],
-    ["L. Krejčí","DF",76,26],["E. Agbadou","DF",76,26],["S. Bueno","DF",75,26],["M. Doherty","DF",74,33],["Toti","DF",74,26],["H. Bueno","DF",73,22],
-    ["João Gomes","MF",79,24],["André","MF",78,24],["J. Bellegarde","MF",76,27],["S. Arias","MF",76,27],["M. Munetsi","MF",75,29],["J. Tchatchoua","MF",74,23],
-    ["J. Strand Larsen","FW",77,25],["H. Hwang","FW",75,29],["T. Arokodare","FW",74,24],["Fer López","FW",73,21]]},
+    ["José Sá","GK",78,32,"GK"],["S. Johnstone","GK",75,32,"GK"],
+    ["L. Krejčí","DF",76,26,"CB"],["E. Agbadou","DF",76,26,"CB"],["S. Bueno","DF",75,26,"CB"],["M. Doherty","DF",74,33,"CB"],["Toti","DF",74,26,"CB"],["H. Bueno","DF",73,22,"LB"],
+    ["João Gomes","MF",79,24,"CDM"],["André","MF",78,24,"CDM"],["J. Bellegarde","MF",76,27,"CAM"],["S. Arias","MF",76,27,"CDM"],["M. Munetsi","MF",75,29,"CM"],["J. Tchatchoua","MF",74,23,"RM"],
+    ["J. Strand Larsen","FW",77,25,"ST"],["H. Hwang","FW",75,29,"ST"],["T. Arokodare","FW",74,24,"ST"],["Fer López","FW",73,21,"RW"]]},
   /* ---- Championship pool (indices 20+): the full 24-club second tier; 3 join the Premier League each season ---- */
   { name: "Leicester City", short: "LEI", base: 73, squad: [
-    ["J. Stolarczyk","GK",72,27],["D. Iversen","GK",70,28],
-    ["W. Faes","DF",74,27],["R. Pereira","DF",74,32],["C. Okoli","DF",72,24],["J. Vestergaard","DF",72,33],["C. Coady","DF",72,32],["L. Thomas","DF",70,24],
-    ["B. El Khannouss","MF",77,21],["H. Winks","MF",74,29],["B. Soumaré","MF",73,26],["K. McAteer","MF",72,23],["O. Skipp","MF",72,25],["H. Choudhury","MF",70,28],
-    ["S. Mavididi","FW",75,27],["A. Fatawu","FW",74,21],["P. Daka","FW",73,27],["T. Cannon","FW",70,22]]},
+    ["J. Stolarczyk","GK",72,27,"GK"],["D. Iversen","GK",70,28,"GK"],
+    ["W. Faes","DF",74,27,"CB"],["R. Pereira","DF",74,32,"RB"],["C. Okoli","DF",72,24,"CB"],["J. Vestergaard","DF",72,33,"CB"],["C. Coady","DF",72,32,"CB"],["L. Thomas","DF",70,24,"LB"],
+    ["B. El Khannouss","MF",77,21,"CAM"],["H. Winks","MF",74,29,"CDM"],["B. Soumaré","MF",73,26,"CDM"],["K. McAteer","MF",72,23,"RM"],["O. Skipp","MF",72,25,"CDM"],["H. Choudhury","MF",70,28,"CDM"],
+    ["S. Mavididi","FW",75,27,"LW"],["A. Fatawu","FW",74,21,"RW"],["P. Daka","FW",73,27,"ST"],["T. Cannon","FW",70,22,"ST"]]},
   { name: "Southampton", short: "SOU", base: 72, squad: [
-    ["G. Bazunu","GK",72,24],["A. McCarthy","GK",71,35],
-    ["T. Harwood-Bellis","DF",74,23],["J. Bree","DF",71,27],["R. Manning","DF",71,29],["V. Quarshie","DF",70,21],["Welington","DF",70,24],["J. Stephens","DF",69,31],
-    ["F. Downes","MF",73,26],["J. Aribo","MF",72,29],["S. Charles","MF",71,24],["W. Smallbone","MF",70,25],["R. Fraser","MF",70,30],["S. Edozie","MF",70,22],
-    ["T. Dibling","FW",75,19],["C. Archer","FW",73,24],["P. Onuachu","FW",73,31],["K. Sulemana","FW",72,23]]},
+    ["G. Bazunu","GK",72,24,"GK"],["A. McCarthy","GK",71,35,"GK"],
+    ["T. Harwood-Bellis","DF",74,23,"CB"],["J. Bree","DF",71,27,"RB"],["R. Manning","DF",71,29,"LB"],["V. Quarshie","DF",70,21,"CB"],["Welington","DF",70,24,"LB"],["J. Stephens","DF",69,31,"CB"],
+    ["F. Downes","MF",73,26,"CM"],["J. Aribo","MF",72,29,"CM"],["S. Charles","MF",71,24,"CM"],["W. Smallbone","MF",70,25,"CM"],["R. Fraser","MF",70,30,"LM"],["S. Edozie","MF",70,22,"LM"],
+    ["T. Dibling","FW",75,19,"RW"],["C. Archer","FW",73,24,"ST"],["P. Onuachu","FW",73,31,"ST"],["K. Sulemana","FW",72,23,"LW"]]},
   { name: "Ipswich Town", short: "IPS", base: 71, squad: [
-    ["A. Palmer","GK",72,29],["C. Walton","GK",69,28],
-    ["L. Davis","DF",72,27],["D. O'Shea","DF",71,26],["L. Woolfenden","DF",71,26],["C. Burgess","DF",71,29],["H. Clarke","DF",71,27],["C. Townsend","DF",70,30],
-    ["J. Philogene","MF",74,23],["J. Cajuste","MF",72,26],["C. Chaplin","MF",72,28],["W. Burns","MF",72,26],["S. Morsy","MF",71,33],["J. Taylor","MF",70,25],
-    ["S. Szmodics","FW",73,29],["G. Hirst","FW",72,26],["A. Al-Hamadi","FW",70,23],["K. Jackson","FW",69,24]]},
+    ["A. Palmer","GK",72,29,"GK"],["C. Walton","GK",69,28,"GK"],
+    ["L. Davis","DF",72,27,"LB"],["D. O'Shea","DF",71,26,"CB"],["L. Woolfenden","DF",71,26,"CB"],["C. Burgess","DF",71,29,"CB"],["H. Clarke","DF",71,27,"RB"],["C. Townsend","DF",70,30,"LB"],
+    ["J. Philogene","MF",74,23,"LM"],["J. Cajuste","MF",72,26,"CDM"],["C. Chaplin","MF",72,28,"CAM"],["W. Burns","MF",72,26,"RM"],["S. Morsy","MF",71,33,"CDM"],["J. Taylor","MF",70,25,"CDM"],
+    ["S. Szmodics","FW",73,29,"ST"],["G. Hirst","FW",72,26,"ST"],["A. Al-Hamadi","FW",70,23,"ST"],["K. Jackson","FW",69,24,"ST"]]},
   { name: "Sheffield United", short: "SHU", base: 72, squad: [
-    ["M. Cooper","GK",73,25],["A. Davies","GK",69,30],
-    ["A. Ahmedhodžić","DF",73,26],["A. Trusty","DF",71,26],["H. Burrows","DF",71,24],["J. Robinson","DF",70,31],["F. Seriki","DF",69,23],["R. Norrington-Davies","DF",69,26],
-    ["G. Hamer","MF",76,28],["C. O'Hare","MF",73,27],["V. Souza","MF",73,24],["J. Rak-Sakyi","MF",72,22],["S. Peck","MF",70,24],["A. Brooks","MF",69,21],
-    ["B. Brereton Díaz","FW",72,26],["T. Campbell","FW",71,25],["R. One","FW",69,22],["D. Jebbison","FW",68,22]]},
+    ["M. Cooper","GK",73,25,"GK"],["A. Davies","GK",69,30,"GK"],
+    ["A. Ahmedhodžić","DF",73,26,"CB"],["A. Trusty","DF",71,26,"CB"],["H. Burrows","DF",71,24,"LB"],["J. Robinson","DF",70,31,"CB"],["F. Seriki","DF",69,23,"RB"],["R. Norrington-Davies","DF",69,26,"LB"],
+    ["G. Hamer","MF",76,28,"LM"],["C. O'Hare","MF",73,27,"CAM"],["V. Souza","MF",73,24,"CDM"],["J. Rak-Sakyi","MF",72,22,"RM"],["S. Peck","MF",70,24,"CDM"],["A. Brooks","MF",69,21,"RM"],
+    ["B. Brereton Díaz","FW",72,26,"ST"],["T. Campbell","FW",71,25,"ST"],["R. One","FW",69,22,"ST"],["D. Jebbison","FW",68,22,"ST"]]},
   { name: "Birmingham City", short: "BIR", base: 70, squad: [
-    ["B. Peacock-Farrell","GK",70,28],["R. Allsop","GK",68,33],
-    ["E. Laird","DF",71,24],["C. Klarer","DF",71,25],["L. Buchanan","DF",69,24],["T. Gardner-Hickman","DF",69,23],["A. Cochrane","DF",68,25],["K. Roberts","DF",67,28],
-    ["T. Iwata","MF",72,28],["K. Bielik","MF",71,27],["Paik Seung-ho","MF",71,28],["A. Pritchard","MF",69,32],["T. Roberts","MF",69,26],["M. Sullivan","MF",67,22],
-    ["J. Stansfield","FW",74,22],["K. Furuhashi","FW",74,30],["L. Dykes","FW",70,30],["K. Anderson","FW",68,29]]},
+    ["B. Peacock-Farrell","GK",70,28,"GK"],["R. Allsop","GK",68,33,"GK"],
+    ["E. Laird","DF",71,24,"RB"],["C. Klarer","DF",71,25,"CB"],["L. Buchanan","DF",69,24,"LB"],["T. Gardner-Hickman","DF",69,23,"CB"],["A. Cochrane","DF",68,25,"LB"],["K. Roberts","DF",67,28,"RB"],
+    ["T. Iwata","MF",72,28,"CDM"],["K. Bielik","MF",71,27,"CDM"],["Paik Seung-ho","MF",71,28,"CM"],["A. Pritchard","MF",69,32,"CM"],["T. Roberts","MF",69,26,"CAM"],["M. Sullivan","MF",67,22,"CM"],
+    ["J. Stansfield","FW",74,22,"ST"],["K. Furuhashi","FW",74,30,"ST"],["L. Dykes","FW",70,30,"ST"],["K. Anderson","FW",68,29,"LW"]]},
   { name: "Wrexham", short: "WRX", base: 69, squad: [
-    ["D. Ward","GK",70,32],["A. Okonkwo","GK",70,23],
-    ["L. Cacace","DF",70,24],["C. Doyle","DF",70,21],["M. Cleworth","DF",68,23],["T. O'Connor","DF",68,26],["E. O'Connell","DF",68,29],["L. Brunt","DF",67,24],
-    ["J. Windass","MF",71,31],["N. Broadhead","MF",71,27],["E. Lee","MF",70,30],["G. Dobson","MF",69,27],["O. Rathbone","MF",69,27],["R. Longman","MF",68,24],
-    ["K. Moore","FW",72,33],["S. Smith","FW",69,27],["R. Hardie","FW",69,28],["J. Bickerstaff","FW",66,23]]},
+    ["D. Ward","GK",70,32,"GK"],["A. Okonkwo","GK",70,23,"GK"],
+    ["L. Cacace","DF",70,24,"LB"],["C. Doyle","DF",70,21,"CB"],["M. Cleworth","DF",68,23,"CB"],["T. O'Connor","DF",68,26,"CB"],["E. O'Connell","DF",68,29,"CB"],["L. Brunt","DF",67,24,"CB"],
+    ["J. Windass","MF",71,31,"CAM"],["N. Broadhead","MF",71,27,"LM"],["E. Lee","MF",70,30,"CM"],["G. Dobson","MF",69,27,"CDM"],["O. Rathbone","MF",69,27,"CM"],["R. Longman","MF",68,24,"LM"],
+    ["K. Moore","FW",72,33,"ST"],["S. Smith","FW",69,27,"ST"],["R. Hardie","FW",69,28,"ST"],["J. Bickerstaff","FW",66,23,"ST"]]},
   { name: "West Bromwich Albion", short: "WBA", base: 71, squad: [
-    ["J. Griffiths","GK",72,24],["T. Cann","GK",64,24],
-    ["T. Heggem","DF",71,26],["D. Furlong","DF",70,30],["N. Phillips","DF",70,28],["M. Holgate","DF",69,29],["C. Taylor","DF",67,22],["Z. Ashworth","DF",65,22],
-    ["J. Wallace","MF",72,31],["J. Swift","MF",71,30],["A. Mowatt","MF",70,30],["J. Molumby","MF",70,26],["I. Price","MF",69,22],["O. Diakite","MF",68,25],
-    ["A. Armstrong","FW",73,28],["J. Maja","FW",72,27],["T. Fellows","FW",71,22],["A. Heggebo","FW",67,24]]},
+    ["J. Griffiths","GK",72,24,"GK"],["T. Cann","GK",64,24,"GK"],
+    ["T. Heggem","DF",71,26,"CB"],["D. Furlong","DF",70,30,"RB"],["N. Phillips","DF",70,28,"CB"],["M. Holgate","DF",69,29,"CB"],["C. Taylor","DF",67,22,"LB"],["Z. Ashworth","DF",65,22,"LB"],
+    ["J. Wallace","MF",72,31,"RM"],["J. Swift","MF",71,30,"CAM"],["A. Mowatt","MF",70,30,"CDM"],["J. Molumby","MF",70,26,"CDM"],["I. Price","MF",69,22,"CM"],["O. Diakite","MF",68,25,"CDM"],
+    ["A. Armstrong","FW",73,28,"ST"],["J. Maja","FW",72,27,"ST"],["T. Fellows","FW",71,22,"RW"],["A. Heggebo","FW",67,24,"ST"]]},
   { name: "Middlesbrough", short: "MID", base: 72, squad: [
-    ["S. Dieng","GK",71,31],["S. Brynn","GK",66,25],
-    ["D. Fry","DF",71,28],["D. Lenihan","DF",70,31],["N. Borges","DF",69,27],["G. Edmundson","DF",68,28],["M. Targett","DF",68,30],["L. Ayling","DF",66,34],
-    ["H. Hackney","MF",76,23],["A. Morris","MF",71,24],["R. McGree","MF",71,27],["D. Barlaser","MF",69,28],["M. Hamilton","MF",67,21],["L. McCabe","MF",65,19],
-    ["M. Whittaker","FW",73,24],["T. Conway","FW",72,23],["D. Burgzorg","FW",70,27],["K. Sene","FW",68,24]]},
+    ["S. Dieng","GK",71,31,"GK"],["S. Brynn","GK",66,25,"GK"],
+    ["D. Fry","DF",71,28,"CB"],["D. Lenihan","DF",70,31,"CB"],["N. Borges","DF",69,27,"CB"],["G. Edmundson","DF",68,28,"CB"],["M. Targett","DF",68,30,"LB"],["L. Ayling","DF",66,34,"RB"],
+    ["H. Hackney","MF",76,23,"CDM"],["A. Morris","MF",71,24,"CDM"],["R. McGree","MF",71,27,"LM"],["D. Barlaser","MF",69,28,"CDM"],["M. Hamilton","MF",67,21,"LM"],["L. McCabe","MF",65,19,"CAM"],
+    ["M. Whittaker","FW",73,24,"RW"],["T. Conway","FW",72,23,"ST"],["D. Burgzorg","FW",70,27,"ST"],["K. Sene","FW",68,24,"ST"]]},
   { name: "Coventry City", short: "COV", base: 73, squad: [
-    ["C. Rushworth","GK",72,24],["B. Collins","GK",67,29],
-    ["M. van Ewijk","DF",72,25],["B. Thomas","DF",71,24],["L. Binks","DF",70,24],["K. Kesler-Hayden","DF",69,22],["J. Latibeaudiere","DF",68,25],["J. Bidwell","DF",68,32],
-    ["J. Rudoni","MF",75,24],["B. Sheaf","MF",72,27],["V. Torp","MF",71,25],["T. Sakamoto","MF",71,29],["J. Eccles","MF",70,25],["J. Allen","MF",68,30],
-    ["H. Wright","FW",73,27],["E. Simms","FW",72,24],["B. Thomas-Asante","FW",71,26],["N. Bassette","FW",67,21]]},
+    ["C. Rushworth","GK",72,24,"GK"],["B. Collins","GK",67,29,"GK"],
+    ["M. van Ewijk","DF",72,25,"RB"],["B. Thomas","DF",71,24,"CB"],["L. Binks","DF",70,24,"CB"],["K. Kesler-Hayden","DF",69,22,"RB"],["J. Latibeaudiere","DF",68,25,"CB"],["J. Bidwell","DF",68,32,"LB"],
+    ["J. Rudoni","MF",75,24,"CAM"],["B. Sheaf","MF",72,27,"CDM"],["V. Torp","MF",71,25,"CM"],["T. Sakamoto","MF",71,29,"RM"],["J. Eccles","MF",70,25,"CDM"],["J. Allen","MF",68,30,"CM"],
+    ["H. Wright","FW",73,27,"ST"],["E. Simms","FW",72,24,"ST"],["B. Thomas-Asante","FW",71,26,"ST"],["N. Bassette","FW",67,21,"ST"]]},
   { name: "Stoke City", short: "STO", base: 71, squad: [
-    ["V. Johansson","GK",73,27],["J. Bonham","GK",66,31],
-    ["B. Wilmot","DF",70,26],["B. Gibson","DF",68,32],["J. Tchamadeu","DF",68,22],["A. Phillips","DF",67,20],["E. Bocat","DF",67,26],["L. Gooch","DF",66,29],
-    ["S. Thomas","MF",70,26],["M. Manhoef","MF",70,23],["L. Baker","MF",68,30],["B. Lawal","MF",68,22],["J. Thompson","MF",67,28],["T. Sparrow","MF",64,22],
-    ["D. Mubama","FW",68,21],["A. Vidigal","FW",67,27],["N. Lowe","FW",66,20],["E. Tezgel","FW",65,20]]},
+    ["V. Johansson","GK",73,27,"GK"],["J. Bonham","GK",66,31,"GK"],
+    ["B. Wilmot","DF",70,26,"CB"],["B. Gibson","DF",68,32,"CB"],["J. Tchamadeu","DF",68,22,"RB"],["A. Phillips","DF",67,20,"CB"],["E. Bocat","DF",67,26,"LB"],["L. Gooch","DF",66,29,"RB"],
+    ["S. Thomas","MF",70,26,"RM"],["M. Manhoef","MF",70,23,"RM"],["L. Baker","MF",68,30,"CM"],["B. Lawal","MF",68,22,"CM"],["J. Thompson","MF",67,28,"CM"],["T. Sparrow","MF",64,22,"RM"],
+    ["D. Mubama","FW",68,21,"ST"],["A. Vidigal","FW",67,27,"ST"],["N. Lowe","FW",66,20,"ST"],["E. Tezgel","FW",65,20,"ST"]]},
   { name: "Millwall", short: "MLW", base: 71, squad: [
-    ["L. Roberts","GK",67,30],["L. Jensen","GK",65,26],
-    ["J. Cooper","DF",68,30],["J. Tanganga","DF",68,26],["M. Wallace","DF",66,32],["D. McNamara","DF",66,26],["J. Bryan","DF",66,31],["W. Harding","DF",65,28],
-    ["G. Saville","MF",67,32],["C. de Norre","MF",67,28],["F. Azeez","MF",67,24],["G. Honeyman","MF",67,30],["B. Mitchell","MF",66,24],["C. Neghli","MF",66,23],
-    ["M. Ivanovic","FW",68,21],["J. Coburn","FW",67,22],["M. Langstaff","FW",66,28],["A. Emakhu","FW",65,21]]},
+    ["L. Roberts","GK",67,30,"GK"],["L. Jensen","GK",65,26,"GK"],
+    ["J. Cooper","DF",68,30,"CB"],["J. Tanganga","DF",68,26,"CB"],["M. Wallace","DF",66,32,"CB"],["D. McNamara","DF",66,26,"LB"],["J. Bryan","DF",66,31,"LB"],["W. Harding","DF",65,28,"CB"],
+    ["G. Saville","MF",67,32,"CDM"],["C. de Norre","MF",67,28,"CDM"],["F. Azeez","MF",67,24,"LM"],["G. Honeyman","MF",67,30,"CAM"],["B. Mitchell","MF",66,24,"CM"],["C. Neghli","MF",66,23,"RM"],
+    ["M. Ivanovic","FW",68,21,"ST"],["J. Coburn","FW",67,22,"ST"],["M. Langstaff","FW",66,28,"ST"],["A. Emakhu","FW",65,21,"LW"]]},
   { name: "Norwich City", short: "NOR", base: 70, squad: [
-    ["A. Gunn","GK",71,29],["G. Long","GK",64,31],
-    ["J. Cordoba","DF",70,24],["J. Stacey","DF",68,29],["S. Duffy","DF",67,33],["D. Giannoulis","DF",67,29],["K. Fisher","DF",67,21],["B. Chrisene","DF",65,21],
-    ["K. McLean","MF",70,33],["C. Fassnacht","MF",69,31],["O. Forson","MF",68,21],["J. Sorensen","MF",68,27],["A. Slimane","MF",67,24],["O. Schwartau","MF",65,19],
-    ["J. Sargent","FW",73,25],["G. Sainz","FW",71,24],["A. Crnac","FW",69,21],["M. Kvistgaarden","FW",68,23]]},
+    ["A. Gunn","GK",71,29,"GK"],["G. Long","GK",64,31,"GK"],
+    ["J. Cordoba","DF",70,24,"CB"],["J. Stacey","DF",68,29,"RB"],["S. Duffy","DF",67,33,"CB"],["D. Giannoulis","DF",67,29,"LB"],["K. Fisher","DF",67,21,"RB"],["B. Chrisene","DF",65,21,"LB"],
+    ["K. McLean","MF",70,33,"CDM"],["C. Fassnacht","MF",69,31,"RM"],["O. Forson","MF",68,21,"RM"],["J. Sorensen","MF",68,27,"CM"],["A. Slimane","MF",67,24,"CM"],["O. Schwartau","MF",65,19,"CAM"],
+    ["J. Sargent","FW",73,25,"ST"],["G. Sainz","FW",71,24,"LW"],["A. Crnac","FW",69,21,"ST"],["M. Kvistgaarden","FW",68,23,"ST"]]},
   { name: "Watford", short: "WAT", base: 70, squad: [
-    ["D. Bachmann","GK",69,31],["E. Selvik","GK",65,26],
-    ["R. Porteous","DF",70,26],["F. Sierralta","DF",69,28],["J. Ngakia","DF",67,25],["M. Pollock","DF",67,21],["C. Wiley","DF",67,20],["J. Abankwah","DF",66,21],
-    ["G. Chakvetadze","MF",71,26],["I. Louza","MF",70,26],["E. Kayembe","MF",69,27],["H. Kyprianou","MF",68,24],["O. Maamma","MF",67,20],["R. Vata","MF",67,20],
-    ["V. Bayo","FW",70,27],["M. Rajovic","FW",68,26],["K. Baah","FW",68,22],["R. Healey","FW",66,31]]},
+    ["D. Bachmann","GK",69,31,"GK"],["E. Selvik","GK",65,26,"GK"],
+    ["R. Porteous","DF",70,26,"CB"],["F. Sierralta","DF",69,28,"CB"],["J. Ngakia","DF",67,25,"RB"],["M. Pollock","DF",67,21,"CB"],["C. Wiley","DF",67,20,"LB"],["J. Abankwah","DF",66,21,"CB"],
+    ["G. Chakvetadze","MF",71,26,"LM"],["I. Louza","MF",70,26,"CM"],["E. Kayembe","MF",69,27,"CM"],["H. Kyprianou","MF",68,24,"CDM"],["O. Maamma","MF",67,20,"RM"],["R. Vata","MF",67,20,"LM"],
+    ["V. Bayo","FW",70,27,"ST"],["M. Rajovic","FW",68,26,"ST"],["K. Baah","FW",68,22,"RW"],["R. Healey","FW",66,31,"ST"]]},
   { name: "Swansea City", short: "SWA", base: 70, squad: [
-    ["L. Vigouroux","GK",68,32],["A. Fisher","GK",65,27],
-    ["H. Darling","DF",68,26],["B. Cabango","DF",68,25],["J. Tymon","DF",67,26],["J. Key","DF",66,26],["B. Cooper","DF",65,25],["M. Sorinola","DF",65,24],
-    ["M. Grimes","MF",69,30],["L. O'Brien","MF",68,26],["G. Franco","MF",67,24],["Eom Ji-sung","MF",67,24],["E. Galbraith","MF",66,24],["J. Fulton","MF",66,31],
-    ["L. Cullen","FW",67,26],["Z. Vipotnik","FW",67,23],["Ronald","FW",66,24],["F. Bianchini","FW",65,24]]},
+    ["L. Vigouroux","GK",68,32,"GK"],["A. Fisher","GK",65,27,"GK"],
+    ["H. Darling","DF",68,26,"CB"],["B. Cabango","DF",68,25,"CB"],["J. Tymon","DF",67,26,"LB"],["J. Key","DF",66,26,"RB"],["B. Cooper","DF",65,25,"CB"],["M. Sorinola","DF",65,24,"RB"],
+    ["M. Grimes","MF",69,30,"CDM"],["L. O'Brien","MF",68,26,"CM"],["G. Franco","MF",67,24,"CDM"],["Eom Ji-sung","MF",67,24,"LM"],["E. Galbraith","MF",66,24,"CAM"],["J. Fulton","MF",66,31,"CDM"],
+    ["L. Cullen","FW",67,26,"ST"],["Z. Vipotnik","FW",67,23,"ST"],["Ronald","FW",66,24,"RW"],["F. Bianchini","FW",65,24,"ST"]]},
   { name: "Bristol City", short: "BRC", base: 70, squad: [
-    ["M. O'Leary","GK",67,29],["S. Bajic","GK",65,24],
-    ["R. Dickie","DF",67,29],["Z. Vyner","DF",67,28],["K. Naismith","DF",66,33],["C. Pring","DF",66,27],["G. Tanner","DF",65,26],["H. Roberts","DF",65,23],
-    ["J. Knight","MF",69,24],["S. Twine","MF",69,26],["A. Mehmeti","MF",68,24],["M. Bird","MF",67,25],["J. Williams","MF",66,27],["M. McGuane","MF",66,26],
-    ["M. Sykes","FW",67,28],["N. Wells","FW",66,35],["S. Armstrong","FW",66,22],["F. Mayulu","FW",66,23]]},
+    ["M. O'Leary","GK",67,29,"GK"],["S. Bajic","GK",65,24,"GK"],
+    ["R. Dickie","DF",67,29,"CB"],["Z. Vyner","DF",67,28,"CB"],["K. Naismith","DF",66,33,"CB"],["C. Pring","DF",66,27,"LB"],["G. Tanner","DF",65,26,"RB"],["H. Roberts","DF",65,23,"LB"],
+    ["J. Knight","MF",69,24,"CM"],["S. Twine","MF",69,26,"RM"],["A. Mehmeti","MF",68,24,"LM"],["M. Bird","MF",67,25,"CM"],["J. Williams","MF",66,27,"CDM"],["M. McGuane","MF",66,26,"CDM"],
+    ["M. Sykes","FW",67,28,"RW"],["N. Wells","FW",66,35,"ST"],["S. Armstrong","FW",66,22,"ST"],["F. Mayulu","FW",66,23,"ST"]]},
   { name: "Preston North End", short: "PNE", base: 70, squad: [
-    ["F. Woodman","GK",70,28],["D. Cornell","GK",64,34],
-    ["J. Storey","DF",68,26],["L. Lindsay","DF",67,29],["J. Whatmough","DF",66,28],["A. Hughes","DF",66,32],["L. Gibson","DF",66,25],["T. Mawene","DF",64,20],
-    ["B. Whiteman","MF",68,29],["A. McCann","MF",68,26],["M. Frokjaer","MF",68,26],["R. Brady","MF",67,33],["S. Thordarson","MF",67,26],["R. Ledson","MF",66,28],
-    ["S. Greenwood","FW",70,23],["E. Riis","FW",68,27],["M. Osmajic","FW",68,26],["W. Keane","FW",67,32]]},
+    ["F. Woodman","GK",70,28,"GK"],["D. Cornell","GK",64,34,"GK"],
+    ["J. Storey","DF",68,26,"CB"],["L. Lindsay","DF",67,29,"CB"],["J. Whatmough","DF",66,28,"CB"],["A. Hughes","DF",66,32,"CB"],["L. Gibson","DF",66,25,"CB"],["T. Mawene","DF",64,20,"CB"],
+    ["B. Whiteman","MF",68,29,"CDM"],["A. McCann","MF",68,26,"CM"],["M. Frokjaer","MF",68,26,"CM"],["R. Brady","MF",67,33,"LM"],["S. Thordarson","MF",67,26,"CM"],["R. Ledson","MF",66,28,"CM"],
+    ["S. Greenwood","FW",70,23,"ST"],["E. Riis","FW",68,27,"ST"],["M. Osmajic","FW",68,26,"ST"],["W. Keane","FW",67,32,"ST"]]},
   { name: "Derby County", short: "DER", base: 69, squad: [
-    ["J. Zetterstrom","GK",67,27],["J. Vickers","GK",66,30],
-    ["M. Clarke","DF",67,29],["S. Langas","DF",66,25],["C. Nelson","DF",66,32],["R. Nyambe","DF",66,27],["K. Wilson","DF",66,25],["J. Ward","DF",66,29],
-    ["E. Adams","MF",67,29],["C. Blackett-Taylor","MF",67,27],["B. Osborn","MF",66,31],["D. Ozoh","MF",66,20],["H. Armstrong","MF",66,19],["L. Thompson","MF",65,23],
-    ["C. Morris","FW",69,29],["P. Agyemang","FW",68,24],["J. Yates","FW",67,28],["N. Mendez-Laing","FW",67,33]]},
+    ["J. Zetterstrom","GK",67,27,"GK"],["J. Vickers","GK",66,30,"GK"],
+    ["M. Clarke","DF",67,29,"CB"],["S. Langas","DF",66,25,"CB"],["C. Nelson","DF",66,32,"CB"],["R. Nyambe","DF",66,27,"RB"],["K. Wilson","DF",66,25,"RB"],["J. Ward","DF",66,29,"RB"],
+    ["E. Adams","MF",67,29,"CDM"],["C. Blackett-Taylor","MF",67,27,"LM"],["B. Osborn","MF",66,31,"CM"],["D. Ozoh","MF",66,20,"CDM"],["H. Armstrong","MF",66,19,"CDM"],["L. Thompson","MF",65,23,"CM"],
+    ["C. Morris","FW",69,29,"ST"],["P. Agyemang","FW",68,24,"ST"],["J. Yates","FW",67,28,"ST"],["N. Mendez-Laing","FW",67,33,"LW"]]},
   { name: "Hull City", short: "HUL", base: 69, squad: [
-    ["I. Pandur","GK",68,25],["M. Ingram","GK",64,32],
-    ["R. Giles","DF",69,25],["J. Egan","DF",68,32],["L. Coyle","DF",68,30],["C. Hughes","DF",68,21],["M. Drameh","DF",67,23],["S. McLoughlin","DF",67,28],
-    ["A. Kamara","MF",70,22],["M. Belloumi","MF",69,23],["M. Mehlem","MF",69,27],["K. Palmer","MF",68,28],["R. Slater","MF",68,25],["S. Alzate","MF",67,26],
-    ["J. Gelhardt","FW",68,23],["K. Joseph","FW",67,24],["M. Burstow","FW",66,22],["J. Ndala","FW",66,21]]},
+    ["I. Pandur","GK",68,25,"GK"],["M. Ingram","GK",64,32,"GK"],
+    ["R. Giles","DF",69,25,"LB"],["J. Egan","DF",68,32,"CB"],["L. Coyle","DF",68,30,"RB"],["C. Hughes","DF",68,21,"CB"],["M. Drameh","DF",67,23,"RB"],["S. McLoughlin","DF",67,28,"CB"],
+    ["A. Kamara","MF",70,22,"RM"],["M. Belloumi","MF",69,23,"RM"],["M. Mehlem","MF",69,27,"CM"],["K. Palmer","MF",68,28,"CAM"],["R. Slater","MF",68,25,"CM"],["S. Alzate","MF",67,26,"CDM"],
+    ["J. Gelhardt","FW",68,23,"ST"],["K. Joseph","FW",67,24,"ST"],["M. Burstow","FW",66,22,"ST"],["J. Ndala","FW",66,21,"LW"]]},
   { name: "Queens Park Rangers", short: "QPR", base: 69, squad: [
-    ["P. Nardi","GK",67,31],["J. Walsh","GK",64,23],
-    ["J. Dunne","DF",67,27],["J. Clarke-Salter","DF",67,27],["S. Cook","DF",66,34],["K. Paal","DF",66,28],["L. Morrison","DF",65,22],["H. Ashby","DF",65,23],
-    ["I. Chair","MF",71,27],["K. Dembele","MF",69,22],["S. Field","MF",68,27],["N. Madsen","MF",67,25],["J. Varane","MF",66,24],["J. Colback","MF",65,35],
-    ["K. Saito","FW",67,24],["M. Frey","FW",66,31],["Z. Celar","FW",66,26],["R. Kolli","FW",65,20]]},
+    ["P. Nardi","GK",67,31,"GK"],["J. Walsh","GK",64,23,"GK"],
+    ["J. Dunne","DF",67,27,"RB"],["J. Clarke-Salter","DF",67,27,"CB"],["S. Cook","DF",66,34,"CB"],["K. Paal","DF",66,28,"LB"],["L. Morrison","DF",65,22,"CB"],["H. Ashby","DF",65,23,"RB"],
+    ["I. Chair","MF",71,27,"LM"],["K. Dembele","MF",69,22,"RM"],["S. Field","MF",68,27,"CDM"],["N. Madsen","MF",67,25,"CAM"],["J. Varane","MF",66,24,"CDM"],["J. Colback","MF",65,35,"CM"],
+    ["K. Saito","FW",67,24,"LW"],["M. Frey","FW",66,31,"ST"],["Z. Celar","FW",66,26,"ST"],["R. Kolli","FW",65,20,"ST"]]},
   { name: "Blackburn Rovers", short: "BLB", base: 69, squad: [
-    ["A. Pears","GK",67,27],["B. Toth","GK",66,28],
-    ["C. Brittain","DF",68,27],["D. Hyam","DF",67,29],["H. Carter","DF",66,25],["S. Wharton","DF",66,28],["O. Beck","DF",66,22],["D. Batth","DF",65,34],
-    ["T. Cantwell","MF",69,27],["L. Travis","MF",67,28],["A. Kargbo","MF",67,26],["R. Hedges","MF",66,30],["S. Tronstad","MF",66,30],["A. Weimann","MF",66,34],
-    ["M. Gueye","FW",67,27],["Y. Ohashi","FW",66,29],["N. Ennis","FW",65,26],["H. Leonard","FW",64,22]]},
+    ["A. Pears","GK",67,27,"GK"],["B. Toth","GK",66,28,"GK"],
+    ["C. Brittain","DF",68,27,"RB"],["D. Hyam","DF",67,29,"CB"],["H. Carter","DF",66,25,"CB"],["S. Wharton","DF",66,28,"CB"],["O. Beck","DF",66,22,"LB"],["D. Batth","DF",65,34,"CB"],
+    ["T. Cantwell","MF",69,27,"CAM"],["L. Travis","MF",67,28,"CDM"],["A. Kargbo","MF",67,26,"CAM"],["R. Hedges","MF",66,30,"LM"],["S. Tronstad","MF",66,30,"CDM"],["A. Weimann","MF",66,34,"CAM"],
+    ["M. Gueye","FW",67,27,"ST"],["Y. Ohashi","FW",66,29,"ST"],["N. Ennis","FW",65,26,"ST"],["H. Leonard","FW",64,22,"ST"]]},
   { name: "Portsmouth", short: "POM", base: 69, squad: [
-    ["N. Schmid","GK",68,26],["W. Norris","GK",66,32],
-    ["C. Shaughnessy","DF",67,29],["C. Ogilvie","DF",66,29],["R. Atkinson","DF",66,27],["H. Matthews","DF",65,21],["Z. Swanson","DF",65,25],["T. Devlin","DF",64,22],
-    ["J. Murphy","MF",68,30],["M. Pack","MF",67,34],["C. Lang","MF",67,27],["A. Dozzell","MF",66,26],["A. Aouchiche","MF",66,23],["O. Moxon","MF",65,27],
-    ["C. Bishop","FW",68,29],["A. Segecic","FW",67,21],["M. Ritchie","FW",65,36],["T. Waddingham","FW",63,20]]},
+    ["N. Schmid","GK",68,26,"GK"],["W. Norris","GK",66,32,"GK"],
+    ["C. Shaughnessy","DF",67,29,"CB"],["C. Ogilvie","DF",66,29,"LB"],["R. Atkinson","DF",66,27,"CB"],["H. Matthews","DF",65,21,"CB"],["Z. Swanson","DF",65,25,"RB"],["T. Devlin","DF",64,22,"RB"],
+    ["J. Murphy","MF",68,30,"LM"],["M. Pack","MF",67,34,"CDM"],["C. Lang","MF",67,27,"CAM"],["A. Dozzell","MF",66,26,"CDM"],["A. Aouchiche","MF",66,23,"CAM"],["O. Moxon","MF",65,27,"CM"],
+    ["C. Bishop","FW",68,29,"ST"],["A. Segecic","FW",67,21,"ST"],["M. Ritchie","FW",65,36,"RW"],["T. Waddingham","FW",63,20,"ST"]]},
   { name: "Charlton Athletic", short: "CHA", base: 69, squad: [
-    ["T. Kaminski","GK",68,33],["W. Mannion","GK",66,27],
-    ["J. Edwards","DF",66,26],["L. Jones","DF",66,30],["A. Bell","DF",66,31],["A. Mitchell","DF",65,23],["K. Ramsay","DF",65,25],["T. Watson","DF",64,28],
-    ["G. Docherty","MF",66,29],["A. Campbell","MF",66,27],["C. Coventry","MF",66,25],["S. Carey","MF",66,25],["R. Apter","MF",66,22],["K. Anderson","MF",64,20],
-    ["M. Leaburn","FW",67,22],["C. Kelman","FW",67,24],["M. Godden","FW",66,34],["G. Ahadme","FW",66,25]]},
+    ["T. Kaminski","GK",68,33,"GK"],["W. Mannion","GK",66,27,"GK"],
+    ["J. Edwards","DF",66,26,"LB"],["L. Jones","DF",66,30,"CB"],["A. Bell","DF",66,31,"CB"],["A. Mitchell","DF",65,23,"CB"],["K. Ramsay","DF",65,25,"RB"],["T. Watson","DF",64,28,"RB"],
+    ["G. Docherty","MF",66,29,"CDM"],["A. Campbell","MF",66,27,"LM"],["C. Coventry","MF",66,25,"CDM"],["S. Carey","MF",66,25,"CM"],["R. Apter","MF",66,22,"RM"],["K. Anderson","MF",64,20,"CM"],
+    ["M. Leaburn","FW",67,22,"ST"],["C. Kelman","FW",67,24,"ST"],["M. Godden","FW",66,34,"ST"],["G. Ahadme","FW",66,25,"ST"]]},
   { name: "Oxford United", short: "OXF", base: 68, squad: [
-    ["J. Cumming","GK",67,26],["C. Trueman","GK",63,29],
-    ["M. Helik","DF",68,30],["E. Moore","DF",66,28],["C. Brown","DF",66,27],["H. ter Avest","DF",65,28],["G. Leigh","DF",65,30],["S. Long","DF",65,30],
-    ["C. Brannagan","MF",68,29],["T. Goodrham","MF",67,22],["L. Sibley","MF",66,24],["B. De Keersmaecker","MF",66,25],["F. Krastev","MF",66,23],["S. Mills","MF",65,22],
-    ["M. Harris","FW",66,26],["M. Phillips","FW",66,34],["D. Scarlett","FW",66,21],["P. Placheta","FW",65,27]]},
+    ["J. Cumming","GK",67,26,"GK"],["C. Trueman","GK",63,29,"GK"],
+    ["M. Helik","DF",68,30,"CB"],["E. Moore","DF",66,28,"CB"],["C. Brown","DF",66,27,"CB"],["H. ter Avest","DF",65,28,"RB"],["G. Leigh","DF",65,30,"LB"],["S. Long","DF",65,30,"CB"],
+    ["C. Brannagan","MF",68,29,"CDM"],["T. Goodrham","MF",67,22,"LM"],["L. Sibley","MF",66,24,"CAM"],["B. De Keersmaecker","MF",66,25,"CDM"],["F. Krastev","MF",66,23,"LM"],["S. Mills","MF",65,22,"RM"],
+    ["M. Harris","FW",66,26,"ST"],["M. Phillips","FW",66,34,"LW"],["D. Scarlett","FW",66,21,"ST"],["P. Placheta","FW",65,27,"LW"]]},
   { name: "Sheffield Wednesday", short: "SHW", base: 67, squad: [
-    ["J. Dawson","GK",67,31],["P. Charles","GK",65,20],
-    ["D. Iorfa","DF",67,30],["Y. Valery","DF",66,26],["M. Lowe","DF",66,28],["L. Palmer","DF",66,34],["M. Ihiekwe","DF",65,33],["G. Otegbayo","DF",63,21],
-    ["B. Bannan","MF",70,36],["D. Gassama","MF",67,22],["S. Ingelsson","MF",66,27],["W. Vaulks","MF",66,31],["R. Shipston","MF",63,20],["S. Fusire","MF",62,20],
-    ["A. Musaba","FW",67,24],["J. Lowe","FW",66,31],["B. Cadamarteri","FW",65,20],["C. McNeill","FW",63,22]]},
+    ["J. Dawson","GK",67,31,"GK"],["P. Charles","GK",65,20,"GK"],
+    ["D. Iorfa","DF",67,30,"CB"],["Y. Valery","DF",66,26,"RB"],["M. Lowe","DF",66,28,"LB"],["L. Palmer","DF",66,34,"CB"],["M. Ihiekwe","DF",65,33,"CB"],["G. Otegbayo","DF",63,21,"CB"],
+    ["B. Bannan","MF",70,36,"CM"],["D. Gassama","MF",67,22,"LM"],["S. Ingelsson","MF",66,27,"CM"],["W. Vaulks","MF",66,31,"CDM"],["R. Shipston","MF",63,20,"CM"],["S. Fusire","MF",62,20,"CM"],
+    ["A. Musaba","FW",67,24,"RW"],["J. Lowe","FW",66,31,"ST"],["B. Cadamarteri","FW",65,20,"ST"],["C. McNeill","FW",63,22,"ST"]]},
   /* ---- League One (44-67) ---- */
   { name: "Bolton Wanderers", short: "BOL", base: 67, col: "#13284B", squad: [] },
   { name: "Huddersfield Town", short: "HUD", base: 67, col: "#0072CE", squad: [] },
@@ -750,6 +750,53 @@ const EURO_NAMES = ["Müller","Rossi","Costa","Kovač","Janssen","Petrov","Novak
    opponents are loaded into it for the duration of one match. */
 const EURO_SLOT = CLUBS.length;
 CLUBS.push({ name: "European Opposition", short: "EUR", base: 75, col: "#8A98A5", squad: [] });
+
+/* Traditional club nicknames, shown in the league table, squad header and scouting reports. */
+const CLUB_NICK = {
+  "Arsenal": "The Gunners", "Aston Villa": "The Villans", "Bournemouth": "The Cherries",
+  "Brentford": "The Bees", "Brighton": "The Seagulls", "Burnley": "The Clarets",
+  "Chelsea": "The Blues", "Crystal Palace": "The Eagles", "Everton": "The Toffees",
+  "Fulham": "The Cottagers", "Leeds United": "The Whites", "Liverpool": "The Reds",
+  "Manchester City": "The Citizens", "Manchester United": "The Red Devils", "Newcastle United": "The Magpies",
+  "Nottingham Forest": "The Tricky Trees", "Sunderland": "The Black Cats", "Tottenham Hotspur": "Spurs",
+  "West Ham United": "The Hammers", "Wolves": "Wolves", "Leicester City": "The Foxes",
+  "Southampton": "The Saints", "Ipswich Town": "The Tractor Boys", "Sheffield United": "The Blades",
+  "Birmingham City": "The Blues", "Wrexham": "The Red Dragons", "West Bromwich Albion": "The Baggies",
+  "Middlesbrough": "Boro", "Coventry City": "The Sky Blues", "Stoke City": "The Potters",
+  "Millwall": "The Lions", "Norwich City": "The Canaries", "Watford": "The Hornets",
+  "Swansea City": "The Swans", "Bristol City": "The Robins", "Preston North End": "The Lilywhites",
+  "Derby County": "The Rams", "Hull City": "The Tigers", "Queens Park Rangers": "The Hoops",
+  "Blackburn Rovers": "Rovers", "Portsmouth": "Pompey", "Charlton Athletic": "The Addicks",
+  "Oxford United": "The U's", "Sheffield Wednesday": "The Owls", "Bolton Wanderers": "The Trotters",
+  "Huddersfield Town": "The Terriers", "Barnsley": "The Tykes", "Wigan Athletic": "The Latics",
+  "Reading": "The Royals", "Stockport County": "The Hatters", "Peterborough United": "The Posh",
+  "Leyton Orient": "The O's", "Wycombe Wanderers": "The Chairboys", "Blackpool": "The Seasiders",
+  "Rotherham United": "The Millers", "Lincoln City": "The Imps", "Mansfield Town": "The Stags",
+  "Stevenage": "Boro", "Bradford City": "The Bantams", "Exeter City": "The Grecians",
+  "Bristol Rovers": "The Gas", "Northampton Town": "The Cobblers", "Burton Albion": "The Brewers",
+  "Cambridge United": "The U's", "Shrewsbury Town": "The Shrews", "Port Vale": "The Valiants",
+  "Crawley Town": "The Red Devils", "Cheltenham Town": "The Robins", "Notts County": "The Magpies",
+  "MK Dons": "The Dons", "Wimbledon": "The Wombles", "Gillingham": "The Gills",
+  "Walsall": "The Saddlers", "Doncaster Rovers": "Donny", "Salford City": "The Ammies",
+  "Chesterfield": "The Spireites", "Oldham Athletic": "The Latics", "Crewe Alexandra": "The Railwaymen",
+  "Tranmere Rovers": "Rovers", "Grimsby Town": "The Mariners", "Swindon Town": "The Robins",
+  "Colchester United": "The U's", "Newport County": "The Exiles", "Harrogate Town": "The Sulphurites",
+  "Barrow": "The Bluebirds", "Carlisle United": "The Cumbrians", "Bromley": "The Ravens",
+  "Fleetwood Town": "The Cod Army", "Cardiff City": "The Bluebirds", "Morecambe": "The Shrimps",
+  "Accrington Stanley": "Stanley", "Sutton United": "The U's", "Southend United": "The Shrimpers",
+  "York City": "The Minstermen", "Barnet": "The Bees", "Gateshead": "The Heed",
+  "Hartlepool United": "Pools", "Solihull Moors": "The Moors", "Rochdale": "Dale",
+  "Yeovil Town": "The Glovers", "Eastleigh": "The Spitfires", "Halifax Town": "The Shaymen",
+  "Woking": "The Cardinals", "Aldershot Town": "The Shots", "Altrincham": "Alty",
+  "Dagenham & Redbridge": "The Daggers", "Ebbsfleet United": "The Fleet", "Kidderminster Harriers": "The Harriers",
+  "Maidstone United": "The Stones", "Tamworth": "The Lambs", "Hereford": "The Bulls",
+  "Boreham Wood": "The Wood", "Maidenhead United": "The Magpies", "Wealdstone": "The Stones",
+  "Oxford City": "The Hoops", "Braintree Town": "The Iron", "Boston United": "The Pilgrims",
+  "Chester": "The Blues", "Darlington": "The Quakers", "Southport": "The Sandgrounders",
+  "Chorley": "The Magpies", "Spennymoor Town": "The Moors", "Brackley Town": "Saints",
+  "Torquay United": "The Gulls"
+};
+CLUBS.forEach(c => { c.nick = CLUB_NICK[c.name] || ""; });
 
 /* Primary kit colours, keyed by club short code */
 const KIT = {
@@ -1114,6 +1161,7 @@ function newGame(clubIdx) {
     screen: "main", tab: "squad", lastMatch: null,
   };
   G.lineup = bestXI(squads[clubIdx], G.formation);
+  buildPreseason();
   genMissions();
   if (topFlight) {
     initEuro(SEASON1_EURO[clubIdx] || null);
@@ -1413,7 +1461,7 @@ function commitWeek(weekResults, myResult, snapshot) {
 }
 
 function quickSim() {
-  if (G.week >= G.fixtures.length || G.live || dueEuro() || dueCup()) return;
+  if (G.week >= G.fixtures.length || G.live || dueEuro() || dueCup() || duePreseason()) return;
   defaultExpectation();
   const my = G.myClub;
   prepMatchLineup();
@@ -2946,6 +2994,159 @@ function startCupLive() {
   save(); render(); // begins paused at 0' — press ▶ Kick off when ready
 }
 
+/* ---------------- Pre-season: friendlies, Community Shield, UEFA Super Cup ----------------
+   These play through the normal match flow (pick your XI, live or quick) and gate the league
+   opener the way cup ties gate a midweek. They are exhibitions: fitness, injuries and sharpness
+   carry into the season, but goals, appearances and bookings do not count toward it. */
+function buildPreseason() {
+  const q = [];
+  const fl = friendliesLeft();
+  for (let i = 0; i < fl; i++) q.push({ ptype: "friendly" });
+  if (G.shield && !G.shield.played) q.push({ ptype: "shield" });
+  if (G.superCup && !G.superCup.played) q.push({ ptype: "supercup" });
+  G.preseason = q;
+}
+function preseasonLabel(ptype) {
+  return ptype === "friendly" ? "\ud83e\udd1d Pre-season friendly" : ptype === "shield" ? "\ud83d\udee1 Community Shield" : "\ud83c\udfc6 UEFA Super Cup";
+}
+function duePreseason() {
+  if (!G.preseason || !G.preseason.length || G.week !== 0 || G.tier == null) return null;
+  const q = G.preseason[0];
+  if (!q) return null;
+  if (q.ptype === "shield" && (!G.shield || G.shield.played)) { G.preseason.shift(); return duePreseason(); }
+  if (q.ptype === "supercup" && (!G.superCup || G.superCup.played)) { G.preseason.shift(); return duePreseason(); }
+  if (!q.opp) {
+    if (q.ptype === "friendly") {
+      let idx = G.myClub, guard = 0;
+      while (idx === G.myClub && guard++ < 50) idx = Math.floor(rnd() * EURO_SLOT);
+      q.opp = { kind: "league", idx, name: CLUBS[idx].name, short: CLUBS[idx].short, base: CLUBS[idx].base, col: colorOf(idx) };
+      q.home = rnd() < 0.5;
+    } else if (q.ptype === "shield") {
+      const idx = G.shield.opp;
+      q.opp = { kind: "league", idx, name: CLUBS[idx].name, short: CLUBS[idx].short, base: CLUBS[idx].base, col: colorOf(idx) };
+      q.home = true;
+    } else {
+      q.opp = { kind: "guest", name: G.superCup.name, short: G.superCup.short, base: G.superCup.base, col: G.superCup.col };
+      q.home = true;
+    }
+    save();
+  }
+  return { kind: "preseason", ptype: q.ptype, label: preseasonLabel(q.ptype), opp: q.opp, home: q.home, isKO: q.ptype !== "friendly" };
+}
+function setPreseasonGuest(opp) {
+  const tu = [opp.name, opp.short, opp.base, opp.col, []];
+  CLUBS[EURO_SLOT].name = tu[0]; CLUBS[EURO_SLOT].short = tu[1];
+  CLUBS[EURO_SLOT].base = tu[2]; CLUBS[EURO_SLOT].col = tu[3];
+  G.squads[EURO_SLOT] = genEuroSquad(tu);
+  G.guestClub = { name: tu[0], short: tu[1], base: tu[2], col: tu[3] };
+}
+function preseasonOppIdx(fix) {
+  if (fix.opp.kind === "league") return fix.opp.idx;
+  setPreseasonGuest(fix.opp);
+  return EURO_SLOT;
+}
+function psSnapshot(oppIdx) {
+  const snap = {};
+  for (const c of [G.myClub, oppIdx]) {
+    const sq = G.squads[c]; if (!sq) continue;
+    for (const p of sq) snap[p.id] = { goals: p.goals, assists: p.assists, apps: p.apps, yellows: p.yellows, ban: p.ban };
+  }
+  return snap;
+}
+function psRestore(snap) {
+  if (!snap) return;
+  for (const sq of G.squads) for (const p of sq) {
+    const x = snap[p.id];
+    if (x) { p.goals = x.goals; p.assists = x.assists; p.apps = x.apps; p.yellows = x.yellows; p.ban = x.ban; }
+  }
+}
+function playPreseasonQuick() {
+  const fix = duePreseason();
+  if (!fix || G.live || dueEuro() || dueCup()) return;
+  prepMatchLineup();
+  const oppIdx = preseasonOppIdx(fix);
+  const snap = psSnapshot(oppIdx);
+  const h = fix.home ? G.myClub : oppIdx, a = fix.home ? oppIdx : G.myClub;
+  const opts = {};
+  if (fix.home) { opts.hXI = G.lineup; opts.hMent = G.mentality; opts.hForm = G.formation; opts.hStyle = G.style || "Balanced"; }
+  else { opts.aXI = G.lineup; opts.aMent = G.mentality; opts.aForm = G.formation; opts.aStyle = G.style || "Balanced"; }
+  commitPreseason(fix, simMatch(h, a, opts), undefined, snap);
+}
+function startPreseasonLive() {
+  const fix = duePreseason();
+  if (!fix || G.live || dueEuro() || dueCup()) return;
+  prepMatchLineup();
+  const oppIdx = preseasonOppIdx(fix);
+  const snap = psSnapshot(oppIdx);
+  const h = fix.home ? G.myClub : oppIdx, a = fix.home ? oppIdx : G.myClub;
+  const aiXI = bestXI(G.squads[oppIdx], "4-4-2");
+  const oppT = fix.opp.kind === "guest" ? aiTacticsByBase(fix.opp.base) : aiTactics(oppIdx);
+  const L = {
+    h, a,
+    hXI: fix.home ? [...G.lineup] : aiXI,
+    aXI: fix.home ? aiXI : [...G.lineup],
+    hMent: fix.home ? G.mentality : "Balanced",
+    aMent: fix.home ? "Balanced" : G.mentality,
+    hForm: fix.home ? G.formation : oppT.form,
+    aForm: fix.home ? oppT.form : G.formation,
+    hStyle: fix.home ? (G.style || "Balanced") : oppT.style,
+    aStyle: fix.home ? oppT.style : (G.style || "Balanced"),
+    events: [{ min: 0, type: "info", text: fix.label + " - kick-off!", zh: "\u958b\u6ce2\uff01" }],
+    elsewhere: [], otherResults: [], snapshot: null,
+    minute: 0, phase: "first", subsUsed: 0, aiSubs: 0, windows: 0, winPending: false,
+    manage: false, notice: null, speed: "normal",
+    reds: {}, endMin: 91 + Math.floor(rnd() * 4),
+    psFix: fix, psSnap: snap,
+    stats: { t: 0, hp: 0, hShots: 0, aShots: 0, hSot: 0, aSot: 0 },
+  };
+  L.hApp = [...L.hXI]; L.aApp = [...L.aXI];
+  L.weather = getWeather();
+  if (L.weather !== "clear") L.events.push({ min: 0, type: "info", text: WEATHER[L.weather].icon + " " + WEATHER[L.weather].name + " - " + WEATHER[L.weather].note, zh: wxLineZH(L.weather) });
+  G.live = L;
+  liveCacheDirty();
+  G.screen = "live";
+  save(); render();
+}
+function commitPreseason(fix, r, pens, snap) {
+  ghQueueSync();
+  addDramaEvents(r);
+  psRestore(snap);
+  const myG = fix.home ? r.hg : r.ag, opG = fix.home ? r.ag : r.hg;
+  let win = myG > opG, note = "";
+  if (myG === opG && fix.isKO) {
+    const oppIdx = fix.opp.kind === "league" ? fix.opp.idx : EURO_SLOT;
+    const so = pens || simShootoutClubs(G.myClub, oppIdx);
+    win = so.myWin; note = so.note;
+    r.events = (r.events || []).concat(shootoutEvents(so, G.myClub, oppIdx));
+  }
+  for (const id of (G.lineup || [])) { const p = pById(id); if (p) bumpForm(p, 1); }
+  const opName = fix.opp.short || fix.opp.name;
+  const scoreStr = myG + "-" + opG + " vs " + opName + (note ? " " + note : "");
+  if (fix.ptype === "friendly") {
+    adjBudget(fix.home ? 0.4 : 0.2, "Pre-season friendly gate", "gate");
+    G.friendliesPlayed = (G.friendliesPlayed || 0) + 1;
+    G.friendlyNews = "\ud83e\udd1d Friendly: " + scoreStr + ". Sharpness up across the XI.";
+  } else if (fix.ptype === "shield") {
+    G.shield.played = true;
+    if (win) { G.honours.push("Season " + G.season + ": Community Shield winners"); adjBudget(2, "Community Shield winners' prize", "prize"); boardBump(3);
+      G.shieldNews = "\ud83d\udee1 Community Shield WON " + scoreStr + ". Silverware before the league even starts."; }
+    else G.shieldNews = "\ud83d\udee1 Community Shield lost " + scoreStr + ". Only a curtain-raiser.";
+  } else {
+    G.superCup.played = true;
+    if (win) { G.honours.push("Season " + G.season + ": UEFA Super Cup winners"); adjBudget(3, "UEFA Super Cup winners' prize", "prize"); boardBump(4);
+      G.superCupNews = "\ud83c\udfc6 UEFA Super Cup WON " + scoreStr + ". European silverware to open the campaign."; }
+    else G.superCupNews = "\ud83c\udfc6 UEFA Super Cup lost " + scoreStr + ".";
+  }
+  if (G.preseason && G.preseason.length) G.preseason.shift();
+  r.dateMs = matchDateMs("league", G.week);
+  G.lastMatch = r;
+  G.lastMatchEuro = "preseason";
+  G.lastMatchLabel = fix.label;
+  G.live = null;
+  G.screen = "matchResult";
+  save(); render();
+}
+
 function renderHall() {
   const hon = G.honours || [], motm = G.motm || [], car = G.career || [];
   const bestPos = car.length ? Math.min(...car.map(c => c.pos)) : null;
@@ -3614,7 +3815,7 @@ function genMinuteEvents(L) {
 }
 
 function startMatchday() {
-  if (G.week >= G.fixtures.length || G.live || dueEuro() || dueCup()) return;
+  if (G.week >= G.fixtures.length || G.live || dueEuro() || dueCup() || duePreseason()) return;
   defaultExpectation();
   const my = G.myClub;
   prepMatchLineup();
@@ -4255,7 +4456,7 @@ function finishLiveMatch() {
   if (!L || (L.phase !== "ft" && L.phase !== "pens")) return;
   const hg = liveGoals(L, L.h, 999), ag = liveGoals(L, L.a, 999);
   // a drawn knockout tie goes to penalties — live and kick by kick
-  const isKO = !!L.cupFix || (L.euro && L.fix && L.fix.kind !== "league");
+  const isKO = !!L.cupFix || (L.euro && L.fix && L.fix.kind !== "league") || (L.psFix && L.psFix.isKO);
   if (hg === ag && isKO && !L.pens) {
     // your call: coolest heads or the forwards who live for this
     L.pensPlan = (typeof confirm === "function" && !confirm("PENALTIES.\nOK = your highest-rated players take them.\nCancel = forwards first."))
@@ -4280,7 +4481,7 @@ function finishLiveMatch() {
   }
   myRes.weather = L.weather;
   myRes.ratings = matchRatings(L.h, L.a, L.hApp, L.aApp, myRes.events, hg, ag);
-  const weekResults = (L.euro || L.cupFix) ? null : G.fixtures[G.week].map((f, j) => {
+  const weekResults = (L.euro || L.cupFix || L.psFix) ? null : G.fixtures[G.week].map((f, j) => {
     const o = L.otherResults.find(x => x.j === j);
     return o ? o.r : myRes;
   });
@@ -4300,6 +4501,7 @@ function finishLiveMatch() {
   };
   apply(L.h, L.hApp, res);
   apply(L.a, L.aApp, -res);
+  if (L.psFix) { commitPreseason(L.psFix, myRes, L.pens ? L.pens.so : undefined, L.psSnap); return; }
   if (L.euro) { commitEuro(L.fix, myRes, L.pens ? L.pens.so : undefined); return; }
   if (L.cupFix) { commitCup(L.cupFix, myRes, L.pens ? L.pens.so : undefined); return; }
   commitWeek(weekResults, myRes, L.snapshot);
@@ -4781,6 +4983,7 @@ function nextSeason(newClub) {
   setWageCap();
   G.fixtures = leagueFixtures(G.league);
   G.lineup = bestXI(G.squads[G.myClub], G.formation);
+  buildPreseason();
   G.screen = "main"; G.tab = "squad"; G.lastMatch = null;
   save();
   render();
@@ -4908,6 +5111,7 @@ function load() {
     delete data.nextId;
     G = data;
     reconcileRoles();
+    if (!G.preseason) { G.preseason = []; if (G.week === 0) buildPreseason(); }
     const guest = G.guestClub || (G.euro && G.euro.opp);
     if (guest) { // restore the visiting-opposition slot (European or cup minnow)
       CLUBS[EURO_SLOT].name = guest.name;
@@ -5720,8 +5924,12 @@ function renderMain() {
   else if (G.tab === "finance") body = renderFinance();
   const euroFix = dueEuro();
   const cupFix = euroFix ? null : dueCup();
+  const preFix = (euroFix || cupFix) ? null : duePreseason();
   let playBtns;
-  if (euroFix) {
+  if (preFix) {
+    playBtns = `
+      <button class="action" onclick="goPreMatch()">${esc(preFix.label)}: vs ${esc(preFix.opp.name)} ${preFix.home ? "(H)" : "(A)"} →</button>`;
+  } else if (euroFix) {
     playBtns = `
       <button class="action" onclick="goPreMatch()">🏆 ${COMP_NAME[G.euro.comp]} · ${matchDateStr(G.euro.comp, G.week, G.euro.played, true)} — ${euroFix.label}: vs ${esc(euroFix.opp.name)} ${euroFix.home ? "(H)" : "(A)"} →</button>`;
   } else if (cupFix) {
@@ -5811,12 +6019,9 @@ function renderMain() {
   const eventNewsLine = G.eventNews ? `<p class="note" style="margin:0 0 10px;color:var(--ink)">${esc(G.eventNews)}</p>` : "";
   return `
     ${meeting}
-    ${shieldPanel}
     ${shieldNewsLine}
-    ${superCupPanel}
     ${superCupNewsLine}
     ${euroQualLine}
-    ${friendliesPanel}
     ${sponsorPanel}
     ${eventPanel}
     ${eventNewsLine}
@@ -6025,7 +6230,7 @@ function renderSquad() {
     Object.keys(STAFF).map(k => `${STAFF[k].icon} <b>${STAFF[k].name}</b> — tier ${staffTier(k)}/3` +
       (staffTier(k) < 3 ? ` <button class="ghost" style="padding:2px 8px;font-size:11px" onclick="hireStaff('${k}')">Upgrade £${6 * (staffTier(k) + 1)}M</button>` : " (max)") +
       ` <span class="note">${STAFF[k].desc}</span>`).join("<br>") + `</p></div>`;
-  return news + staffHtml + `<div class="panel"><h2>${clubCrest(G.myClub, 28)}Squad — ${esc(CLUBS[G.myClub].name)}</h2>
+  return news + staffHtml + `<div class="panel"><h2>${clubCrest(G.myClub, 28)}Squad — ${esc(CLUBS[G.myClub].name)}${CLUBS[G.myClub].nick ? ` <span class="note" style="font-weight:normal">(${esc(CLUBS[G.myClub].nick)})</span>` : ""}</h2>
     <p class="note">Wage bill: <b style="color:${wageBill() > wageCap() ? "var(--red)" : "var(--pitch)"}">£${wageBill()}M</b> / £${wageCap()}M cap per year</p>
     <table><thead><tr>${thSort("squad","pos","Pos")}${thSort("squad","name","Name")}${thSort("squad","rating","Rating",1,"","Rat")}${thSort("squad","pot","Pot",1,"m-hide")}${thSort("squad","age","Age",1)}${thSort("squad","fitness","Cond",1)}${thSort("squad","form","Form",1,"m-hide")}${thSort("squad","goals","Goals",1,"","Gls")}${thSort("squad","wage","Contract",1,"","£")}<th>Status</th></tr></thead><tbody>` +
     squad.map(p => `<tr${inXI.has(p.id) ? ' class="me"' : ""}>
@@ -6145,7 +6350,7 @@ function renderTable() {
       if (isPL) zone = i === 0 ? "champ" : i < 4 ? "ucl" : i === 4 ? "uel" : i === 5 ? "uecl" : i >= relStart ? "releg" : "";
       else zone = i === 0 ? "champ" : i < T.autoUp ? "ucl" : (T.po && i >= T.po[0] - 1 && i <= T.po[1] - 1) ? "uecl" : i >= relStart ? "releg" : "";
       return `<tr class="${row.i === G.myClub ? "me " : ""}${zone}">
-      <td class="num">${i + 1}</td><td>${clubCrest(row.i, 15)}${esc(row.name)}</td>
+      <td class="num">${i + 1}</td><td>${clubCrest(row.i, 15)}${esc(row.name)}${CLUBS[row.i].nick ? `<br><span class="note" style="font-size:10px;font-weight:normal">${esc(CLUBS[row.i].nick)}</span>` : ""}</td>
       <td class="num">${row.p}</td><td class="num">${row.w}</td><td class="num">${row.d}</td><td class="num">${row.l}</td>
       <td class="num">${row.gf}</td><td class="num">${row.ga}</td><td class="num">${row.gf - row.ga}</td><td class="num"><b>${row.pts}</b></td>
       <td class="formbar">${row.form.slice(-5).map(x => `<span class="${x}">${x}</span>`).join("")}</td>
@@ -6258,7 +6463,7 @@ function renderLive() {
   const running = tickTimer != null;
   const [hCol, aCol] = kitColors(L.h, L.a);
   let html = `<div class="panel">
-    <h2>${L.euro ? "🏆 " + COMP_NAME[G.euro.comp] + " — " + esc(L.fix.label) : L.cupLabel ? "🏆 " + esc(L.cupLabel) : "Matchweek " + (G.week + 1)} · ${matchDateStr(L.euro ? G.euro.comp : L.cupFix ? L.cupFix.cupKey : "league", G.week, L.euro && G.euro ? G.euro.played : undefined)} — Live</h2>
+    <h2>${L.euro ? "🏆 " + COMP_NAME[G.euro.comp] + " — " + esc(L.fix.label) : L.psFix ? esc(L.psFix.label) : L.cupLabel ? "🏆 " + esc(L.cupLabel) : "Matchweek " + (G.week + 1)} · ${matchDateStr(L.euro ? G.euro.comp : L.cupFix ? L.cupFix.cupKey : "league", G.week, L.euro && G.euro ? G.euro.played : undefined)} — Live</h2>
     <div class="score-line" id="live-score">${liveScoreHtml(L)}</div>
     <div class="minute-badge" id="live-min">${phaseLabel}</div>
     <div class="note" id="live-stats" style="text-align:center">${liveStatsLine(L)}</div>
@@ -6337,8 +6542,21 @@ function goPreMatch() {
 function renderPreMatch() {
   const euroFix = dueEuro();
   const cupFix = euroFix ? null : dueCup();
+  const preFix = (euroFix || cupFix) ? null : duePreseason();
   let fixtureHtml, scoutHtml, liveBtn, quickBtn;
-  if (cupFix) {
+  if (preFix) {
+    const o = preFix.opp;
+    const oppBase = o.kind === "league" ? CLUBS[o.idx].base : o.base;
+    const myC = clubCrest(G.myClub, 24) + esc(CLUBS[G.myClub].name);
+    const opC = crest(o.short, o.kind === "league" ? colorOf(o.idx) : o.col, 24) + esc(o.name);
+    fixtureHtml = `<h2>${esc(preFix.label)}</h2>
+      <div class="score-line">${preFix.home ? myC : opC}<span class="vs">vs</span>${preFix.home ? opC : myC}</div>
+      <p class="note" style="text-align:center">${preFix.ptype === "friendly" ? "A pre-season warm-up - minutes and sharpness, nothing on the line." : preFix.ptype === "shield" ? "The traditional curtain-raiser - the season's first silverware." : "The European curtain-raiser, against the holders of the other major trophy."}</p>`;
+    const pT = aiTacticsByBase(oppBase);
+    scoutHtml = `<h3>Scouting report - ${esc(o.name)}${o.kind === "league" && CLUBS[o.idx] && CLUBS[o.idx].nick ? ` (${esc(CLUBS[o.idx].nick)})` : ""}</h3>
+      <p><span class="stars-bar">${starBar(oppBase + 3)}</span> Squad strength ${oppBase} · They play a <b>${pT.form} ${pT.style}</b> - ${styleTip(pT.style)}</p>`;
+    liveBtn = "startPreseasonLive()"; quickBtn = "playPreseasonQuick()";
+  } else if (cupFix) {
     const o = cupFix.opp;
     const myC = clubCrest(G.myClub, 24) + esc(CLUBS[G.myClub].name);
     const opC = crest(o.short, o.kind === "league" ? colorOf(o.idx) : o.col, 24) + esc(o.name);
@@ -6348,7 +6566,7 @@ function renderPreMatch() {
         ${cupFix.home ? opC : myC}</div>
       <p class="note" style="text-align:center">📅 ${matchDateStr(cupFix.cupKey, G.week)} · ${cupFix.isFinal ? "Wembley. A trophy on the line." : cupFix.home ? "A home tie — see them off." : "An away trip — keep your heads."}</p>`;
     const cupT = o.kind === "league" ? aiTactics(o.idx) : aiTacticsByBase(o.base);
-    scoutHtml = `<h3>Scouting report — ${esc(o.name)}</h3>
+    scoutHtml = `<h3>Scouting report — ${esc(o.name)}${o.kind === "league" && CLUBS[o.idx] && CLUBS[o.idx].nick ? ` (${esc(CLUBS[o.idx].nick)})` : ""}</h3>
       <p><span class="stars-bar">${starBar(o.base + 3)}</span> Squad strength ${o.base}
       · They play a <b>${cupT.form} ${cupT.style}</b> — ${styleTip(cupT.style)}
       ${o.kind === "minnow" ? "<br><b>Lower-league opposition</b> — a fine chance to rest tired legs, but beware the banana skin." : ""}</p>`;
@@ -6386,7 +6604,7 @@ function renderPreMatch() {
       <div class="score-line">${clubCrest(myFix[0], 24)}${esc(CLUBS[myFix[0]].name)}<span class="vs">vs</span>${clubCrest(myFix[1], 24)}${esc(CLUBS[myFix[1]].name)}</div>
       <p class="note" style="text-align:center">${isDerby(myFix[0], myFix[1]) ? "🔥 <b>DERBY DAY.</b> Bragging rights and double the board's judgement at stake. " : ""}${home ? "At home — the crowd is behind you." : "Away from home."}</p>`;
     const oppT = aiTactics(oppIdx);
-    scoutHtml = `<h3>Scouting report — ${esc(CLUBS[oppIdx].name)}</h3>
+    scoutHtml = `<h3>Scouting report — ${esc(CLUBS[oppIdx].name)}${CLUBS[oppIdx].nick ? ` (${esc(CLUBS[oppIdx].nick)})` : ""}</h3>
       <p>League position: <b>#${t.indexOf(oppRow) + 1}</b> (you: #${t.indexOf(myRow) + 1}) ·
       Form: <span class="formbar">${formStr(oppRow)}</span> ·
       <span class="stars-bar">${starBar(CLUBS[oppIdx].base + 3)}</span> strength ${CLUBS[oppIdx].base}<br>
@@ -6424,7 +6642,7 @@ function renderMatchResult() {
   const myWin = (r.h === G.myClub && r.hg > r.ag) || (r.a === G.myClub && r.ag > r.hg);
   const draw = r.hg === r.ag;
   const derby = !G.lastMatchEuro && isDerby(r.h, r.a);
-  const verdict = (derby ? (myWin ? "🔥 DERBY WON — the city is yours! " : draw ? "🔥 Derby honours shared. " : "🔥 A derby defeat. Stay indoors a few days. ") : "") + (myWin ? "A fine win!" : draw ? "Honours even." : G.lastMatchEuro ? "A tough European night." : "A tough afternoon.");
+  const verdict = (derby ? (myWin ? "🔥 DERBY WON — the city is yours! " : draw ? "🔥 Derby honours shared. " : "🔥 A derby defeat. Stay indoors a few days. ") : "") + (myWin ? "A fine win!" : draw ? "Honours even." : G.lastMatchEuro === "euro" ? "A tough European night." : "A tough afternoon.");
   const wxTag = r.weather && r.weather !== "clear" && WEATHER[r.weather]
     ? " · " + WEATHER[r.weather].icon + " " + WEATHER[r.weather].name : "";
   // who scored — the headline facts stay visible; everything else folds away
@@ -6436,10 +6654,11 @@ function renderMatchResult() {
   const seasonOver = G.week >= G.fixtures.length;
   let nextLine = "";
   if (!seasonOver) {
-    const ef = dueEuro(), cf = ef ? null : dueCup();
-    const nf = (!ef && !cf && G.fixtures[G.week]) ? G.fixtures[G.week].find(([h, a]) => h === G.myClub || a === G.myClub) : null;
+    const ef = dueEuro(), cf = ef ? null : dueCup(), pf = (ef || cf) ? null : duePreseason();
+    const nf = (!ef && !cf && !pf && G.fixtures[G.week]) ? G.fixtures[G.week].find(([h, a]) => h === G.myClub || a === G.myClub) : null;
     if (ef) nextLine = "🏆 " + COMP_NAME[G.euro.comp] + " · " + esc(ef.label) + " vs " + esc(ef.opp.name) + (ef.home ? " (H)" : " (A)") + " — " + matchDateStr(G.euro.comp, G.week, G.euro.played);
     else if (cf) nextLine = "🏆 " + esc(cf.label) + " vs " + esc(cf.opp.name) + (cf.home ? " (H)" : " (A)") + " — " + matchDateStr(cf.cupKey, G.week);
+    else if (pf) nextLine = esc(pf.label) + " vs " + esc(pf.opp.name) + (pf.home ? " (H)" : " (A)");
     else if (nf) {
       const home = nf[0] === G.myClub;
       nextLine = "Matchweek " + (G.week + 1) + " vs " + esc(CLUBS[home ? nf[1] : nf[0]].name) + (home ? " (H)" : " (A)") + " — " + matchDateStr("league", G.week);
