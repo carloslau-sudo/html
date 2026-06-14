@@ -1013,7 +1013,7 @@ function hireStaff(k) {
   if (t >= 3) return;
   const cost = 6 * (t + 1);
   if (G.budget < cost) { if (typeof alert === "function") alert("Hiring tier " + (t + 1) + " costs £" + cost + "M — you don't have it."); return; }
-  G.budget -= cost;
+  adjBudget(-cost, "Hired backroom staff (tier " + (t + 1) + ")", "staff");
   G.staff = G.staff || {}; G.staff[k] = t + 1;
   save(); render();
 }
@@ -1112,6 +1112,7 @@ function newGame(clubIdx) {
     G.euro = null; G.euroRivals = []; G.cups = noCups();
   }
   setWageCap();
+  ledgerOpen();
   G.board = { conf: 65, exp: expectedPos(clubIdx), grace: 6, chosen: false };
   save();
   render();
@@ -1346,7 +1347,7 @@ function commitWeek(weekResults, myResult, snapshot) {
     const drift = Math.max(-1.5, Math.min(1.5, (G.board.exp - p) * 0.15));
     if (myResult.h === G.myClub) { // 🎟 gate receipts
       const gate = Math.round((0.3 + (CLUBS[G.myClub].base - 70) * 0.04 + (G.board.conf / 100) * 0.3) * 10) / 10;
-      G.budget = Math.round((G.budget + gate) * 10) / 10;
+      adjBudget(gate, "Matchday gate receipts", "gate");
     }
     const derbyX = isDerby(myResult.h, myResult.a) ? 2 : 1;
     boardBump((win ? 2 : draw ? 0.5 : -2.5) * derbyX + drift);
@@ -1437,6 +1438,7 @@ function startChallenge(kind) {
     G.challenge = "survival";
     G.board = { conf: 55, exp: 17, grace: 6, chosen: true, choice: "survival" };
     G.budget = Math.max(10, Math.round(G.budget * 0.6));
+    ledgerOpen();
     genMissions();
     save(); render();
     return;
@@ -1471,6 +1473,7 @@ function startChallenge(kind) {
     G.formation = "4-4-2"; G.mentality = "Balanced"; G.style = "Balanced";
     G.lineup = bestXI(G.squads[G.myClub], G.formation);
     G.budget = Math.max(5, Math.round((10 + (CLUBS[G.myClub].base - 70) * 3) * 0.6));
+    ledgerOpen();
     setWageCap();
     G.board = { conf: 45, exp: 17, grace: 25, chosen: true, choice: "rescue" };
     G.cups.lc.alive = "out"; G.cups.fa.alive = "out"; // the old manager's messes
@@ -1486,6 +1489,7 @@ function startChallenge(kind) {
     newGame(candidates[Math.floor(Math.random() * candidates.length)]);
     G.challenge = "takeover";
     G.budget = 400;
+    ledgerOpen();
     G.wcap = Math.round(wageCapFormula() * 1.6);
     G.board = { conf: 70, exp: 1, grace: 6, chosen: true, choice: "takeover" };
     save(); render();
@@ -1637,7 +1641,7 @@ const EVENT_DEFS = {
     resolve(ctx, i) {
       if (i === 1) return "You passed. The scout mutters something about 'the next big one' for weeks.";
       if (G.budget < 2) return "The £2M isn't there. The scout sighs deeply.";
-      G.budget -= 2;
+      adjBudget(-2, "Extra scouting mission", "event");
       const pos = ["DF", "MF", "MF", "FW"][Math.floor(rnd() * 4)];
       const kid = makePlayer(YOUTH_FIRST[Math.floor(rnd() * YOUTH_FIRST.length)] + " " + YOUTH_LAST[Math.floor(rnd() * YOUTH_LAST.length)], pos, 52 + Math.floor(rnd() * 8), 17);
       kid.pot = rnd() < 0.18 ? 86 + Math.floor(rnd() * 8) : kid.rating + 5 + Math.floor(rnd() * 12);
@@ -1657,7 +1661,7 @@ const EVENT_DEFS = {
     resolve(ctx, i) {
       if (i === 1) return "You passed on the guru. Your head physio looks quietly relieved.";
       if (G.budget < 5) return "The £5M isn't in the budget. Awkward phone call.";
-      G.budget -= 5;
+      adjBudget(-5, "Squad commitment (boardroom)", "event");
       for (const p of G.squads[G.myClub]) p.fitness = Math.min(100, p.fitness + 10);
       return "The guru's month works wonders — the whole squad gains fresh legs (+10 fitness everyone).";
     },
@@ -1687,7 +1691,7 @@ const EVENT_DEFS = {
         auto: 1 };
     },
     resolve(ctx, i) {
-      if (i === 0) { G.budget -= 10; boardBump(4); return "You handed back £10M. The chairman's handshake lasts a second longer than usual (+4 confidence)."; }
+      if (i === 0) { adjBudget(-10, "Returned funds to the board", "event"); boardBump(4); return "You handed back £10M. The chairman's handshake lasts a second longer than usual (+4 confidence)."; }
       boardBump(-2);
       return "You kept the budget. Someone upstairs writes something in a small notebook (−2 confidence).";
     },
@@ -1721,7 +1725,7 @@ const EVENT_DEFS = {
     },
     resolve(ctx, i) {
       if (i === 1) return "You declined. A week later, a rival manager is on the front pages over that same dinner. Bullet: dodged.";
-      if (rnd() < 0.5) { G.budget += 8; return "Charming company, deep pockets: an £8M 'goodwill investment' lands in the transfer kitty."; }
+      if (rnd() < 0.5) { adjBudget(8, "Goodwill investment", "event"); return "Charming company, deep pockets: an £8M 'goodwill investment' lands in the transfer kitty."; }
       boardBump(-4);
       return "The 'investor' was a tabloid setup. The headline is unkind; the board is unamused (−4 confidence).";
     },
@@ -1761,7 +1765,7 @@ const EVENT_DEFS = {
         auto: 1 };
     },
     resolve(ctx, i) {
-      if (i === 0) { G.budget += 3; for (const id of validateLineup()) { const p = pById(id); if (p) p.fitness = Math.max(20, p.fitness - 6); } return G.sponsor.name + " is thrilled and adds a £3M activation bonus. The XI yawns through Tuesday training (−6 fitness)."; }
+      if (i === 0) { adjBudget(3, "Sponsor activation bonus", "sponsor"); for (const id of validateLineup()) { const p = pById(id); if (p) p.fitness = Math.max(20, p.fitness - 6); } return G.sponsor.name + " is thrilled and adds a £3M activation bonus. The XI yawns through Tuesday training (−6 fitness)."; }
       return "The captain charms the room solo. Honour intact, legs preserved.";
     },
   },
@@ -1778,7 +1782,7 @@ const EVENT_DEFS = {
     resolve(ctx, i) {
       if (i === 1) return "You hung up. Some doors are better left closed.";
       if (G.budget < 12) return "The money isn't there. The agent's line goes dead.";
-      G.budget -= 12;
+      adjBudget(-12, "Agent fee (boardroom)", "event");
       const kid = makePlayer(YOUTH_FIRST[Math.floor(rnd() * YOUTH_FIRST.length)] + " " + ["Silva","Costa","Romero","Otero","Vidal"][Math.floor(rnd() * 5)], ["MF","FW"][Math.floor(rnd() * 2)], 58 + Math.floor(rnd() * 8), 16);
       kid.pot = rnd() < 0.45 ? 87 + Math.floor(rnd() * 8) : kid.rating + 6 + Math.floor(rnd() * 10);
       G.squads[G.myClub].push(kid);
@@ -1876,7 +1880,7 @@ function signSponsor(i) {
   if (!o || G.sponsor) return;
   G.sponsor = { name: o.name, base: o.base, winBonus: o.winBonus, top4Bonus: o.top4Bonus, trophyBonus: o.trophyBonus, years: o.years };
   G.sponsorOffers = null;
-  G.budget += o.base; // year one, paid up front
+  adjBudget(o.base, "Sponsor signing-on (" + o.name + ")", "sponsor"); // year one, paid up front
   G.deals = G.deals || [];
   G.deals.unshift("🤝 Signed " + o.name + " as shirt sponsor — £" + o.base + "M banked for year one");
   save(); render();
@@ -1923,8 +1927,8 @@ function setExpectation(kind) {
   G.board.exp = opt.target;
   G.board.choice = kind;
   G.board.chosen = true;
-  if (kind === "ambitious") G.budget = (G.budget || 0) + ambitionBonus();
-  if (kind === "conservative") G.budget = Math.round((G.budget || 0) * 0.75);
+  if (kind === "ambitious") adjBudget(ambitionBonus(), "Board war chest (ambitious objective)", "funds");
+  if (kind === "conservative") adjBudget(Math.round((G.budget || 0) * 0.75) - (G.budget || 0), "Budget held back (conservative objective)", "running");
   save(); render();
 }
 function defaultExpectation() { // playing on without choosing = the sensible option
@@ -2071,6 +2075,7 @@ function takeJob(clubIdx) {
   }
   G.euro = null;                 // the European campaign stayed with your old club
   G.budget = Math.max(5, 10 + (CLUBS[clubIdx].base - 70) * 3);
+  ledgerOpen("New club: opening transfer budget");
   G.sponsor = null; G.sponsorOffers = null; G.sponsorNews = null; // the deal stayed with your old club
   setWageCap();
   G.board = { conf: 60, exp: expectedPos(clubIdx), grace: G.week + 6, chosen: true };
@@ -2263,7 +2268,7 @@ function acceptOffer(pid) {
   p.fitness = 100; p.form = 0;
   p.wage = wageFor(p.rating, p.age); p.years = 2 + Math.floor(rnd() * 3);
   if (o.buyer.idx !== undefined && G.squads[o.buyer.idx].length < 25) G.squads[o.buyer.idx].push(p);
-  G.budget += o.fee;
+  adjBudget(o.fee, "Sold " + p.name + " to " + o.buyer.name, "transfer_in");
   G.lineup = validateLineup();
   G.offersIn = G.offersIn.filter(x => x.pid !== pid);
   G.deals.unshift("💸 You accepted £" + o.fee + "M from " + o.buyer.name + " for " + p.name);
@@ -2292,7 +2297,7 @@ function requestFunds() {
   const conf = G.board.conf;
   if (rnd() * 100 < conf) { // the chairman opens the chequebook — and expects results
     const amount = 10 + Math.round(conf / 8) + Math.round(rnd() * 8);
-    G.budget += amount;
+    adjBudget(amount, "Board grant (transfer funds)", "funds");
     boardBump(-4);
     G.eventNews = "💷 The board grants you an extra £" + amount + "M. \"Spend it well — we'll be watching.\" (−4 confidence: expectations just rose.)";
   } else {
@@ -2318,7 +2323,7 @@ function buyPlayer(clubIdx, pid) {
   p.fitness = 100; p.form = 0;
   p.wage = wAgreed; p.years = 3;
   G.squads[G.myClub].push(p);
-  G.budget -= price;
+  adjBudget(-price, "Bought " + p.name + " from " + CLUBS[clubIdx].name, "transfer_out");
   G.deals.unshift("✍ You signed " + p.name + " from " + CLUBS[clubIdx].name + " for £" + price + "M" +
     (p.injury ? " — ⚠ he arrives injured and needs " + p.injury + " week" + (p.injury > 1 ? "s" : "") + " to recover" :
      p.ban ? " — ⚠ he arrives suspended (" + p.ban + " match ban carries over)" : ""));
@@ -2401,7 +2406,7 @@ function sellPlayer(pid) {
   p.fitness = 100; p.form = 0;
   p.wage = wageFor(p.rating, p.age); p.years = 2 + Math.floor(rnd() * 3);
   G.squads[to].push(p);
-  G.budget += fee;
+  adjBudget(fee, "Sold " + p.name + " to " + CLUBS[to].name, "transfer_in");
   G.lineup = validateLineup();
   G.deals.unshift("💸 You sold " + p.name + " to " + CLUBS[to].name + " for £" + fee + "M");
   save(); render();
@@ -2443,7 +2448,7 @@ function buyForeign(key) {
   p.role = s.role || roleFor(s.pos, G.squads[G.myClub]);
   p.wage = wAgreed; p.years = 3;
   G.squads[G.myClub].push(p);
-  G.budget -= price;
+  adjBudget(-price, "Bought " + s.name + " (foreign signing)", "transfer_out");
   G.signedStars = G.signedStars || [];
   G.signedStars.push(key);
   G.deals.unshift("🌍 You signed " + s.name + " from " + s.club + " for £" + price + "M — a statement to all of Europe");
@@ -2781,7 +2786,7 @@ function commitCup(fix, r, pens) {
       c.alive = "won";
       c.winner = CLUBS[G.myClub].name;
       G.honours.push("Season " + G.season + ": " + CUP_NAME[fix.cupKey] + " winners");
-      G.budget = (G.budget || 0) + CUP_PRIZE[fix.cupKey];
+      adjBudget(CUP_PRIZE[fix.cupKey], CUP_NAME[fix.cupKey] + " winners' prize", "prize");
       boardBump(12);
       note += " — 🏆 " + CUP_NAME[fix.cupKey].toUpperCase() + " WINNERS! (£" + CUP_PRIZE[fix.cupKey] + "M prize)";
     } else {
@@ -4441,7 +4446,28 @@ function nextSeason(newClub) {
     G.sponsor = null; G.sponsorOffers = null; G.sponsorNews = null;
   }
   const promoBudget = (wasPromoted && !takingJob) ? 30 : 0;
+  const oldBudgetForLedger = G.budget || 0;
   G.budget = Math.round((movedClub ? 0 : (G.budget || 0) * 0.5) + 20 + (CLUBS[G.myClub].base - 70) * 8 + (movedClub ? 0 : leaguePrize + euroPrize + sponsorIncome) + missionsWon * 8 - (staffTier("coach") + staffTier("physio") + staffTier("scout")) * 2) + promoBudget;
+  {
+    const stipend = Math.round((20 + (CLUBS[G.myClub].base - 70) * 8) * 10) / 10;
+    const staffUpkeep = (staffTier("coach") + staffTier("physio") + staffTier("scout")) * 2;
+    const fitems = [];
+    if (!movedClub && leaguePrize) fitems.push(["League prize money (finished #" + myFinalPos + ")", leaguePrize, "prize"]);
+    if (!movedClub && euroPrize) fitems.push(["European prize money", euroPrize, "prize"]);
+    if (!movedClub && sponsorIncome) fitems.push(["Sponsor income" + (G.sponsor ? " (" + G.sponsor.name + ")" : ""), sponsorIncome, "sponsor"]);
+    if (missionsWon) fitems.push(["Mission bonuses (x" + missionsWon + ")", missionsWon * 8, "prize"]);
+    if (promoBudget) fitems.push(["Promotion windfall", promoBudget, "prize"]);
+    fitems.push(["Club stature stipend (Season " + (G.season + 1) + ")", stipend, "stipend"]);
+    if (staffUpkeep) fitems.push(["Backroom staff upkeep", -staffUpkeep, "staff"]);
+    const known = fitems.reduce((acc, it) => acc + it[1], 0);
+    const running = Math.round((G.budget - oldBudgetForLedger - known) * 10) / 10;
+    const fseq = [["Club running costs (unspent budget absorbed)", running, "running"]].concat(fitems);
+    G.ledger = G.ledger || [];
+    let fbal = oldBudgetForLedger;
+    for (const it of fseq) { fbal = Math.round((fbal + it[1]) * 10) / 10; G.ledger.push({ s: G.season, w: null, amt: it[1], label: it[0], cat: it[2], bal: fbal }); }
+    G.ledger[G.ledger.length - 1].bal = G.budget;
+    if (G.ledger.length > 400) G.ledger = G.ledger.slice(-400);
+  }
 
   // European football and the domestic cups are a top-flight affair only
   if (G.tier === 0) {
@@ -5390,6 +5416,76 @@ function drawAnalytics() {
   drawPosChart(hist); drawGoalsChart(hist); drawPaceChart(hist);
 }
 
+function adjBudget(delta, label, cat) {
+  if (!G) return;
+  delta = Math.round(delta * 10) / 10;
+  G.budget = Math.round(((G.budget || 0) + delta) * 10) / 10;
+  G.ledger = G.ledger || [];
+  G.ledger.push({ s: G.season || 1, w: G.week, amt: delta, label: label || "Adjustment", cat: cat || "other", bal: G.budget });
+  if (G.ledger.length > 400) G.ledger = G.ledger.slice(-400);
+  return G.budget;
+}
+function ledgerOpen(label) {
+  G.ledger = [{ s: G.season || 1, w: G.week || 0, amt: G.budget || 0, label: label || "Opening transfer budget", cat: "opening", bal: G.budget || 0 }];
+}
+function finMoneyM(n) {
+  const v = Math.round(n * 10) / 10;
+  return (v < 0 ? "-" : "") + "£" + Math.abs(v) + "M";
+}
+function finCatName(c) {
+  return ({ opening: "Opening balance", gate: "Matchday gate", transfer_in: "Player sales", transfer_out: "Player purchases", sponsor: "Sponsorship", prize: "Prize money", funds: "Board grants", staff: "Backroom staff", event: "Boardroom events", running: "Running costs", stipend: "Stature stipend" })[c] || "Other";
+}
+function renderFinance() {
+  if (!G.ledger || !G.ledger.length) ledgerOpen();
+  const L = G.ledger, bal = G.budget;
+  const cats = {}; let totIn = 0, totOut = 0;
+  for (const e of L) {
+    if (e.cat === "opening") continue;
+    cats[e.cat] = (cats[e.cat] || 0) + e.amt;
+    if (e.amt >= 0) totIn += e.amt; else totOut += e.amt;
+  }
+  const catRows = Object.keys(cats).sort((a, b) => Math.abs(cats[b]) - Math.abs(cats[a]))
+    .map(c => `<tr><td>${finCatName(c)}</td><td class="num" style="color:${cats[c] >= 0 ? "var(--pitch)" : "var(--red)"}">${finMoneyM(cats[c])}</td></tr>`).join("");
+  const pts = L.map(e => e.bal);
+  const W = 640, H = 130, pad = 10;
+  const lo = Math.min(0, ...pts), hi = Math.max(1, ...pts);
+  const xs = i => pad + (L.length <= 1 ? (W - 2 * pad) / 2 : i * (W - 2 * pad) / (L.length - 1));
+  const ys = v => H - pad - ((v - lo) / ((hi - lo) || 1)) * (H - 2 * pad);
+  const linePath = pts.map((v, i) => `${i ? "L" : "M"}${xs(i).toFixed(1)} ${ys(v).toFixed(1)}`).join(" ");
+  const areaPath = `M${xs(0).toFixed(1)} ${ys(lo).toFixed(1)} ` + pts.map((v, i) => `L${xs(i).toFixed(1)} ${ys(v).toFixed(1)}`).join(" ") + ` L${xs(pts.length - 1).toFixed(1)} ${ys(lo).toFixed(1)} Z`;
+  const zeroY = ys(0).toFixed(1);
+  const chart = `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="none" style="display:block;max-height:140px;margin-top:6px">
+      <line x1="${pad}" y1="${zeroY}" x2="${W - pad}" y2="${zeroY}" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3"/>
+      <path d="${areaPath}" fill="var(--pitch)" opacity="0.10"/>
+      <path d="${linePath}" fill="none" stroke="var(--pitch)" stroke-width="2"/>
+      <circle cx="${xs(pts.length - 1).toFixed(1)}" cy="${ys(pts[pts.length - 1]).toFixed(1)}" r="3.5" fill="var(--pitch)"/>
+    </svg>`;
+  const show = L.slice(-120).reverse();
+  const rows = show.map(e => {
+    const per = e.w == null ? "End of S" + e.s : "S" + e.s + " · wk " + (e.w + 1);
+    const col = e.amt > 0 ? "var(--pitch)" : e.amt < 0 ? "var(--red)" : "inherit";
+    const amt = e.cat === "opening" ? "" : (e.amt > 0 ? "+" : "") + finMoneyM(e.amt);
+    return `<tr><td class="note">${per}</td><td>${esc(e.label)}</td><td class="num" style="color:${col}">${amt}</td><td class="num">${finMoneyM(e.bal)}</td></tr>`;
+  }).join("");
+  const capped = L.length > 120 ? `<p class="note">Showing the most recent 120 of ${L.length} entries. Category totals above cover the full history.</p>` : "";
+  return `<div class="panel">
+    <h2>💷 Finance</h2>
+    <p>Transfer budget (cash available): <b style="color:${bal < 0 ? "var(--red)" : "var(--pitch)"};font-size:1.3em">${finMoneyM(bal)}</b>
+      &nbsp;·&nbsp; Wage bill: <b style="color:${wageBill() > wageCap() ? "var(--red)" : "inherit"}">£${wageBill()}M</b> / £${wageCap()}M cap</p>
+    ${chart}
+    <p class="note">Cash balance across your career. Each season close keeps half of any unspent budget; the rest is absorbed as running costs.</p>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;margin:10px 0 4px">
+      <div><b>Money in:</b> <span style="color:var(--pitch)">${finMoneyM(totIn)}</span></div>
+      <div><b>Money out:</b> <span style="color:var(--red)">${finMoneyM(totOut)}</span></div>
+      <div><b>Net:</b> ${finMoneyM(totIn + totOut)}</div>
+    </div>
+    <table><thead><tr><th>By category</th><th class="num">Total</th></tr></thead><tbody>${catRows}</tbody></table>
+    <h3 style="margin-top:14px">Transactions</h3>
+    ${capped}
+    <table><thead><tr><th>When</th><th>Item</th><th class="num">In / Out</th><th class="num">Balance</th></tr></thead><tbody>${rows}</tbody></table>
+  </div>`;
+}
+
 function tabBtn(id, label) {
   return `<button class="${G.tab === id ? "active" : ""}" onclick="G.tab='${id}';save();render()">${label}</button>`;
 }
@@ -5407,6 +5503,7 @@ function renderMain() {
   else if (G.tab === "hall") body = renderHall();
   else if (G.tab === "cloud") body = renderCloud();
   else if (G.tab === "transfers") body = renderTransfers();
+  else if (G.tab === "finance") body = renderFinance();
   const euroFix = dueEuro();
   const cupFix = euroFix ? null : dueCup();
   let playBtns;
@@ -5483,7 +5580,7 @@ function renderMain() {
     ${eventNewsLine}
     ${boardLine}
     ${missionsLine()}
-    <div class="tabs">${tabBtn("squad","Squad")}${tabBtn("tactics","Tactics & Lineup")}${tabBtn("fixtures","Fixtures")}${tabBtn("table","Table")}${tabBtn("scorers","Top Scorers")}${tabBtn("form","📊 Form")}${G.euro ? tabBtn("europe","🌍 Europe") : ""}${tabBtn("cups","🏆 Cups")}${tabBtn("transfers", windowOpen() ? "💰 Transfers ●" : "💰 Transfers")}${tabBtn("hall","🏛 Hall of Fame")}${tabBtn("cloud","☁ Cloud")}</div>
+    <div class="tabs">${tabBtn("squad","Squad")}${tabBtn("tactics","Tactics & Lineup")}${tabBtn("fixtures","Fixtures")}${tabBtn("table","Table")}${tabBtn("scorers","Top Scorers")}${tabBtn("form","📊 Form")}${G.euro ? tabBtn("europe","🌍 Europe") : ""}${tabBtn("cups","🏆 Cups")}${tabBtn("transfers", windowOpen() ? "💰 Transfers ●" : "💰 Transfers")}${tabBtn("finance","💷 Finance")}${tabBtn("hall","🏛 Hall of Fame")}${tabBtn("cloud","☁ Cloud")}</div>
     ${body}
     <div class="panel row">
       ${playBtns}
