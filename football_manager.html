@@ -1550,6 +1550,31 @@ function evPick(filter, n) {
   return out;
 }
 function bumpForm(p, d) { if (p) p.form = Math.max(-2, Math.min(2, (p.form || 0) + d)); }
+function friendliesLeft() {
+  if (G.friendlySeason !== G.season) { G.friendlySeason = G.season; G.friendliesPlayed = 0; G.friendlyNews = null; }
+  return Math.max(0, 3 - (G.friendliesPlayed || 0));
+}
+function playFriendly() {
+  if (G.week !== 0 || G.live || friendliesLeft() <= 0) return;
+  let opp = G.myClub, guard = 0;
+  while (opp === G.myClub && guard++ < 50) opp = Math.floor(rnd() * EURO_SLOT);
+  const home = rnd() < 0.5;
+  const xi = validateLineup();
+  const myStr = xi.reduce((t, id) => { const p = pById(id); return t + (p ? effRating(p) : 0); }, 0) / Math.max(1, xi.length);
+  const oppXi = bestXI(G.squads[opp], "4-4-2");
+  const oppStr = oppXi.reduce((t, id) => { const p = G.squads[opp].find(x => x.id === id); return t + (p ? p.rating : 0); }, 0) / Math.max(1, oppXi.length);
+  const edge = (myStr - oppStr) * 0.06 + (home ? 0.3 : -0.1);
+  const goalsFor = e => Math.max(0, Math.round((1.1 + e) * (0.45 + rnd())));
+  const myG = goalsFor(edge), opG = goalsFor(-edge);
+  // minutes sharpen the side; nobody is booked or cup-tied in a friendly; small knock risk
+  for (const id of xi) { const p = pById(id); if (p) { bumpForm(p, 1); if (rnd() < 0.025) p.injury = Math.max(p.injury, 1 + Math.floor(rnd() * 2)); } }
+  adjBudget(home ? 0.4 : 0.2, "Pre-season friendly gate", "gate");
+  G.friendliesPlayed = (G.friendliesPlayed || 0) + 1;
+  const me = CLUBS[G.myClub].short, op = CLUBS[opp].short;
+  const score = home ? me + " " + myG + "-" + opG + " " + op : op + " " + opG + "-" + myG + " " + me;
+  G.friendlyNews = "\ud83e\udd1d Friendly: " + score + ". Sharpness up across the XI." + (friendliesLeft() ? " (" + friendliesLeft() + " left)" : "");
+  save(); render();
+}
 function pById(id) { return G.squads[G.myClub].find(p => p.id === id); }
 
 const EVENT_DEFS = {
@@ -2085,6 +2110,32 @@ function takeJob(clubIdx) {
   G.screen = "main"; G.tab = "squad";
   genMissions();
   save(); render();
+}
+
+function mgrRep() {
+  const base = (CLUBS[G.myClub] ? CLUBS[G.myClub].base : 70);
+  return Math.round(base + Math.min(14, ((G.honours || []).length) * 2));
+}
+function applyJob(clubIdx) {
+  if (!CLUBS[clubIdx]) return;
+  if (typeof confirm === "function" && !confirm("Leave " + CLUBS[G.myClub].name + " to take over " + CLUBS[clubIdx].name + " for " + seasonYears(G.season + 1) + "? Your transfer budget, sponsor and any European place stay behind.")) return;
+  nextSeason(clubIdx);
+}
+function jobCentreHtml() {
+  if (!G.pyr || !G.pyr.newTiers) return "";
+  const rep = mgrRep();
+  const cands = G.pyr.newTiers.flat()
+    .filter(i => i !== G.myClub && CLUBS[i] && (CLUBS[i].base - rep) <= 7)
+    .sort((a, b) => CLUBS[b].base - CLUBS[a].base)
+    .slice(0, 12);
+  if (!cands.length) return "";
+  const cards = cands.map(i => {
+    const ti = tierOfClub(i, G.pyr.newTiers);
+    const gap = CLUBS[i].base - rep;
+    const tag = gap >= 4 ? " · a real step up" : gap >= 1 ? " · a step up" : gap <= -8 ? " · a smaller club" : " · a sideways move";
+    return `<div class="club-card" onclick="applyJob(${i})"><div class="cname">${esc(CLUBS[i].name)}</div><div class="cinfo">${esc(TIERS[ti].name)} · squad strength ${CLUBS[i].base}${tag}</div></div>`;
+  }).join("");
+  return `<div class="panel" style="border-color:var(--amber)"><h2>💼 Job Centre — managerial vacancies</h2><p class="note">Fancy a fresh challenge for ${seasonYears(G.season + 1)}? Apply to take over another club. Bigger clubs open up as your reputation grows through trophies and overachieving. Your transfer budget, sponsor and any European place stay behind.</p><div class="club-grid">${cards}</div></div>`;
 }
 
 function renderSacked() {
@@ -2689,7 +2740,7 @@ function initCups() {
     lc: { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
       remaining: buildCupField(32), rounds: [
       { week: 4, label: "Round 3" }, { week: 8, label: "Round 4" }, { week: 13, label: "Quarter-final" },
-      { week: 21, label: "Semi-final" }, { week: 26, label: "Final" }] },
+      { week: 19, week2: 21, label: "Semi-final" }, { week: 26, label: "Final" }] },
     fa: { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
       remaining: buildCupField(64), rounds: [
       { week: 16, label: "Round 3" }, { week: 20, label: "Round 4" }, { week: 25, label: "Round 5" },
@@ -2732,10 +2783,15 @@ function dueCup() {
     const c = G.cups[key];
     if (!c || c.alive !== true) continue;
     const rd = c.rounds[c.r];
-    if (rd && G.week === rd.week) {
-      if (!c.opp) { c.opp = drawMyCupOpp(c, c.r); save(); }
-      return { cupKey: key, label: CUP_NAME[key] + " · " + rd.label, opp: c.opp,
-               home: c.opp.home, isFinal: c.r === c.rounds.length - 1 };
+    if (!rd) continue;
+    const leg2 = rd.week2 && G.week === rd.week2;
+    const leg1 = G.week === rd.week && !(rd.week2 && c.agg);
+    if (leg1 || leg2) {
+      if (!c.opp) { c.opp = drawMyCupOpp(c, c.r); c.firstLegHome = c.opp.home; save(); }
+      const leg = rd.week2 ? (leg2 ? 2 : 1) : 0;
+      const home = leg === 0 ? c.opp.home : (leg2 ? !c.firstLegHome : c.firstLegHome);
+      return { cupKey: key, label: CUP_NAME[key] + " · " + rd.label + (leg ? " (" + (leg === 1 ? "1st" : "2nd") + " leg)" : ""),
+               opp: c.opp, home, isFinal: c.r === c.rounds.length - 1, leg };
     }
   }
   return null;
@@ -2762,26 +2818,42 @@ function commitCup(fix, r, pens) {
   r.dateMs = matchDateMs(fix.cupKey, G.week);
   const c = G.cups[fix.cupKey];
   const myG = fix.home ? r.hg : r.ag, opG = fix.home ? r.ag : r.hg;
+  const roundLabel = c.rounds[c.r].label;
+  const twoLeg = fix.leg === 1 || fix.leg === 2;
+  if (fix.leg === 1) {
+    // first leg of a two-legged tie: bank the score, keep the opponent, do not advance
+    c.agg = { my: myG, opp: opG };
+    const fnote = " - first leg, " + (myG > opG ? "leading " : myG < opG ? "trailing " : "level ") + myG + "-" + opG;
+    c.results.push({ label: roundLabel + " (1st leg)", opp: fix.opp.name, myG, opG, home: fix.home, note: fnote });
+    c.history.push({ label: roundLabel + " (1st leg)", myTie: CLUBS[G.myClub].name + " " + myG + "-" + opG + " " + fix.opp.name, ties: [] });
+    G.lastMatch = r; G.lastMatchEuro = "cup";
+    G.lastMatchLabel = CUP_NAME[fix.cupKey] + " · " + roundLabel + " (1st leg)" + fnote;
+    G.live = null; G.screen = "matchResult"; save(); render();
+    return;
+  }
   let note = "";
-  let win = myG > opG;
-  if (myG === opG) {
+  let aggMy = myG + (twoLeg && c.agg ? c.agg.my : 0), aggOp = opG + (twoLeg && c.agg ? c.agg.opp : 0);
+  let win = aggMy > aggOp;
+  if (aggMy === aggOp) {
     const oppIdx = fix.opp.kind === "league" ? fix.opp.idx : EURO_SLOT;
     const so = pens || simShootoutClubs(G.myClub, oppIdx);
     win = so.myWin;
-    note = so.note;
+    note = (twoLeg ? " - " + aggMy + "-" + aggOp + " agg;" : "") + " " + so.note;
     r.events = (r.events || []).concat(shootoutEvents(so, G.myClub, oppIdx));
+  } else if (twoLeg) {
+    note = " - " + (win ? "won " : "lost ") + aggMy + "-" + aggOp + " on aggregate";
   }
-  const roundLabel = c.rounds[c.r].label;
-  c.results.push({ label: roundLabel, opp: fix.opp.name, myG, opG, home: fix.home, note });
+  const resultLabel = roundLabel + (fix.leg === 2 ? " (2nd leg)" : "");
+  c.results.push({ label: resultLabel, opp: fix.opp.name, myG, opG, home: fix.home, note });
   // resolve the rest of the round's draw
   const others = (c.remaining || []).filter(e => entrantUid(e) !== "ME" && entrantUid(e) !== fix.opp.uid);
   const rest = simCupRound(others);
   const myTie = CLUBS[G.myClub].name + " " + myG + "–" + opG + " " + fix.opp.name + (note.includes("penalties") ? " (pens)" : "");
-  c.history.push({ label: roundLabel, myTie, ties: rest.ties });
+  c.history.push({ label: resultLabel, myTie, ties: rest.ties });
   const myTieWinner = win ? { kind: "me" } : (c.remaining || []).find(e => entrantUid(e) === fix.opp.uid);
   c.remaining = rest.survivors.concat(myTieWinner ? [myTieWinner] : []);
   if (win) {
-    c.r++; c.opp = null;
+    c.r++; c.opp = null; c.agg = null; c.firstLegHome = undefined;
     if (c.r >= c.rounds.length) {
       c.alive = "won";
       c.winner = CLUBS[G.myClub].name;
@@ -2794,7 +2866,7 @@ function commitCup(fix, r, pens) {
       if (fix.opp.kind === "minnow" && fix.opp.base < 65) note += " — no banana skin today.";
     }
   } else {
-    c.alive = "out";
+    c.alive = "out"; c.opp = null; c.agg = null; c.firstLegHome = undefined;
     boardBump(fix.opp.kind === "minnow" ? -8 : -3);
     if (fix.opp.kind === "minnow") note += " — a giant-killing! The press will not be kind.";
     // the tournament carries on without you
@@ -2818,7 +2890,7 @@ function commitCup(fix, r, pens) {
 function playCupQuick() {
   const fix = dueCup();
   if (!fix || G.live || dueEuro()) return;
-  prepMatchLineup();
+  prepMatchLineup(true);
   const oppIdx = cupOppIdx(fix);
   const h = fix.home ? G.myClub : oppIdx, a = fix.home ? oppIdx : G.myClub;
   const opts = {};
@@ -2830,7 +2902,7 @@ function playCupQuick() {
 function startCupLive() {
   const fix = dueCup();
   if (!fix || G.live || dueEuro()) return;
-  prepMatchLineup();
+  prepMatchLineup(true);
   const oppIdx = cupOppIdx(fix);
   const h = fix.home ? G.myClub : oppIdx, a = fix.home ? oppIdx : G.myClub;
   const aiXI = bestXI(G.squads[oppIdx], "4-4-2");
@@ -2937,7 +3009,8 @@ function renderCups() {
    Top 8 → Round of 16 directly; 9th–24th → knockout play-off; 25th+ out. */
 
 function euroMDWeeks(comp) { return comp === "UECL" ? [3, 6, 9, 12, 15, 18] : [3, 5, 7, 9, 11, 14, 17, 18]; }
-const EURO_KO_WEEKS = { playoff: 22, R16: 24, QF: 27, SF: 30, F: 34 };
+const EURO_KO_WEEKS = { playoff: 22, R16: 24, QF: 28, SF: 32, F: 34 };  // first leg (or the one-off final)
+const EURO_KO_WEEK2 = { playoff: 23, R16: 27, QF: 30, SF: 33 };          // second leg (finals are single)
 const EURO_KO_LABEL = { playoff: "Knockout Play-off", R16: "Round of 16", QF: "Quarter-final", SF: "Semi-final", F: "FINAL" };
 const EURO_KO_NEXT = { playoff: "R16", R16: "QF", QF: "SF", SF: "F", F: "won" };
 
@@ -2947,6 +3020,37 @@ function euroTuple(E, id) { // [name, short, base, col, stars]
 }
 function euroName(E, id) { return id === "me" ? CLUBS[G.myClub].name : euroTuple(E, id)[0]; }
 function euroBase(E, id) { return id === "me" ? CLUBS[G.myClub].base : euroTuple(E, id)[2]; }
+
+function euroOrd(n) { const s = ["th", "st", "nd", "rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+
+function euroCupWinnerIdx(c) {
+  if (!c || !c.winner) return -1;
+  return CLUBS.findIndex((x, i) => i < EURO_SLOT && x.name === c.winner);
+}
+
+/* Real English European qualification, computed across the final league table:
+   top `uclSlots` go to the Champions League (4, occasionally 5 via the European
+   Performance Spot); the FA Cup winners take a Europa League place and the
+   League Cup winners a Conference League place; when a cup winner has already
+   qualified higher, that place passes down to the next club, so some seasons
+   send 7th or 8th into the Conference League. Returns {comp, route} per club. */
+function europeanBerths(table, faIdx, lcIdx, uclSlots) {
+  const comp = {}, route = {}, taken = new Set();
+  for (let i = 0; i < uclSlots && i < table.length; i++) { comp[table[i]] = "UCL"; route[table[i]] = "finished " + euroOrd(i + 1); taken.add(table[i]); }
+  let uel = 1;
+  if (faIdx >= 0 && table.includes(faIdx)) {
+    if (!taken.has(faIdx)) { comp[faIdx] = "UEL"; route[faIdx] = "FA Cup winners"; taken.add(faIdx); }
+    else uel++;
+  }
+  for (let i = 0; i < table.length && uel > 0; i++) if (!taken.has(table[i])) { comp[table[i]] = "UEL"; route[table[i]] = "finished " + euroOrd(i + 1); taken.add(table[i]); uel--; }
+  let uecl = 1;
+  if (lcIdx >= 0 && table.includes(lcIdx)) {
+    if (!taken.has(lcIdx)) { comp[lcIdx] = "UECL"; route[lcIdx] = "League Cup winners"; taken.add(lcIdx); }
+    else uecl++;
+  }
+  for (let i = 0; i < table.length && uecl > 0; i++) if (!taken.has(table[i])) { comp[table[i]] = "UECL"; route[table[i]] = "finished " + euroOrd(i + 1); taken.add(table[i]); uecl--; }
+  return { comp, route };
+}
 
 function initEuro(comp) {
   if (!comp) { G.euro = null; return; }
@@ -2982,16 +3086,24 @@ function dueEuro() {
     }
     return { kind: "league", label: "League Phase · Matchday " + (E.played + 1) + " of " + wks.length, opp: E.opp, home: E.opp.home };
   }
-  if (EURO_KO_WEEKS[E.stage] === G.week) {
+  const isFinal = E.stage === "F";
+  const leg2Due = !isFinal && EURO_KO_WEEK2[E.stage] === G.week;
+  const leg1Due = EURO_KO_WEEKS[E.stage] === G.week && (isFinal || !E.agg);
+  if (leg1Due || leg2Due) {
+    const leg2 = leg2Due;
     if (!E.opp) {
       const pool = E.koPool || [];
       const id = pool[Math.floor(rnd() * pool.length)];
       if (id === undefined) { E.stage = "out"; save(); return null; }
       const tu = euroTuple(E, id);
-      E.opp = { id, name: tu[0], short: tu[1], base: tu[2], col: tu[3], home: E.stage === "F" ? true : rnd() < 0.5 };
+      E.firstLegHome = isFinal ? true : rnd() < 0.5;
+      E.opp = { id, name: tu[0], short: tu[1], base: tu[2], col: tu[3], home: E.firstLegHome };
       save();
     }
-    return { kind: E.stage, label: EURO_KO_LABEL[E.stage], opp: E.opp, home: E.opp.home };
+    const leg = isFinal ? 0 : (leg2 ? 2 : 1);
+    const home = isFinal ? true : (leg2 ? !E.firstLegHome : E.firstLegHome);
+    return { kind: E.stage, leg, label: EURO_KO_LABEL[E.stage] + (leg ? " (" + (leg === 1 ? "1st" : "2nd") + " leg)" : ""),
+             opp: E.opp, home };
   }
   return null;
 }
@@ -3101,34 +3213,44 @@ function commitEuro(fix, r, pens) {
       }
     }
   } else {
-    let win = myG > opG;
-    if (myG === opG) {
-      const so = pens || simShootoutClubs(G.myClub, EURO_SLOT);
-      win = so.myWin;
-      note = so.note;
-      r.events = (r.events || []).concat(shootoutEvents(so, G.myClub, EURO_SLOT));
-    }
-    // the rest of the round resolves alongside your tie
-    const others = (E.koPool || []).filter(id => id !== fix.opp.id);
-    let survivors = simEuroKORound(E, others);
-    if (!win) {
-      E.stage = "out";
-      boardBump(fix.kind === "F" ? -1 : -3);
-      if (fix.kind === "F") note += " — runners-up.";
-    } else if (fix.kind === "playoff") {
-      E.koPool = (E.koTop8 || []).concat(survivors);
-      E.stage = "R16"; boardBump(3); note += " — into the Round of 16!";
-    } else if (fix.kind === "F") {
-      E.stage = "won";
-      G.honours.push("Season " + G.season + ": " + COMP_NAME[E.comp] + " winners");
-      boardBump(15);
-      note = " — CHAMPIONS OF EUROPE!";
+    const isFinal = fix.kind === "F";
+    if (!isFinal && fix.leg === 1) {
+      // first leg: bank the score; the return leg is already on the calendar
+      E.agg = { my: myG, opp: opG };
+      note = " - first leg, " + (myG > opG ? "leading " : myG < opG ? "trailing " : "level ") + myG + "-" + opG;
     } else {
-      E.koPool = survivors;
-      E.stage = EURO_KO_NEXT[fix.kind];
-      boardBump(fix.kind === "SF" ? 4 : 3);
+      let aggMy = myG + (isFinal ? 0 : (E.agg ? E.agg.my : 0)), aggOp = opG + (isFinal ? 0 : (E.agg ? E.agg.opp : 0));
+      let win = aggMy > aggOp;
+      if (aggMy === aggOp) {
+        const so = pens || simShootoutClubs(G.myClub, EURO_SLOT);
+        win = so.myWin;
+        note = (isFinal ? "" : " - " + aggMy + "-" + aggOp + " agg;") + " " + so.note;
+        r.events = (r.events || []).concat(shootoutEvents(so, G.myClub, EURO_SLOT));
+      } else if (!isFinal) {
+        note = " - " + (win ? "won " : "lost ") + aggMy + "-" + aggOp + " on aggregate";
+      }
+      // the rest of the round resolves alongside your tie
+      const others = (E.koPool || []).filter(id => id !== fix.opp.id);
+      let survivors = simEuroKORound(E, others);
+      if (!win) {
+        E.stage = "out";
+        boardBump(isFinal ? -1 : -3);
+        if (isFinal) note += " — runners-up.";
+      } else if (fix.kind === "playoff") {
+        E.koPool = (E.koTop8 || []).concat(survivors);
+        E.stage = "R16"; boardBump(3); note += " — into the Round of 16!";
+      } else if (isFinal) {
+        E.stage = "won";
+        G.honours.push("Season " + G.season + ": " + COMP_NAME[E.comp] + " winners");
+        boardBump(15);
+        note += " — CHAMPIONS OF EUROPE!";
+      } else {
+        E.koPool = survivors;
+        E.stage = EURO_KO_NEXT[fix.kind];
+        boardBump(fix.kind === "SF" ? 4 : 3);
+      }
+      E.opp = null; E.agg = null; E.firstLegHome = undefined;
     }
-    E.opp = null;
   }
   E.results.push({ label: fix.label, opp: fix.opp.name, myG, opG, home: fix.home, note });
   G.lastMatch = r;
@@ -3143,7 +3265,7 @@ function commitEuro(fix, r, pens) {
 function playEuroQuick() {
   const fix = dueEuro();
   if (!fix || G.live) return;
-  prepMatchLineup();
+  prepMatchLineup(true);
   setEuroGuest(fix.opp);
   const h = fix.home ? G.myClub : EURO_SLOT, a = fix.home ? EURO_SLOT : G.myClub;
   const opts = {};
@@ -3155,7 +3277,7 @@ function playEuroQuick() {
 function startEuroLive() {
   const fix = dueEuro();
   if (!fix || G.live) return;
-  prepMatchLineup();
+  prepMatchLineup(true);
   setEuroGuest(fix.opp);
   const oppIdx = EURO_SLOT;
   const h = fix.home ? G.myClub : EURO_SLOT, a = fix.home ? EURO_SLOT : G.myClub;
@@ -4470,10 +4592,40 @@ function nextSeason(newClub) {
   }
 
   // European football and the domestic cups are a top-flight affair only
+  // Community Shield: last season's top-flight champions vs the FA Cup winners.
+  // Only when you were in the Premier League last season (so the cups ran) and
+  // you finished as champions or lifted the FA Cup, and you stayed at the club.
+  G.shield = null; G.shieldNews = null;
+  if (!movedClub && oldTier === 0 && PY.champions && G.cups && G.cups.fa) {
+    const champIdx = PY.champions[0];
+    const faName = G.cups.fa.winner;
+    const faIdx = faName ? CLUBS.findIndex((c, i) => i < EURO_SLOT && c.name === faName) : -1;
+    const iAmChamp = champIdx === G.myClub, iAmFA = faIdx === G.myClub;
+    let opp = -1;
+    if (iAmChamp && iAmFA) opp = finalT[1] ? finalT[1].i : -1;
+    else if (iAmChamp) opp = faIdx;
+    else if (iAmFA) opp = champIdx;
+    if (opp >= 0 && opp < EURO_SLOT && opp !== G.myClub) G.shield = { opp, played: false, as: iAmChamp ? "champions" : "FA Cup winners" };
+  }
+  // UEFA Super Cup: last season's Champions League winners vs the Europa League
+  // winners. You contest it if you lifted the UCL or UEL and stayed at the club;
+  // the other competition is not simulated, so its strongest club stands in as
+  // the opposing champions.
+  G.superCup = null; G.superCupNews = null;
+  if (!movedClub && G.euro && G.euro.stage === "won" && (G.euro.comp === "UCL" || G.euro.comp === "UEL")) {
+    const wonComp = G.euro.comp, otherComp = wonComp === "UCL" ? "UEL" : "UCL";
+    let best = EURO_POOLS[otherComp][0];
+    for (const c of EURO_POOLS[otherComp]) if (c[2] > best[2]) best = c;
+    G.superCup = { name: best[0], short: best[1], base: best[2], col: best[3], as: COMP_NAME[wonComp] + " winners", played: false };
+  }
   if (G.tier === 0) {
     resolveEuroRivals();
     if (oldTier === 0 && !movedClub) {
-      initEuro(myFinalPos <= 4 ? "UCL" : myFinalPos === 5 ? "UEL" : myFinalPos === 6 ? "UECL" : null);
+      const uclSlots = rnd() < 0.34 ? 5 : 4;
+      const berths = europeanBerths(finalT.map(t => t.i), euroCupWinnerIdx(G.cups && G.cups.fa), euroCupWinnerIdx(G.cups && G.cups.lc), uclSlots);
+      const myComp = berths.comp[G.myClub] || null;
+      G.euroQual = { comp: myComp, route: myComp ? berths.route[G.myClub] : null, slots: uclSlots };
+      initEuro(myComp);
       assignEuroRivals(finalT);
     } else {
       initEuro(null);
@@ -5100,9 +5252,58 @@ function validateLineup() {
 
 /* Before every match: field the strongest available XI by form, position and
    fitness (auto-pick on, the default), or keep the manager's chosen XI with only
-   injured/suspended men replaced (auto-pick off). */
-function prepMatchLineup() {
-  G.lineup = (G.autoXI === false) ? validateLineup() : bestXI(G.squads[G.myClub], G.formation);
+   injured/suspended men replaced (auto-pick off). Cup and European ties always
+   field the strongest available XI regardless of the toggle (forceBest). */
+function playSuperCup() {
+  if (!G.superCup || G.superCup.played || G.week !== 0 || G.live) return;
+  const xi = bestXI(G.squads[G.myClub], G.formation);
+  const myStr = xi.reduce((t, id) => { const p = pById(id); return t + (p ? effRating(p) : 0); }, 0) / Math.max(1, xi.length);
+  const oStr = G.superCup.base;
+  const edge = (myStr - oStr) * 0.07;
+  const gf = e => Math.max(0, Math.round((1.2 + e) * (0.4 + rnd())));
+  let myG = gf(edge), opG = gf(-edge), win = myG > opG, note = "";
+  if (myG === opG) { win = rnd() < 0.5 + edge * 0.1; note = win ? " (won on penalties)" : " (lost on penalties)"; }
+  for (const id of xi) { const p = pById(id); if (p) bumpForm(p, 1); }
+  G.superCup.played = true;
+  const opName = G.superCup.short;
+  if (win) {
+    G.honours.push("Season " + G.season + ": UEFA Super Cup winners");
+    adjBudget(3, "UEFA Super Cup winners' prize", "prize");
+    boardBump(4);
+    G.superCupNews = "\ud83c\udfc6 UEFA Super Cup WON " + myG + "-" + opG + " vs " + opName + note + ". European silverware to open the campaign.";
+  } else {
+    G.superCupNews = "\ud83c\udfc6 UEFA Super Cup lost " + myG + "-" + opG + " vs " + opName + note + ".";
+  }
+  save(); render();
+}
+
+function playShield() {
+  if (!G.shield || G.shield.played || G.week !== 0 || G.live) return;
+  const opp = G.shield.opp;
+  const xi = bestXI(G.squads[G.myClub], G.formation);
+  const myStr = xi.reduce((t, id) => { const p = pById(id); return t + (p ? effRating(p) : 0); }, 0) / Math.max(1, xi.length);
+  const oXi = bestXI(G.squads[opp], "4-4-2");
+  const oStr = oXi.reduce((t, id) => { const p = G.squads[opp].find(x => x.id === id); return t + (p ? p.rating : 0); }, 0) / Math.max(1, oXi.length);
+  const edge = (myStr - oStr) * 0.07;
+  const gf = e => Math.max(0, Math.round((1.2 + e) * (0.4 + rnd())));
+  let myG = gf(edge), opG = gf(-edge), win = myG > opG, note = "";
+  if (myG === opG) { win = rnd() < 0.5 + edge * 0.1; note = win ? " (won on penalties)" : " (lost on penalties)"; }
+  for (const id of xi) { const p = pById(id); if (p) bumpForm(p, 1); }
+  G.shield.played = true;
+  const opName = CLUBS[opp].short;
+  if (win) {
+    G.honours.push("Season " + G.season + ": Community Shield winners");
+    adjBudget(2, "Community Shield winners\' prize", "prize");
+    boardBump(3);
+    G.shieldNews = "\ud83d\udee1 Community Shield WON " + myG + "-" + opG + " vs " + opName + note + ". Silverware before the league even starts.";
+  } else {
+    G.shieldNews = "\ud83d\udee1 Community Shield lost " + myG + "-" + opG + " vs " + opName + note + ". Only a curtain-raiser.";
+  }
+  save(); render();
+}
+
+function prepMatchLineup(forceBest) {
+  G.lineup = (!forceBest && G.autoXI === false) ? validateLineup() : bestXI(G.squads[G.myClub], G.formation);
 }
 
 /* ---------------- Rendering ---------------- */
@@ -5559,6 +5760,28 @@ function renderMain() {
           </div>`).join("") +
         `</div>
       </div>` : "";
+  const shieldPanel = (G.week === 0 && !G.live && G.shield && !G.shield.played) ? `
+      <div class="panel" style="border-color:var(--amber)">
+        <h2>\ud83d\udee1 The Community Shield</h2>
+        <p class="note">The traditional curtain-raiser. As ${G.shield.as || "qualifiers"} you face <b>${esc(CLUBS[G.shield.opp].name)}</b> for the season's first silverware.</p>
+        <div class="row"><button class="action" onclick="playShield()">\u25b6 Play the Community Shield</button></div>
+      </div>` : "";
+  const shieldNewsLine = (G.week === 0 && G.shieldNews) ? `<p class="note" style="margin:0 0 10px">${esc(G.shieldNews)}</p>` : "";
+  const superCupPanel = (G.week === 0 && !G.live && G.superCup && !G.superCup.played) ? `
+      <div class="panel" style="border-color:var(--amber)">
+        <h2>\ud83c\udfc6 UEFA Super Cup</h2>
+        <p class="note">The European curtain-raiser. As ${G.superCup.as} you face <b>${esc(G.superCup.name)}</b>, holders of the other major European trophy.</p>
+        <div class="row"><button class="action" onclick="playSuperCup()">\u25b6 Play the Super Cup</button></div>
+      </div>` : "";
+  const superCupNewsLine = (G.week === 0 && G.superCupNews) ? `<p class="note" style="margin:0 0 10px">${esc(G.superCupNews)}</p>` : "";
+  const euroQualLine = (G.week === 0 && G.euroQual && G.euroQual.comp) ? `<p class="note" style="margin:0 0 10px">\ud83c\udf0d Qualified for the ${COMP_NAME[G.euroQual.comp]} (${esc(G.euroQual.route || "")}).${G.euroQual.slots === 5 ? " England earned a 5th Champions League place this season." : ""}</p>` : "";
+  const friendliesPanel = (G.week === 0 && !G.live && friendliesLeft() > 0) ? `
+      <div class="panel" style="border-color:var(--line)">
+        <h2>\ud83e\udd1d Pre-season friendlies</h2>
+        <p class="note">Warm-up matches sharpen your XI before the league starts, pull a modest gate, and carry a slight injury risk. <b>${friendliesLeft()}</b> left this pre-season.</p>
+        ${G.friendlyNews ? `<p class="note">${esc(G.friendlyNews)}</p>` : ""}
+        <div class="row"><button class="action" onclick="playFriendly()">\u25b6 Play a friendly</button></div>
+      </div>` : "";
   const eventPanel = G.event ? `
       <div class="panel" style="border-color:var(--amber)">
         <h2>📰 A situation needs your attention</h2>
@@ -5575,6 +5798,12 @@ function renderMain() {
   const eventNewsLine = G.eventNews ? `<p class="note" style="margin:0 0 10px;color:var(--ink)">${esc(G.eventNews)}</p>` : "";
   return `
     ${meeting}
+    ${shieldPanel}
+    ${shieldNewsLine}
+    ${superCupPanel}
+    ${superCupNewsLine}
+    ${euroQualLine}
+    ${friendliesPanel}
     ${sponsorPanel}
     ${eventPanel}
     ${eventNewsLine}
@@ -6395,6 +6624,7 @@ function renderSeasonEnd() {
       <div class="row"><button class="action" onclick="nextSeason()">${promoted ? "⬆ Up to " + upName + " →" : iAmDown ? "Down to " + downName + " - fight back →" : "Continue to " + seasonYears(G.season + 1) + " →"}</button>
       <button class="ghost" onclick="showSeasonCard()" title="A poster of your season - share it">🖼 Season card</button>
       <button class="ghost" onclick="resetGame()">New game (different club)</button></div></div>
+      ${jobCentreHtml()}
       <div id="card-box"></div>` + renderTable();
   }
   if (!G.relegated || !G.promoted) { // ensure the rich top-flight screen has its lists
@@ -6446,7 +6676,7 @@ function renderSeasonEnd() {
         <span class="note">…or simply start next season below to stay loyal.</span>
       </div>
     </div>` : "";
-  return natHtml + approachHtml + `
+  return natHtml + approachHtml + jobCentreHtml() + `
     <div class="banner">
       <h2>${iWon ? "🏆 CHAMPIONS! 🏆" : "The " + seasonYears(G.season) + " season is complete"}</h2>
       <p>${iWon
