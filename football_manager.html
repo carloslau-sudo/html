@@ -400,7 +400,7 @@ const CLUBS = [
     ["L. Foster","FW",75,25],["J. Anthony","FW",75,25],["Z. Flemming","FW",74,28],["J. Bruun Larsen","FW",74,27]]},
   { name: "Chelsea", short: "CHE", base: 82, squad: [
     ["R. Sánchez","GK",80,27],["F. Jörgensen","GK",75,23],
-    ["R. James","DF",84,25],["M. Cucurella","DF",83,27],["L. Colwill","DF",82,22],["M. Gusto","DF",80,22],["T. Chalobah","DF",79,26],["B. Badiashile","DF",78,24],
+    ["R. James","DF",84,25,"RB"],["M. Cucurella","DF",83,27,"LB"],["L. Colwill","DF",82,22,"CB"],["M. Gusto","DF",80,22,"RB"],["T. Chalobah","DF",79,26,"CB"],["B. Badiashile","DF",78,24,"CB"],
     ["C. Palmer","MF",89,23],["M. Caicedo","MF",87,23],["E. Fernández","MF",85,24],["J. Gittens","MF",80,21],["R. Lavia","MF",79,21],["A. Santos","MF",78,21],
     ["João Pedro","FW",84,23],["P. Neto","FW",82,25],["A. Garnacho","FW",81,21],["L. Delap","FW",80,22]]},
   { name: "Crystal Palace", short: "CRY", base: 78, squad: [
@@ -903,10 +903,12 @@ function wageFor(rating, age) {
   const ageF = age <= 21 ? 0.6 : age <= 23 ? 0.8 : 1;
   return Math.max(0.3, Math.round(18 * Math.exp(0.1176 * (rating - 90)) * ageF * 10) / 10);
 }
-function makePlayer(name, pos, rating, age) {
-  return { id: nextId++, name, pos, rating, age, pot: potentialFor(rating, age),
+function makePlayer(name, pos, rating, age, role) {
+  const p = { id: nextId++, name, pos, rating, age, pot: potentialFor(rating, age),
            wage: wageFor(rating, age), years: 2 + Math.floor(Math.random() * 4),
            fitness: 100, morale: 75, form: 0, injury: 0, ban: 0, yellows: 0, goals: 0, assists: 0, apps: 0 };
+  if (role) p.role = role; // explicit slot from the roster (e.g. a right-back, not just "DF")
+  return p;
 }
 function wageBill() {
   return Math.round(G.squads[G.myClub].reduce((s, p) => s + (p.wage || 0), 0) * 10) / 10;
@@ -973,9 +975,19 @@ function potStars(p) {
 }
 
 function genSquad(clubIdx) {
-  const sq = CLUBS[clubIdx].squad.map(([name, pos, rating, age]) => makePlayer(name, pos, rating, age));
+  const sq = CLUBS[clubIdx].squad.map(([name, pos, rating, age, role]) => makePlayer(name, pos, rating, age, role));
   assignRoles(sq);
   return sq;
+}
+// push explicit roster roles onto an already-saved squad (the rating-sorted
+// auto-assignment can mislabel a club's best defender as a CB when he is a RB)
+function reconcileRoles() {
+  if (!G || !G.squads) return;
+  for (let c = 0; c < CLUBS.length && c < G.squads.length; c++) {
+    const roster = CLUBS[c] && CLUBS[c].squad, sq = G.squads[c];
+    if (!roster || !sq) continue;
+    for (const p of sq) { const row = roster.find(r => r[0] === p.name && r[4]); if (row) p.role = row[4]; }
+  }
 }
 
 /* ---------------- Fixtures (double round robin, circle method) ---------------- */
@@ -4895,6 +4907,7 @@ function load() {
     nextId = data.nextId || 1000;
     delete data.nextId;
     G = data;
+    reconcileRoles();
     const guest = G.guestClub || (G.euro && G.euro.opp);
     if (guest) { // restore the visiting-opposition slot (European or cup minnow)
       CLUBS[EURO_SLOT].name = guest.name;
