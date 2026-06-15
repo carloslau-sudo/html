@@ -2917,8 +2917,8 @@ function renderTransfers() {
 
 /* ---------------- Domestic cups (FA Cup & League Cup) ---------------- */
 
-const CUP_NAME = { fa: "FA Cup", lc: "League Cup" };
-const CUP_PRIZE = { fa: 10, lc: 6 };
+const CUP_NAME = { fa: "FA Cup", lc: "League Cup", et: "Bristol Street Motors Trophy" };
+const CUP_PRIZE = { fa: 10, lc: 6, et: 3 };
 
 /* lower-league opposition for early rounds — the banana skins */
 const MINNOWS = [
@@ -2940,9 +2940,9 @@ const MINNOWS = [
 /* Each cup is a real bracket: a full field enters round one, every tie is
    played, and the tournament resolves to a winner even after you exit. */
 
-function entrantUid(e) { return e.kind === "me" ? "ME" : e.kind === "league" ? "L" + e.idx : "M" + e.m; }
-function entrantName(e) { return e.kind === "me" ? CLUBS[G.myClub].name : e.kind === "league" ? CLUBS[e.idx].name : MINNOWS[e.m][0]; }
-function entrantBase(e) { return e.kind === "me" ? CLUBS[G.myClub].base : e.kind === "league" ? CLUBS[e.idx].base : MINNOWS[e.m][2]; }
+function entrantUid(e) { return e.kind === "me" ? "ME" : e.kind === "league" ? "L" + e.idx : e.kind === "u21" ? "U" + e.idx : "M" + e.m; }
+function entrantName(e) { return e.kind === "me" ? CLUBS[G.myClub].name : e.kind === "league" ? CLUBS[e.idx].name : e.kind === "u21" ? CLUBS[e.idx].name + " U21" : MINNOWS[e.m][0]; }
+function entrantBase(e) { return e.kind === "me" ? CLUBS[G.myClub].base : e.kind === "league" ? CLUBS[e.idx].base : e.kind === "u21" ? Math.max(50, CLUBS[e.idx].base - 16) : MINNOWS[e.m][2]; }
 
 function buildCupField(size) {
   const field = [{ kind: "me" }];
@@ -2955,6 +2955,28 @@ function buildCupField(size) {
   return field.slice(0, size);
 }
 
+/* Bristol Street Motors Trophy (EFL Trophy): League One & League Two clubs plus
+   16 invited Premier League / Championship academy (U21) sides — 64 in all, a
+   straight knockout to a Wembley final. Top-flight and Championship clubs do not
+   contest it, and the National League has its own competition, so it exists only
+   for tiers 2 and 3. Rounds avoid every League Cup and FA Cup week. */
+function buildTrophyField() {
+  const field = [{ kind: "me" }];
+  const lower = (G.tiers[2] || []).concat(G.tiers[3] || []); // League One + League Two
+  for (const idx of lower) if (idx !== G.myClub) field.push({ kind: "league", idx });
+  const academy = (G.tiers[0] || []).concat(G.tiers[1] || []).slice(0, 16); // invited PL/Championship U21 sides
+  for (const idx of academy) field.push({ kind: "u21", idx });
+  return field;
+}
+function buildTrophyCup() {
+  if (G.tier === 2 || G.tier === 3) {
+    return { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
+      remaining: buildTrophyField(), rounds: [
+      { week: 6, label: "Round 1" }, { week: 10, label: "Round 2" }, { week: 23, label: "Last 16" },
+      { week: 28, label: "Quarter-final" }, { week: 33, label: "Semi-final" }, { week: 41, label: "Final" }] };
+  }
+  return { alive: "out", rounds: [], results: [], history: [], r: 0, winner: null };
+}
 function initCups() {
   G.cups = {
     lc: { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
@@ -2965,6 +2987,7 @@ function initCups() {
       remaining: buildCupField(64), rounds: [
       { week: 16, label: "Round 3" }, { week: 20, label: "Round 4" }, { week: 25, label: "Round 5" },
       { week: 29, label: "Quarter-final" }, { week: 31, label: "Semi-final" }, { week: 35, label: "Final" }] },
+    et: buildTrophyCup(),
   };
 }
 
@@ -2976,6 +2999,9 @@ function drawMyCupOpp(c, r) {
   if (e.kind === "minnow") {
     const m = MINNOWS[e.m];
     return { kind: "minnow", uid: entrantUid(e), name: m[0], short: m[1], base: m[2], col: m[3], home };
+  }
+  if (e.kind === "u21") {
+    return { kind: "u21", uid: entrantUid(e), idx: e.idx, name: CLUBS[e.idx].name + " U21", short: CLUBS[e.idx].short, base: entrantBase(e), col: CLUBS[e.idx].col, home };
   }
   return { kind: "league", uid: entrantUid(e), idx: e.idx, name: CLUBS[e.idx].name, short: CLUBS[e.idx].short, base: CLUBS[e.idx].base, home };
 }
@@ -2999,7 +3025,7 @@ function simCupRound(entrants) {
 
 function dueCup() {
   if (!G.cups) return null;
-  for (const key of ["lc", "fa"]) {
+  for (const key of ["lc", "fa", "et"]) {
     const c = G.cups[key];
     if (!c || c.alive !== true) continue;
     const rd = c.rounds[c.r];
@@ -3349,7 +3375,9 @@ function renderHall() {
 
 function renderCups() {
   let html = `<div class="panel"><h2>🏆 Domestic Cups</h2>`;
-  for (const key of ["lc", "fa"]) {
+  const cupKeys = ["lc", "fa"];
+  if (G.cups.et && (G.cups.et.rounds || []).length) cupKeys.push("et");
+  for (const key of cupKeys) {
     const c = G.cups[key];
     const status =
       c.alive === "won" ? `🏆 <b>${CUP_NAME[key]} WINNERS!</b>` :
@@ -4755,7 +4783,8 @@ function defaultTiers() {
 function tierOfClub(ci, tiers) { for (let t = 0; t < tiers.length; t++) if (tiers[t].includes(ci)) return t; return 0; }
 function tierIndex() { return (typeof G.tier === "number") ? G.tier : (TIER_BY_KEY[G.div] !== undefined ? TIER_BY_KEY[G.div] : 0); }
 function noCups() { return { lc: { alive: "out", rounds: [], results: [], history: [], r: 0, winner: null },
-                             fa: { alive: "out", rounds: [], results: [], history: [], r: 0, winner: null } }; }
+                             fa: { alive: "out", rounds: [], results: [], history: [], r: 0, winner: null },
+                             et: { alive: "out", rounds: [], results: [], history: [], r: 0, winner: null } }; }
 /* place a club into a chosen tier of a fresh pyramid, swapping a club out to keep every tier full */
 function pyramidWithClubInTier(clubIdx, targetTier) {
   const tiers = defaultTiers();
@@ -5318,11 +5347,15 @@ function load() {
     }
     if (!G.cups || !G.cups.lc || !G.cups.lc.remaining) { // any division joins fresh brackets; older and lower-league saves included
       initCups();
-      for (const key of ["lc", "fa"]) {
+      for (const key of ["lc", "fa", "et"]) {
         const c = G.cups[key];
         // if the opening round has already passed, you missed this season's cup and enter fresh next season — no free byes to a final
-        if (c.rounds[0] && c.rounds[0].week < G.week) { c.alive = "out"; c.remaining = []; }
+        if (c && c.rounds[0] && c.rounds[0].week < G.week) { c.alive = "out"; c.remaining = []; }
       }
+    } else if ((G.tier === 2 || G.tier === 3) && (!G.cups.et || !(G.cups.et.rounds || []).length)) {
+      // a lower-league save from before the Trophy existed: add it without disturbing the other cups
+      G.cups.et = buildTrophyCup();
+      if (G.cups.et.rounds[0] && G.cups.et.rounds[0].week < G.week) { G.cups.et.alive = "out"; G.cups.et.remaining = []; }
     }
     if (!G.board) G.board = { conf: 65, exp: expectedPos(G.myClub), grace: G.week + 6, chosen: true };
     if (!G.style || !STYLES[G.style]) G.style = "Balanced";
