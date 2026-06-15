@@ -1324,7 +1324,7 @@ function toggleLang() {
 }
 function evText(e) { return LANG === "zh" && e.zh ? e.zh : e.text; }
 function langBtn(extraStyle) {
-  return `<button class="snd-btn" style="${extraStyle || ""}" onclick="toggleLang()" title="Commentary language / 旁述語言">${LANG === "zh" ? "EN" : "中"}</button>`;
+  return `<button class="snd-btn" style="${extraStyle || ""}" onclick="toggleLang()" title="Language / 語言">${LANG === "zh" ? "EN" : "中"}</button>`;
 }
 
 function simMatch(hIdx, aIdx, opts) {
@@ -2987,6 +2987,22 @@ function buildTrophyCup() {
       { week: 28, label: "Quarter-final" }, { week: 33, label: "Semi-final" }, { week: 41, label: "Final" }] };
   }
   return { alive: "out", rounds: [], results: [], history: [], r: 0, winner: null };
+}
+/* A cup added (or revived) on a save already in progress: pick it up at the next upcoming
+   round, byeing through any rounds already played, unless fewer than two rounds remain
+   (entering with only the final left would be an unfair free run). Returns true if joined. */
+function joinCupMidSeason(c) {
+  if (!c || !c.rounds || !c.rounds.length) return false;
+  let r = 0;
+  while (r < c.rounds.length && c.rounds[r].week < G.week) r++;
+  if (r > c.rounds.length - 2) return false; // fewer than two rounds remain — too late to enter fairly
+  if (r > 0) { // bye through the rounds already played; sim them on the rest of the field to shrink it
+    let field = (c.remaining || []).filter(e => entrantUid(e) !== "ME");
+    for (let i = 0; i < r && field.length > 1; i++) field = simCupRound(field).survivors;
+    c.remaining = [{ kind: "me" }].concat(field);
+  }
+  c.r = r; c.opp = null; c.alive = true;
+  return true;
 }
 function initCups() {
   const lower = G.tier >= 2; // League One, League Two and the National League enter at Round 1
@@ -5496,15 +5512,18 @@ function load() {
     }
     if (!G.cups || !G.cups.lc || !G.cups.lc.remaining) { // any division joins fresh brackets; older and lower-league saves included
       initCups();
-      for (const key of ["lc", "fa", "et"]) {
+      for (const key of ["lc", "fa"]) {
         const c = G.cups[key];
         // if the opening round has already passed, you missed this season's cup and enter fresh next season — no free byes to a final
         if (c && c.rounds[0] && c.rounds[0].week < G.week) { c.alive = "out"; c.remaining = []; }
       }
-    } else if ((G.tier === 2 || G.tier === 3) && (!G.cups.et || !(G.cups.et.rounds || []).length)) {
-      // a lower-league save from before the Trophy existed: add it without disturbing the other cups
+      if (G.cups.et && G.cups.et.alive === true && !joinCupMidSeason(G.cups.et)) { G.cups.et.alive = "out"; G.cups.et.remaining = []; }
+    } else if ((G.tier === 2 || G.tier === 3) &&
+               (!G.cups.et || !(G.cups.et.rounds || []).length ||
+                (G.cups.et.alive === "out" && (!G.cups.et.results || !G.cups.et.results.length)))) {
+      // add the Trophy — or revive one a previous build shelved as "missed this season" — and let you pick it up at the next round
       G.cups.et = buildTrophyCup();
-      if (G.cups.et.rounds[0] && G.cups.et.rounds[0].week < G.week) { G.cups.et.alive = "out"; G.cups.et.remaining = []; }
+      if (G.cups.et.alive === true && !joinCupMidSeason(G.cups.et)) { G.cups.et.alive = "out"; G.cups.et.remaining = []; }
     }
     if (!G.board) G.board = { conf: 65, exp: expectedPos(G.myClub), grace: G.week + 6, chosen: true };
     if (!G.style || !STYLES[G.style]) G.style = "Balanced";
@@ -6410,7 +6429,7 @@ function renderMain() {
     ${body}
     <div class="panel row">
       ${playBtns}
-      <button class="ghost" onclick="toggleLang()" title="Match commentary language / 旁述語言">🗣 Commentary: ${LANG === "zh" ? "中文" : "English"}</button>
+      <button class="ghost" onclick="toggleLang()" title="Language for dates and match commentary / 語言">🌐 Language: ${LANG === "zh" ? "中文" : "English"}</button>
       <button class="ghost" onclick="exportSave()" title="Download your career as a file — back it up or move it to another device">💾 Save to file</button>
       <button class="ghost" onclick="document.getElementById('save-file-input').click()" title="Restore a career from a saved file">📂 Load from file</button>
       <input type="file" id="save-file-input" accept=".json,application/json" style="display:none" onchange="importSave(this)">
@@ -7068,14 +7087,14 @@ function renderMatchResult() {
     ${r.events.some(e => e.type === "goal" && e.clubIdx !== undefined) ? `
     <div style="text-align:center;margin:4px 0 10px">
       <button class="ghost" id="hl-btn" onclick="startHighlights()">🎬 Watch the goals</button>
-      <button class="ghost" onclick="toggleLang()" title="Commentary language / 旁述語言">${LANG === "zh" ? "EN" : "中文旁述"}</button>
+      <button class="ghost" onclick="toggleLang()" title="Language / 語言">${LANG === "zh" ? "EN" : "中文旁述"}</button>
     </div>
     <div id="hl-box" class="pitch-wrap" style="display:none">
       <canvas id="hl-pitch" width="760" height="498"></canvas>
       <button class="snd-btn" onclick="skipHighlight()" title="Skip to the next goal">⏭</button>
     </div>` : `
     <div style="text-align:center;margin:4px 0 10px">
-      <button class="ghost" onclick="toggleLang()" title="Commentary language / 旁述語言">${LANG === "zh" ? "EN" : "中文旁述"}</button>
+      <button class="ghost" onclick="toggleLang()" title="Language / 語言">${LANG === "zh" ? "EN" : "中文旁述"}</button>
     </div>`}
     <details class="fold"><summary>📋 Match timeline (${r.events.length} events)</summary>
       <ul class="events">` +
