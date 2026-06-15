@@ -5381,7 +5381,9 @@ function exportSave() {
   const raw = localStorage.getItem("touchline_save");
   const a = document.createElement("a");
   a.href = "data:application/json;charset=utf-8," + encodeURIComponent(raw);
-  a.download = "football-manager-save-season" + G.season + "-week" + G.week + ".json";
+  const d = new Date(), pad = n => String(n).padStart(2, "0");
+  const stamp = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + "-" + pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds());
+  a.download = "football-manager-save-season" + G.season + "-week" + G.week + "-" + stamp + ".json";
   document.body.appendChild(a);
   a.click();
   a.remove();
