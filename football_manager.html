@@ -1113,17 +1113,18 @@ function effRating(p) {
   return r;
 }
 function available(p) { return p.injury === 0 && p.ban === 0 && !p.loan; }
-/* Energy gate (your squad only). Sit a player once he drops below REST_OUT%;
-   he stays rested until he recovers to REST_IN%, then he is fit for his slot
-   again. Two thresholds (REST_IN > REST_OUT) stop a borderline player flicking
-   in and out match to match. Tune these two numbers to taste. */
-const REST_OUT = 70, REST_IN = 82;
-function updateResting(squad) {
-  for (const p of squad) {
-    if (p.injury > 0 || p.ban > 0 || p.loan) { p.resting = false; continue; } // those are handled by available()
-    if (!p.resting && p.fitness < REST_OUT) p.resting = true;
-    else if (p.resting && p.fitness >= REST_IN) p.resting = false;
-  }
+/* Fitness shapes selection by a graduated penalty, not an on/off bench. A fresh
+   player (>=80%) is untouched; the dock grows as he tires, so the auto-XI keeps
+   your best man while he is only mildly tired and rotates him only once a fresher
+   alternative in his line is the better bet. No hysteresis band, so a recovered
+   player returns the instant he is the stronger pick. */
+const REST_OUT = 72; // at or below this a player is shown as tired in the squad list
+function fatiguePenalty(p) {
+  if (p.fitness >= 80) return 0;
+  return Math.pow((80 - p.fitness) / 10, 1.7) * 2.4; // ~0.1 at 78%, ~2.4 at 70%, ~7.8 at 60%, ~15 at 50%
+}
+function updateResting(squad) { // purely informational "tired" flag for the squad list
+  for (const p of squad) p.resting = !(p.injury > 0 || p.ban > 0 || p.loan) && p.fitness < REST_OUT;
 }
 function moraleFace(m) { m = (m === undefined ? 75 : Math.round(m)); return m >= 85 ? "😀" : m >= 65 ? "🙂" : m >= 55 ? "😐" : "😠"; }
 function condCell(p) {
@@ -1150,7 +1151,7 @@ function bestXI(squad, formationName) {
     for (const p of squad) {
       if (p.pos !== line || !available(p) || used.has(p.id)) continue;
       let v = slotRating(p, role);
-      if (mine && p.resting) v -= 1000; // demote, do not exclude: a rested man still fills his slot if no fit cover exists in his line
+      if (mine) v -= fatiguePenalty(p); // tired legs are docked proportionally; your best fit player keeps his place
       if (v > bv) { bv = v; best = p; }
     }
     if (best) { used.add(best.id); return best.id; }
@@ -1158,7 +1159,7 @@ function bestXI(squad, formationName) {
   });
   // injury crisis: out-of-position stand-ins go into the empty slot itself; prefer the freshest, non-rested cover
   const reserves = squad.filter(p => available(p) && !used.has(p.id))
-                        .sort((a, b) => ((a.resting ? 1 : 0) - (b.resting ? 1 : 0)) || (effRating(b) - effRating(a)));
+                        .sort((a, b) => (fatiguePenalty(a) - fatiguePenalty(b)) || (effRating(b) - effRating(a)));
   for (let i = 0; i < xi.length; i++) if (xi[i] === null && reserves.length) xi[i] = reserves.shift().id;
   return xi.filter(id => id !== null);
 }
@@ -1199,10 +1200,10 @@ function newGame(clubIdx) {
     initEuro(SEASON1_EURO[clubIdx] || null);
     G.euroRivals = Object.entries(SEASON1_EURO).filter(([i]) => +i !== clubIdx)
       .map(([i, c]) => ({ i: +i, comp: c, done: null }));
-    initCups();
   } else {
-    G.euro = null; G.euroRivals = []; G.cups = noCups();
+    G.euro = null; G.euroRivals = [];
   }
+  initCups(); // FA Cup and League Cup are open to every division, not just the top flight
   setWageCap();
   ledgerOpen();
   G.freeAgents = []; topUpFreeAgents(14);
@@ -5035,10 +5036,10 @@ function nextSeason(newClub) {
       const strong = G.league.filter(i => i !== G.myClub).sort((a, b) => CLUBS[b].base - CLUBS[a].base).slice(0, 6);
       assignEuroRivals(strong.map(i => ({ i })));
     }
-    initCups();
   } else {
-    G.euro = null; G.cups = noCups();
+    G.euro = null;
   }
+  initCups(); // every division contests the domestic cups
 
   // the board's mood and expectation for the season ahead
   if (wasPromoted && !takingJob) {
@@ -5315,19 +5316,12 @@ function load() {
       CLUBS[EURO_SLOT].base = guest.base;
       CLUBS[EURO_SLOT].col = guest.col;
     }
-    if (tierIndex() === 0 && (!G.cups || !G.cups.lc.remaining)) { // older formats join fresh brackets mid-season
+    if (!G.cups || !G.cups.lc || !G.cups.lc.remaining) { // any division joins fresh brackets; older and lower-league saves included
       initCups();
       for (const key of ["lc", "fa"]) {
         const c = G.cups[key];
-        while (c.rounds[c.r] && c.rounds[c.r].week < G.week) {
-          // fast-forward passed rounds: the field shrinks, you get byes
-          const others = c.remaining.filter(e => e.kind !== "me");
-          const rd = simCupRound(others);
-          c.history.push({ label: c.rounds[c.r].label, myTie: CLUBS[G.myClub].name + " — bye", ties: rd.ties });
-          c.remaining = rd.survivors.concat([{ kind: "me" }]);
-          c.r++;
-        }
-        if (c.r >= c.rounds.length) c.alive = "out";
+        // if the opening round has already passed, you missed this season's cup and enter fresh next season — no free byes to a final
+        if (c.rounds[0] && c.rounds[0].week < G.week) { c.alive = "out"; c.remaining = []; }
       }
     }
     if (!G.board) G.board = { conf: 65, exp: expectedPos(G.myClub), grace: G.week + 6, chosen: true };
@@ -6441,7 +6435,7 @@ function renderSquad() {
       <td class="num">${condCell(p)}</td><td class="num m-hide">${p.form > 0 ? "+" + p.form : p.form}</td>
       <td class="num">${p.goals}</td>
       <td class="num">£${p.wage || 0}M·${p.years || 0}y${(p.years || 0) <= 1 ? ` <button class="ghost" style="padding:2px 7px;font-size:11px" onclick="renewContract(${p.id})" title="He wants £${renewDemand(p)}M/yr">Renew</button>` : ""}</td>
-      <td>${p.loan ? `<span class="tag">LOAN @${esc(p.loan)}</span>` : ""}${p.injury ? `<span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}${(p.resting && available(p) && !inXI.has(p.id)) ? ` <span class="tag" style="color:var(--amber)" title="Energy below ${REST_OUT}% — rested until back to ${REST_IN}%">RESTED</span>` : ""}${(p.years || 0) <= 1 ? ` <span class="tag" style="color:var(--amber)">EXPIRING</span>` : ""}</td>
+      <td>${p.loan ? `<span class="tag">LOAN @${esc(p.loan)}</span>` : ""}${p.injury ? `<span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}${(p.resting && available(p) && !inXI.has(p.id)) ? ` <span class="tag" style="color:var(--amber)" title="Tired (${p.fitness}% energy). The auto-XI rotated him because a fresher team-mate is the better pick right now; he returns the moment he is your strongest option.">RESTED</span>` : ""}${(p.years || 0) <= 1 ? ` <span class="tag" style="color:var(--amber)">EXPIRING</span>` : ""}</td>
     </tr>`).join("") + `</tbody></table>
     <p class="note">Highlighted rows are your starting XI. ★ = scouted potential for players 23 and under.
     ⚠ EXPIRING players leave on a free at season's end unless renewed — but renewing costs what they're worth NOW.</p></div>`;
@@ -6466,7 +6460,7 @@ function renderTactics() {
       `</select></label>
       <button class="ghost" onclick="G.lineup=bestXI(G.squads[G.myClub],G.formation);save();render()">Auto-pick best XI now</button>
     </div>
-    <p class="note"><label><input type="checkbox" ${G.autoXI === false ? "" : "checked"} onchange="G.autoXI=this.checked;if(this.checked)G.lineup=bestXI(G.squads[G.myClub],G.formation);save();render()"> <b>Auto-pick best XI before every match</b></label> - ${G.autoXI === false ? "OFF: your chosen XI is kept; only injured or suspended men are replaced." : "ON: your strongest available XI by form, position and fitness is picked each matchday; anyone who drops below ${REST_OUT}% is rested and comes back once recovered to ${REST_IN}%. Switch off to pick by hand."}</p>
+    <p class="note"><label><input type="checkbox" ${G.autoXI === false ? "" : "checked"} onchange="G.autoXI=this.checked;if(this.checked)G.lineup=bestXI(G.squads[G.myClub],G.formation);save();render()"> <b>Auto-pick best XI before every match</b></label> - ${G.autoXI === false ? "OFF: your chosen XI is kept; only injured or suspended men are replaced." : "ON: your strongest available XI by form, position and fitness is picked each matchday; a tired player is rotated only when a fresher team-mate in his line is the better pick, and he returns the moment he is your strongest option. Switch off to pick by hand."}</p>
     <p class="note">${esc(STYLES[G.style || "Balanced"].desc)}</p>
     <h3>Starting XI</h3><div class="lineup-grid">`;
   const slotRoles = formSlots(G.formation);
