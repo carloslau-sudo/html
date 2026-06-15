@@ -828,6 +828,7 @@ function shade(hex, amt) {
 }
 /* original shield-style crest drawn in club colours — no licensed artwork */
 function crest(short, col, px) {
+  if (typeof col !== "string" || col[0] !== "#" || col.length < 7) col = "#8A98A5"; // guard a missing/malformed colour (e.g. a cup opponent stored by an older build)
   const rgb = [1, 3, 5].map(i => parseInt(col.slice(i, i + 2), 16));
   const bright = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
   const txt = bright > 150 ? "#1A2026" : "#FFFFFF";
@@ -6508,7 +6509,7 @@ function renderMain() {
       <button class="ghost" onclick="resetGame()">New game</button>
     </div>
     <p class="note" style="text-align:center" id="cloud-note">${(ghCfg() && ghCfg().auto) ? "☁ Auto-sync to GitHub is ON — every result is backed up." : "The game autosaves in this browser after every action. Use 💾 Save to file for backups, or turn on ☁ auto-sync in the Cloud tab."}</p>
-    <p class="note" style="text-align:center;opacity:0.5;font-size:10px">build 2026-06-15 · trophy-draw-fix</p>`;
+    <p class="note" style="text-align:center;opacity:0.5;font-size:10px">build 2026-06-15 · prematch-crest-fix</p>`;
 }
 
 function euroLeagueTableHtml(compact) {
@@ -7065,7 +7066,7 @@ function renderPreMatch() {
   } else if (cupFix) {
     const o = cupFix.opp;
     const myC = clubCrest(G.myClub, 24) + esc(CLUBS[G.myClub].name);
-    const opC = crest(o.short, o.kind === "league" ? colorOf(o.idx) : o.col, 24) + esc(o.name);
+    const opC = crest(o.short, (o.kind === "league" || o.kind === "u21") ? colorOf(o.idx) : (o.col || "#8A98A5"), 24) + esc(o.name);
     fixtureHtml = `<h2>🏆 ${esc(cupFix.label)}</h2>
       <div class="score-line">${cupFix.home ? myC : opC}
         <span class="vs">vs</span>
