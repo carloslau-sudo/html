@@ -1199,7 +1199,7 @@ function newGame(clubIdx) {
     results: [],   // per week: [{h,a,hg,ag}]
     formation: "4-4-2", mentality: "Balanced", style: "Balanced",
     lineup: null, honours: [], moty: [], mgr: { wage: managerWageFor(clubIdx), years: 3 }, euro: null,
-    budget: 20 + (CLUBS[clubIdx].base - 70) * 8,
+    budget: Math.max(5, 20 + (CLUBS[clubIdx].base - 70) * 8),
     deals: [], dealsKey: null, tfFilter: "All",
     screen: "main", tab: "squad", lastMatch: null,
   };
@@ -1453,7 +1453,7 @@ function commitWeek(weekResults, myResult, snapshot) {
     const p = t.findIndex(r => r.i === G.myClub) + 1;
     const drift = Math.max(-1.5, Math.min(1.5, (G.board.exp - p) * 0.15));
     if (myResult.h === G.myClub) { // 🎟 gate receipts
-      const gate = Math.round((0.3 + (CLUBS[G.myClub].base - 70) * 0.04 + (G.board.conf / 100) * 0.3) * 10) / 10;
+      const gate = Math.max(0.1, Math.round((0.3 + (CLUBS[G.myClub].base - 70) * 0.04 + (G.board.conf / 100) * 0.3) * 10) / 10);
       adjBudget(gate, "Matchday gate receipts", "gate");
     }
     const derbyX = isDerby(myResult.h, myResult.a) ? 2 : 1;
@@ -5241,9 +5241,9 @@ function nextSeason(newClub) {
   const mgrWage = (G.mgr && G.mgr.wage) || 0;
   const promoBudget = (wasPromoted && !takingJob) ? 30 : 0;
   const oldBudgetForLedger = G.budget || 0;
-  G.budget = Math.round((movedClub ? 0 : (G.budget || 0) * 0.5) + 20 + (CLUBS[G.myClub].base - 70) * 8 + (movedClub ? 0 : leaguePrize + euroPrize + sponsorIncome) + missionsWon * 8 - (staffTier("coach") + staffTier("physio") + staffTier("scout")) * 2 - mgrWage) + promoBudget;
+  G.budget = Math.round((movedClub ? 0 : (G.budget || 0) * 0.5) + Math.max(5, 20 + (CLUBS[G.myClub].base - 70) * 8) + (movedClub ? 0 : leaguePrize + euroPrize + sponsorIncome) + missionsWon * 8 - (staffTier("coach") + staffTier("physio") + staffTier("scout")) * 2 - mgrWage) + promoBudget;
   {
-    const stipend = Math.round((20 + (CLUBS[G.myClub].base - 70) * 8) * 10) / 10;
+    const stipend = Math.max(5, Math.round((20 + (CLUBS[G.myClub].base - 70) * 8) * 10) / 10);
     const staffUpkeep = (staffTier("coach") + staffTier("physio") + staffTier("scout")) * 2;
     const fitems = [];
     if (!movedClub && leaguePrize) fitems.push(["League prize money (finished #" + myFinalPos + ")", leaguePrize, "prize"]);
@@ -5476,7 +5476,7 @@ function load() {
     if (data.ver === 4) { data.ver = 5; data.live = null; } // old pre-simulated matches can't resume
     if (data.ver === 5) {
       data.ver = 6;
-      data.budget = 20 + (CLUBS[data.myClub].base - 70) * 8;
+      data.budget = Math.max(5, 20 + (CLUBS[data.myClub].base - 70) * 8);
       data.deals = []; data.dealsKey = null; data.tfFilter = "All";
     }
     if (data.ver === 6) {
@@ -5598,6 +5598,7 @@ function load() {
     }
     // lower divisions: pull any unplayed cup back into the weeks that remain so it auto-plays from Round 1 in the schedule
     fitCupsIntoRemainingSeason();
+    if (G.budget < 0) G.budget = Math.max(5, 20 + (CLUBS[G.myClub].base - 70) * 8); // repair a budget driven negative by the old low-stature stipend/gate bug
     if (!G.board) G.board = { conf: 65, exp: expectedPos(G.myClub), grace: G.week + 6, chosen: true };
     if (!G.style || !STYLES[G.style]) G.style = "Balanced";
     if (!FORMATIONS[G.formation]) G.formation = "4-4-2";
@@ -6510,7 +6511,7 @@ function renderMain() {
       <button class="ghost" onclick="resetGame()">New game</button>
     </div>
     <p class="note" style="text-align:center" id="cloud-note">${(ghCfg() && ghCfg().auto) ? "☁ Auto-sync to GitHub is ON — every result is backed up." : "The game autosaves in this browser after every action. Use 💾 Save to file for backups, or turn on ☁ auto-sync in the Cloud tab."}</p>
-    <p class="note" style="text-align:center;opacity:0.5;font-size:10px">build 2026-06-15 · table-highlight</p>`;
+    <p class="note" style="text-align:center;opacity:0.5;font-size:10px">build 2026-06-15 · budget-fix</p>`;
 }
 
 function euroLeagueTableHtml(compact) {
