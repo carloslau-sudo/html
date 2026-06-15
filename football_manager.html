@@ -3046,6 +3046,11 @@ function fitCupsIntoRemainingSeason() {
     if (!c || !(c.rounds || []).length) continue;
     if (c.alive !== true && !(c.results || []).length) c = G.cups[key] = buildDomesticCup(key); // shelved unplayed → fresh from Round 1
     if (c.alive !== true) continue;                 // won, or knocked out — nothing left to play
+    if (key === "et" && !(c.remaining || []).some(e => entrantUid(e) !== "ME")) { // Trophy field lost its opponents on an older save — rebuild it, byed to the round reached
+      let field = buildTrophyField().filter(e => entrantUid(e) !== "ME");
+      for (let i = 0; i < (c.r || 0) && field.length > 1; i++) field = simCupRound(field).survivors;
+      c.remaining = [{ kind: "me" }].concat(field);
+    }
     const from = c.r || 0;                          // first round not yet played; earlier rounds keep their history
     if (from >= c.rounds.length) continue;
     if (c.rounds[from].week >= G.week) continue;    // its next tie is already ahead — it plays normally, leave it alone
@@ -3072,8 +3077,13 @@ function drawMyCupOpp(c, r) {
     const idx = lower[Math.floor(rnd() * lower.length)];
     return { kind: "league", uid: "L" + idx, idx, name: CLUBS[idx].name, short: CLUBS[idx].short, base: CLUBS[idx].base, home };
   }
-  const pool = c.remaining.filter(e => e.kind !== "me" && !(e.kind === "league" && e.idx === G.myClub));
+  const pool = (c.remaining || []).filter(e => e.kind !== "me" && !(e.kind === "league" && e.idx === G.myClub));
   const e = pool[Math.floor(rnd() * pool.length)];
+  if (!e) { // the bracket lost its other entrants (a field corrupted by an earlier build) — draw a stand-in so the tie is always playable
+    const lower = (G.tiers[2] || []).concat(G.tiers[3] || [], G.tiers[1] || []).filter(i => i !== G.myClub);
+    const idx = lower[Math.floor(rnd() * lower.length)];
+    return { kind: "league", uid: "L" + idx, idx, name: CLUBS[idx].name, short: CLUBS[idx].short, base: CLUBS[idx].base, home };
+  }
   if (e.kind === "minnow") {
     const m = MINNOWS[e.m];
     return { kind: "minnow", uid: entrantUid(e), name: m[0], short: m[1], base: m[2], col: m[3], home };
