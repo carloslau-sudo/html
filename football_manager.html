@@ -2422,7 +2422,7 @@ function ensureWindowDeals() {
   if (G.dealsKey === key) return;
   G.dealsKey = key;
   G.deals = [];
-  G.tfSearch = ""; G.tfAfford = false; G.tfFilter = "All"; // a new window starts with clean filters
+  G.tfSearch = ""; G.tfShowAll = false; G.tfFilter = "All"; // a new window starts with clean, scoped filters
   // AI clubs trade among themselves to keep the market alive
   const pool = CLUBS.map((c, i) => i).filter(i => i !== G.myClub && i !== EURO_SLOT);
   for (let n = 0; n < 9; n++) {
@@ -2836,26 +2836,32 @@ function renderTransfers() {
     name: r => r.p.name, club: r => CLUBS[r.club].short, age: r => r.p.age,
     rating: r => r.p.rating, pot: r => r.p.pot || 0, ask: r => askPrice(r.club, r.p),
   };
-  // why can't I buy? — count the gates so the answer is visible, not a tooltip
   const myFull = G.squads[G.myClub].length >= 25;
-  let affordable = 0;
-  for (const r of market) {
-    if (!myFull && canLeave(r.club, r.p) && askPrice(r.club, r.p) <= G.budget
-        && wageBill() + wageFor(r.p.rating, r.p.age) <= wageCap()) affordable++;
-  }
   const headroom = +(wageCap() - wageBill()).toFixed(1);
   const showAll = G.tfShowAll === true;
+  const lvl = CLUBS[G.myClub] ? CLUBS[G.myClub].base : 72;
+  const canAfford = r => canLeave(r.club, r.p) && askPrice(r.club, r.p) <= G.budget && wageBill() + wageFor(r.p.rating, r.p.age) <= wageCap();
+  const onLevel = r => r.p.rating >= lvl - 9 && r.p.rating <= lvl + 7;
+  // default view: players you can afford that suit your club's level; a name search or the toggle overrides
+  let pool, scopeNote = "";
+  if (G.tfSearch) {
+    pool = market.filter(r => r.p.name.toLowerCase().includes(G.tfSearch.toLowerCase()));
+    scopeNote = "Search results.";
+  } else if (showAll) {
+    pool = market;
+    scopeNote = "Showing all <b>" + market.length + "</b> players on the market.";
+  } else {
+    pool = market.filter(r => canAfford(r) && onLevel(r));
+    if (!pool.length) pool = market.filter(canAfford); // nothing on-level fits — fall back to anything affordable
+    if (pool.length) scopeNote = "Showing the <b>" + pool.length + "</b> player" + (pool.length === 1 ? "" : "s") + " within your £" + G.budget + "M budget and wage room, around your club's level.";
+  }
   html += myFull
-    ? `<p style="color:var(--red)"><b>⛔ Your squad is full (25/25)</b> — sell or loan out before you can sign anyone.</p>`
-    : (affordable === 0 && !showAll)
+    ? `<p style="color:var(--red)"><b>⛔ Your squad is full (25/25)</b> — sell or loan out before you can sign anyone. The list below still respects your budget.</p>`
+    : (!pool.length && !showAll)
     ? `<p style="color:var(--red)"><b>⛔ Nothing on the transfer market is within reach</b> — budget £${G.budget}M, wage headroom £${headroom}M/yr. Sign a free agent above (no fee), sell a player, or trim wages.</p>
        <p class="note"><label><input type="checkbox" onchange="G.tfShowAll=this.checked;save();render()"> Show every player anyway, including ones you can't afford</label></p>`
-    : `<p class="note">Showing ${showAll ? "all <b>" + market.length + "</b> players on the market" : "the <b>" + affordable + "</b> player" + (affordable === 1 ? "" : "s") + " within your £" + G.budget + "M budget and £" + headroom + "M/yr wage room"}.</p>
+    : `<p class="note">${scopeNote}</p>
        <p class="note"><label><input type="checkbox" ${showAll ? "checked" : ""} onchange="G.tfShowAll=this.checked;save();render()"> Show every player (loans and transfers), including those beyond your budget</label></p>`;
-  let pool = market;
-  if (G.tfSearch) pool = pool.filter(r => r.p.name.toLowerCase().includes(G.tfSearch.toLowerCase()));
-  else if (!showAll && !myFull) pool = market.filter(r => canLeave(r.club, r.p) && askPrice(r.club, r.p) <= G.budget
-    && wageBill() + wageFor(r.p.rating, r.p.age) <= wageCap());
   const sortedMarket = sortRows(pool, "market", MARKET_COLS, r => r.p);
   if (!sortedMarket.length && market.length && (G.tfSearch || filter !== "All")) {
     html += `<p style="color:var(--amber)"><b>⚠ Your search or position filter is hiding all ${market.length} players</b>
@@ -2886,22 +2892,22 @@ function renderTransfers() {
   const STAR_COLS = { name: x => x.name, club: x => x.club, age: x => x.age, rating: x => x.rating, ask: x => foreignAsk(x) };
   let starPool = foreignStars().filter(s => filter === "All" || s.pos === filter);
   if (G.tfSearch) starPool = starPool.filter(x => x.name.toLowerCase().includes(G.tfSearch.toLowerCase()));
-  if (G.tfAfford && !myFull) {
-    starPool = starPool.filter(s => foreignAsk(s) <= G.budget && wageBill() + wageFor(s.rating, s.age) <= wageCap());
-  }
+  else if (!showAll) starPool = starPool.filter(s => foreignAsk(s) <= G.budget && wageBill() + wageFor(s.rating, s.age) <= wageCap());
   const world = sortRows(starPool, "stars", STAR_COLS, x => x).slice(0, 40);
-  html += `<h3>🌍 World stars — Europe's elite (35% world-record premium)</h3>
-    <table><thead><tr>${thSort("stars","pos","Pos")}${thSort("stars","name","Name")}${thSort("stars","club","Club")}${thSort("stars","age","Age",1)}${thSort("stars","rating","Rating",1,"","Rat")}${thSort("stars","ask","Ask",1)}<th></th></tr></thead><tbody>` +
-    world.map(s => {
-      const price = foreignAsk(s);
-      const wDemand = wageFor(s.rating, s.age);
-      const wageOk = wageBill() + wDemand <= wageCap();
-      const can = price <= G.budget && G.squads[G.myClub].length < 25 && wageOk;
-      return `<tr><td class="pos-${s.pos}" title="${s.pos}">${s.role || s.pos}</td><td>${esc(s.name)}</td>
+  html += `<h3>🌍 World stars — Europe's elite (35% world-record premium)</h3>`;
+  html += world.length
+    ? `<table><thead><tr>${thSort("stars","pos","Pos")}${thSort("stars","name","Name")}${thSort("stars","club","Club")}${thSort("stars","age","Age",1)}${thSort("stars","rating","Rating",1,"","Rat")}${thSort("stars","ask","Ask",1)}<th></th></tr></thead><tbody>` +
+      world.map(s => {
+        const price = foreignAsk(s);
+        const wDemand = wageFor(s.rating, s.age);
+        const wageOk = wageBill() + wDemand <= wageCap();
+        const can = price <= G.budget && G.squads[G.myClub].length < 25 && wageOk;
+        return `<tr><td class="pos-${s.pos}" title="${s.pos}">${s.role || s.pos}</td><td>${esc(s.name)}</td>
         <td>${crest(s.short, s.col, 15)}${esc(s.club)}</td>
         <td class="num">${s.age}</td><td class="num">${s.rating}</td><td class="num">£${price}M<br><span class="note">£${wDemand}M/yr</span></td>
         <td>${can ? `<button class="ghost" onclick="buyForeign('${s.key.replace(/'/g, "\\'")}')">Buy</button>` : `<span class="note" style="font-size:11px">${G.squads[G.myClub].length >= 25 ? "squad full" : price > G.budget ? "over budget" : "wages too high"}</span>`}</td></tr>`;
-    }).join("") + `</tbody></table>`;
+      }).join("") + `</tbody></table>`
+    : `<p class="note">None within your £${G.budget}M budget and wage room right now — these are the world's most expensive players.</p>`;
   if ((G.deals || []).length) {
     html += `<h3>Done deals this window</h3><p class="note">${G.deals.map(esc).join("<br>")}</p>`;
   }
