@@ -1336,8 +1336,10 @@ function simMatch(hIdx, aIdx, opts) {
   const H = teamNumbers(hSquad, hXI, (opts && opts.hMent) || "Balanced", (opts && opts.hForm) || hAI.form, (opts && opts.hStyle) || hAI.style, wx);
   const A = teamNumbers(aSquad, aXI, (opts && opts.aMent) || "Balanced", (opts && opts.aForm) || aAI.form, (opts && opts.aStyle) || aAI.style, wx);
 
-  const hg = poisson(expGoals(H, A, true));
-  const ag = poisson(expGoals(A, H, false));
+  const derby = isDerby(hIdx, aIdx); // 🔥 rivalry: more goals, cards and penalties when these two meet
+  const dGoal = derby ? 1.15 : 1, dCard = derby ? 1.7 : 1, dRed = derby ? 2.3 : 1, dPen = derby ? 2 : 1;
+  const hg = poisson(expGoals(H, A, true) * dGoal);
+  const ag = poisson(expGoals(A, H, false) * dGoal);
 
   const events = [];
   const addGoals = (n, team, clubIdx) => {
@@ -1352,20 +1354,20 @@ function simMatch(hIdx, aIdx, opts) {
 
   // cards, injuries, and the odd missed penalty
   for (const [team, clubIdx] of [[H, hIdx], [A, aIdx]]) {
-    if (rnd() < 0.08) {
+    if (rnd() < 0.08 * dPen) {
       const p = (clubIdx === G.myClub && G.pkTaker && team.xi.find(q => q.id === G.pkTaker)) || pickScorer(team);
       const k = Math.floor(rnd() * PKMISS_LINES.length);
       events.push({ min: 5 + Math.floor(rnd() * 85), type: "pkmiss", clubIdx, pid: p.id, who: p.name,
                     text: p.name + " " + PKMISS_LINES[k], zh: p.name + " " + PKMISS_LINES_ZH[k] });
     }
     for (const p of team.xi) {
-      if (rnd() < 0.13 * (traitOf(p) === "hothead" ? 1.7 : 1)) {
+      if (rnd() < 0.13 * dCard * (traitOf(p) === "hothead" ? 1.7 : 1)) {
         p.yellows++;
         events.push({ min: 10 + Math.floor(rnd() * 80), type: "yellow", clubIdx, pid: p.id, who: p.name,
                       text: p.name + " goes into the book.", zh: p.name + " 食黃牌，俾球證記咗名。" });
         if (p.yellows % 4 === 0) p.ban = Math.max(p.ban, 1);
       }
-      if (rnd() < 0.006) {
+      if (rnd() < 0.006 * dRed) {
         p.ban = Math.max(p.ban, 2);
         events.push({ min: 20 + Math.floor(rnd() * 70), type: "red", clubIdx, pid: p.id, who: p.name,
                       text: p.name + " is sent off! Straight red.", zh: p.name + " 直接紅牌！即刻收工！" });
@@ -1473,13 +1475,22 @@ function commitWeek(weekResults, myResult, snapshot) {
     }
   }
   if (G.week >= G.fixtures.length) {
-    G.screen = "seasonEnd";
     const T = TIERS[tierIndex()];
     const tbl = tableStats();
     if (tbl[0].i === G.myClub) {
       G.honours.push("Season " + G.season + ": " + T.name + " champions");
       if (tierIndex() === 0) boardBump(15);
     }
+    // playable promotion play-offs: a side finishing in the play-off places contests its own
+    // semi-final and Wembley final before the rest of the pyramid is settled
+    {
+      const myPos = tbl.findIndex(r => r.i === G.myClub) + 1;
+      if (T.po && myPos > T.autoUp && myPos >= T.po[0] && myPos <= T.po[1] && !G.playoff && !G.choff) {
+        setupPlayoff(tbl.slice(T.po[0] - 1, T.po[1]).map(r => r.i), tierIndex());
+        G.screen = "prematch"; save(); render(); return;
+      }
+    }
+    G.screen = "seasonEnd";
     // settle the whole pyramid the instant the season ends; the rich Premier
     // League end screen still reads G.relegated / G.promoted, so mirror them
     if (!G.pyr) G.pyr = resolvePyramid();
@@ -2085,7 +2096,7 @@ function expectationText(e) {
          e <= 16 ? "comfortable mid-table safety" : "avoid relegation at all costs";
 }
 /* 🔥 Derby days: rivalries with double stakes and a hotter crowd */
-const DERBIES = [["ARS","TOT"],["LIV","EVE"],["MUN","MCI"],["MUN","LIV"],["CHE","FUL"],["WHU","TOT"],["NEW","SUN"],["AVL","WOL"],["BRE","FUL"],["CRY","BHA"],["SHU","LEE"],["BIR","AVL"],["SHU","SHW"],["NOR","IPS"],["POM","SOU"],["CHA","MLW"],["BLB","BUR"],["BLB","PNE"],["DER","NFO"],["COV","LEI"],["MID","SUN"],["QPR","FUL"],["WBA","WOL"]];
+const DERBIES = [["ARS","TOT"],["LIV","EVE"],["MUN","MCI"],["MUN","LIV"],["CHE","FUL"],["WHU","TOT"],["NEW","SUN"],["AVL","WOL"],["BRE","FUL"],["CRY","BHA"],["SHU","LEE"],["BIR","AVL"],["SHU","SHW"],["NOR","IPS"],["POM","SOU"],["CHA","MLW"],["BLB","BUR"],["BLB","PNE"],["DER","NFO"],["COV","LEI"],["MID","SUN"],["QPR","FUL"],["WBA","WOL"],["LEE","MUN"],["CAR","SWA"]];
 function isDerby(h, a) {
   const x = CLUBS[h] && CLUBS[h].short, y = CLUBS[a] && CLUBS[a].short;
   return DERBIES.some(([m, n]) => (m === x && n === y) || (m === y && n === x));
@@ -2978,24 +2989,32 @@ function buildTrophyCup() {
   return { alive: "out", rounds: [], results: [], history: [], r: 0, winner: null };
 }
 function initCups() {
+  const lower = G.tier >= 2; // League One, League Two and the National League enter at Round 1
   G.cups = {
     lc: { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
-      remaining: buildCupField(32), rounds: [
-      { week: 4, label: "Round 3" }, { week: 8, label: "Round 4" }, { week: 13, label: "Quarter-final" },
-      { week: 19, week2: 21, label: "Semi-final" }, { week: 26, label: "Final" }] },
+      entry: lower ? 2 : 0, remaining: buildCupField(32),
+      rounds: lower
+        ? [ { week: 1, label: "Round 1" }, { week: 2, label: "Round 2" }, { week: 4, label: "Round 3" }, { week: 8, label: "Round 4" }, { week: 13, label: "Quarter-final" }, { week: 19, week2: 21, label: "Semi-final" }, { week: 26, label: "Final" } ]
+        : [ { week: 4, label: "Round 3" }, { week: 8, label: "Round 4" }, { week: 13, label: "Quarter-final" }, { week: 19, week2: 21, label: "Semi-final" }, { week: 26, label: "Final" } ] },
     fa: { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
-      remaining: buildCupField(64), rounds: [
-      { week: 16, label: "Round 3" }, { week: 20, label: "Round 4" }, { week: 25, label: "Round 5" },
-      { week: 29, label: "Quarter-final" }, { week: 31, label: "Semi-final" }, { week: 35, label: "Final" }] },
+      entry: lower ? 2 : 0, remaining: buildCupField(64),
+      rounds: lower
+        ? [ { week: 11, label: "Round 1" }, { week: 14, label: "Round 2" }, { week: 16, label: "Round 3" }, { week: 20, label: "Round 4" }, { week: 25, label: "Round 5" }, { week: 29, label: "Quarter-final" }, { week: 31, label: "Semi-final" }, { week: 35, label: "Final" } ]
+        : [ { week: 16, label: "Round 3" }, { week: 20, label: "Round 4" }, { week: 25, label: "Round 5" }, { week: 29, label: "Quarter-final" }, { week: 31, label: "Semi-final" }, { week: 35, label: "Final" } ] },
     et: buildTrophyCup(),
   };
 }
 
 function drawMyCupOpp(c, r) {
   const isFinal = r === c.rounds.length - 1;
+  const home = isFinal ? true : rnd() < 0.5; // finals at a neutral venue (Wembley)
+  if (c.entry && r < c.entry) { // lower divisions enter at Round 1; preliminary ties are against lower-league opponents, outside the Round 3 bracket
+    const lower = (G.tiers[2] || []).concat(G.tiers[3] || [], G.tiers[4] || []).filter(i => i !== G.myClub);
+    const idx = lower[Math.floor(rnd() * lower.length)];
+    return { kind: "league", uid: "L" + idx, idx, name: CLUBS[idx].name, short: CLUBS[idx].short, base: CLUBS[idx].base, home };
+  }
   const pool = c.remaining.filter(e => e.kind !== "me" && !(e.kind === "league" && e.idx === G.myClub));
   const e = pool[Math.floor(rnd() * pool.length)];
-  const home = isFinal ? true : rnd() < 0.5; // finals at a neutral venue (Wembley)
   if (e.kind === "minnow") {
     const m = MINNOWS[e.m];
     return { kind: "minnow", uid: entrantUid(e), name: m[0], short: m[1], base: m[2], col: m[3], home };
@@ -3066,6 +3085,23 @@ function commitCup(fix, r, pens) {
   const myG = fix.home ? r.hg : r.ag, opG = fix.home ? r.ag : r.hg;
   const roundLabel = c.rounds[c.r].label;
   const twoLeg = fix.leg === 1 || fix.leg === 2;
+  if (c.entry && c.r < c.entry) { // preliminary round: win to reach the Round 3 bracket, lose and you are out before it
+    let note = "", win = myG > opG;
+    if (myG === opG) {
+      const oppIdx = fix.opp.kind === "league" ? fix.opp.idx : EURO_SLOT;
+      const so = pens || simShootoutClubs(G.myClub, oppIdx);
+      win = so.myWin; note = " " + so.note;
+      r.events = (r.events || []).concat(shootoutEvents(so, G.myClub, oppIdx));
+    }
+    c.results.push({ label: roundLabel, opp: fix.opp.name, myG, opG, home: fix.home, note });
+    c.history.push({ label: roundLabel, myTie: CLUBS[G.myClub].name + " " + myG + "–" + opG + " " + fix.opp.name + (note.includes("penalties") ? " (pens)" : ""), ties: [] });
+    if (win) { c.r++; c.opp = null; boardBump(0.5); note += " — through to the " + c.rounds[c.r].label + "."; }
+    else { c.alive = "out"; c.opp = null; boardBump(-2); }
+    G.lastMatch = r; G.lastMatchEuro = "cup";
+    G.lastMatchLabel = CUP_NAME[fix.cupKey] + " · " + roundLabel + note;
+    G.live = null; G.screen = "matchResult"; save(); render();
+    return;
+  }
   if (fix.leg === 1) {
     // first leg of a two-legged tie: bank the score, keep the opponent, do not advance
     c.agg = { my: myG, opp: opG };
@@ -3958,9 +3994,11 @@ function genMinuteEvents(L) {
   const { H, A } = getLiveTeams(L);
   const out = [];
   const push = e => { e.min = L.minute; out.push(e); L.events.push(e); };
+  const derby = isDerby(L.h, L.a); // 🔥 rivalry: more goals, cards and penalties when these two meet
+  const dGoal = derby ? 1.15 : 1, dCard = derby ? 1.7 : 1, dRed = derby ? 2.3 : 1, dPen = derby ? 2 : 1;
   for (const [T, O, clubIdx, home] of [[H, A, L.h, true], [A, H, L.a, false]]) {
     if (!T.xi.length) continue;
-    if (rnd() < expGoals(T, O, home) / 93) {
+    if (rnd() < expGoals(T, O, home) / 93 * dGoal) {
       push(makeGoalEvent(T, clubIdx));
     }
     if (rnd() < 0.043) {
@@ -3969,20 +4007,20 @@ function genMinuteEvents(L) {
       push({ type: "chance", clubIdx, pid: p.id, who: p.name,
              text: p.name + " " + CHANCE_LINES[k], zh: p.name + " " + CHANCE_LINES_ZH[k] });
     }
-    if (rnd() < 0.0009) { // a penalty... missed!
+    if (rnd() < 0.0009 * dPen) { // a penalty... missed!
       const p = (clubIdx === G.myClub && G.pkTaker && T.xi.find(q => q.id === G.pkTaker)) || pickScorer(T);
       const k = Math.floor(rnd() * PKMISS_LINES.length);
       push({ type: "pkmiss", clubIdx, pid: p.id, who: p.name,
              text: p.name + " " + PKMISS_LINES[k], zh: p.name + " " + PKMISS_LINES_ZH[k] });
     }
-    if (rnd() < 0.0152) {
+    if (rnd() < 0.0152 * dCard) {
       const p = T.xi[Math.floor(rnd() * T.xi.length)];
       p.yellows++;
       if (p.yellows % 4 === 0) p.ban = Math.max(p.ban, 1);
       push({ type: "yellow", clubIdx, pid: p.id, who: p.name,
              text: p.name + " goes into the book.", zh: p.name + " 食黃牌，俾球證記咗名。" });
     }
-    if (rnd() < 0.0007) {
+    if (rnd() < 0.0007 * dRed) {
       const p = T.xi[Math.floor(rnd() * T.xi.length)];
       p.ban = Math.max(p.ban, 2);
       L.reds[clubIdx] = (L.reds[clubIdx] || 0) + 1;
@@ -4648,7 +4686,7 @@ function finishLiveMatch() {
   if (!L || (L.phase !== "ft" && L.phase !== "pens")) return;
   const hg = liveGoals(L, L.h, 999), ag = liveGoals(L, L.a, 999);
   // a drawn knockout tie goes to penalties — live and kick by kick
-  const isKO = !!L.cupFix || (L.euro && L.fix && L.fix.kind !== "league") || (L.psFix && L.psFix.isKO);
+  const isKO = !!L.cupFix || !!L.poFix || (L.euro && L.fix && L.fix.kind !== "league") || (L.psFix && L.psFix.isKO);
   if (hg === ag && isKO && !L.pens) {
     // your call: coolest heads or the forwards who live for this
     L.pensPlan = (typeof confirm === "function" && !confirm("PENALTIES.\nOK = your highest-rated players take them.\nCancel = forwards first."))
@@ -4673,7 +4711,7 @@ function finishLiveMatch() {
   }
   myRes.weather = L.weather;
   myRes.ratings = matchRatings(L.h, L.a, L.hApp, L.aApp, myRes.events, hg, ag);
-  const weekResults = (L.euro || L.cupFix || L.psFix) ? null : G.fixtures[G.week].map((f, j) => {
+  const weekResults = (L.euro || L.cupFix || L.psFix || L.poFix) ? null : G.fixtures[G.week].map((f, j) => {
     const o = L.otherResults.find(x => x.j === j);
     return o ? o.r : myRes;
   });
@@ -4696,6 +4734,7 @@ function finishLiveMatch() {
   if (L.psFix) { commitPreseason(L.psFix, myRes, L.pens ? L.pens.so : undefined, L.psSnap); return; }
   if (L.euro) { commitEuro(L.fix, myRes, L.pens ? L.pens.so : undefined); return; }
   if (L.cupFix) { commitCup(L.cupFix, myRes, L.pens ? L.pens.so : undefined); return; }
+  if (L.poFix) { commitPlayoff(L.poFix, myRes, L.pens ? L.pens.so : undefined); return; }
   commitWeek(weekResults, myRes, L.snapshot);
 }
 
@@ -4854,6 +4893,116 @@ function runPlayoffs(tierIdx) {
   const s2 = tie(seeds[1], seeds[2]);
   const f = tie(s1.winner, s2.winner);
   return { auto, up: auto.concat([f.winner]), s1, s2, f };
+}
+
+/* ---- Playable promotion play-offs: you contest your own semi-final and Wembley final ---- */
+function poTie(h, a) { // a simmed tie (no user involvement) returning a display-ready object
+  let r; try { r = simMatch(h, a, {}); } catch (e) { r = { hg: 1, ag: 0 }; }
+  let w = r.hg > r.ag ? h : r.ag > r.hg ? a : null, pens = null;
+  if (w === null) { try { const so = simShootoutClubs(h, a); w = so.myS > so.opS ? h : a; pens = (so.myS > so.opS ? so.myS + "-" + so.opS : so.opS + "-" + so.myS); } catch (e) { w = CLUBS[h].base >= CLUBS[a].base ? h : a; } }
+  return { h, a, hg: r.hg, ag: r.ag, winner: w, pens };
+}
+function setupPlayoff(seeds, tier) { // seeds: the four play-off clubs in finishing order
+  const me = G.myClub;
+  let mySemiOpp, otherPair;
+  if (me === seeds[0]) { mySemiOpp = seeds[3]; otherPair = [seeds[1], seeds[2]]; }
+  else if (me === seeds[3]) { mySemiOpp = seeds[0]; otherPair = [seeds[1], seeds[2]]; }
+  else if (me === seeds[1]) { mySemiOpp = seeds[2]; otherPair = [seeds[0], seeds[3]]; }
+  else { mySemiOpp = seeds[1]; otherPair = [seeds[0], seeds[3]]; }
+  G.playoff = { tier, seeds: seeds.slice(), mySemiOpp, otherPair, otherWinner: null,
+    stage: "semi", result: null, userSemi: null, otherSemi: null, finalTie: null };
+}
+function dueLeaguePlayoff() {
+  const p = G.playoff;
+  if (!p || (p.stage !== "semi" && p.stage !== "final")) return null;
+  if (p.stage === "semi") {
+    const home = (G.myClub === p.seeds[0] || G.myClub === p.seeds[1]); // the higher seed hosts the one-off semi
+    return { stage: "semi", oppIdx: p.mySemiOpp, home, isFinal: false, label: TIERS[p.tier].name + " Play-off Semi-final" };
+  }
+  return { stage: "final", oppIdx: p.otherWinner, home: true, isFinal: true, label: TIERS[p.tier].name + " Play-off Final · Wembley" };
+}
+function goPlayoff() { if (!dueLeaguePlayoff() || G.live) return; G.screen = "prematch"; save(); render(); }
+function playPlayoffQuick() {
+  const fix = dueLeaguePlayoff(); if (!fix || G.live) return;
+  prepMatchLineup(true);
+  const h = fix.home ? G.myClub : fix.oppIdx, a = fix.home ? fix.oppIdx : G.myClub;
+  const opts = {};
+  if (fix.home) { opts.hXI = G.lineup; opts.hMent = G.mentality; opts.hForm = G.formation; opts.hStyle = G.style || "Balanced"; }
+  else { opts.aXI = G.lineup; opts.aMent = G.mentality; opts.aForm = G.formation; opts.aStyle = G.style || "Balanced"; }
+  commitPlayoff(fix, simMatch(h, a, opts));
+}
+function startPlayoffLive() {
+  const fix = dueLeaguePlayoff(); if (!fix || G.live) return;
+  prepMatchLineup(true);
+  const oppIdx = fix.oppIdx, oppT = aiTactics(oppIdx);
+  const h = fix.home ? G.myClub : oppIdx, a = fix.home ? oppIdx : G.myClub;
+  const aiXI = bestXI(G.squads[oppIdx], "4-4-2");
+  const L = {
+    h, a,
+    hXI: fix.home ? [...G.lineup] : aiXI, aXI: fix.home ? aiXI : [...G.lineup],
+    hMent: fix.home ? G.mentality : "Balanced", aMent: fix.home ? "Balanced" : G.mentality,
+    hForm: fix.home ? G.formation : oppT.form, aForm: fix.home ? oppT.form : G.formation,
+    hStyle: fix.home ? (G.style || "Balanced") : oppT.style, aStyle: fix.home ? oppT.style : (G.style || "Balanced"),
+    events: [{ min: 0, type: "info", text: fix.isFinal ? "Kick-off at Wembley — the play-off final!" : "Kick-off — play-off semi-final!", zh: fix.isFinal ? "溫布萊開波——附加賽決賽！" : "開波——附加賽準決賽！" }],
+    elsewhere: [], otherResults: [], snapshot: null,
+    minute: 0, phase: "first", subsUsed: 0, aiSubs: 0, windows: 0, winPending: false,
+    manage: false, notice: null, speed: "normal",
+    reds: {}, endMin: 91 + Math.floor(rnd() * 4), poFix: fix, cupLabel: fix.label,
+    stats: { t: 0, hp: 0, hShots: 0, aShots: 0, hSot: 0, aSot: 0 },
+  };
+  L.hApp = [...L.hXI]; L.aApp = [...L.aXI];
+  L.weather = getWeather();
+  G.live = L; liveCacheDirty(); G.screen = "live"; save(); render();
+}
+function commitPlayoff(fix, r, pens) {
+  const p = G.playoff, oppIdx = fix.oppIdx;
+  const myG = fix.home ? r.hg : r.ag, opG = fix.home ? r.ag : r.hg;
+  let win = myG > opG, soNote = "", pensStr = null;
+  if (myG === opG) {
+    const so = pens || simShootoutClubs(G.myClub, oppIdx);
+    win = so.myWin; soNote = " " + so.note;
+    if (so.myS !== undefined) pensStr = win ? (so.myS + "-" + so.opS) : (so.opS + "-" + so.myS);
+    r.events = (r.events || []).concat(shootoutEvents(so, G.myClub, oppIdx));
+  }
+  r.dateMs = matchDateMs("league", Math.max(0, G.fixtures.length - 1));
+  const userTie = { h: fix.home ? G.myClub : oppIdx, a: fix.home ? oppIdx : G.myClub, hg: r.hg, ag: r.ag, winner: win ? G.myClub : oppIdx, pens: pensStr };
+  G.lastMatch = r; G.lastMatchEuro = "playoff";
+  const TN = TIERS[p.tier].name;
+  if (fix.stage === "semi") {
+    p.userSemi = userTie;
+    p.otherSemi = poTie(p.otherPair[0], p.otherPair[1]);
+    p.otherWinner = p.otherSemi.winner;
+    if (win) {
+      p.stage = "final"; boardBump(2);
+      G.lastMatchLabel = TN + " Play-off Semi-final · won " + myG + "–" + opG + soNote + " — Wembley awaits, vs " + CLUBS[p.otherWinner].name + "!";
+      G.screen = "matchResult"; save(); render(); return;
+    }
+    p.finalTie = poTie(oppIdx, p.otherWinner); // the side that beat you contests the final
+    boardBump(-3);
+    G.lastMatchLabel = TN + " Play-off Semi-final · lost " + myG + "–" + opG + soNote + " — the dream is over for another year.";
+    finishPlayoff(p.finalTie.winner); return;
+  }
+  p.finalTie = userTie;
+  if (win) { boardBump(14); G.lastMatchLabel = TN + " Play-off FINAL · WON " + myG + "–" + opG + soNote + " — PROMOTED at Wembley!"; finishPlayoff(G.myClub); }
+  else { boardBump(-2); G.lastMatchLabel = TN + " Play-off Final · lost " + myG + "–" + opG + soNote + " — beaten at Wembley."; finishPlayoff(oppIdx); }
+}
+function finishPlayoff(promotedIdx) {
+  const p = G.playoff, T = TIERS[p.tier], t = tableStats();
+  const auto = t.slice(0, T.autoUp).map(r => r.i);
+  G.choff = { auto, up: auto.concat([promotedIdx]), s1: p.userSemi || null, s2: p.otherSemi || null, f: p.finalTie || null };
+  p.stage = "done"; p.result = (promotedIdx === G.myClub) ? "promoted" : "out";
+  if (!G.pyr) G.pyr = resolvePyramid();
+  if (tierIndex() === 0) { G.relegated = G.pyr.down[0]; G.promoted = G.pyr.up[1]; }
+  G.screen = "matchResult"; save(); render();
+}
+function continueAfterMatch() {
+  if (G.lastMatchEuro === "playoff" && G.playoff) {
+    G.screen = (G.playoff.stage === "done") ? "seasonEnd" : "prematch";
+    save(); render(); return;
+  }
+  G.screen = "main";
+  G.tab = G.lastMatchEuro === "euro" ? "europe" : G.lastMatchEuro === "cup" ? "cups" : "table";
+  save(); render();
 }
 
 /* resolve the WHOLE pyramid for the season just finished */
@@ -5204,7 +5353,7 @@ function nextSeason(newClub) {
     }
   }
   topUpFreeAgents(14); // guarantee a free-agent market every summer — vital for cash-strapped clubs
-  delete G.pyr; delete G.choff; delete G.relegated; delete G.promoted; delete G.plLeague;
+  delete G.pyr; delete G.choff; delete G.playoff; delete G.relegated; delete G.promoted; delete G.plLeague;
   G.season++; G.week = 0; G.results = []; G.offersIn = []; G.dealsKey = null;
   setWageCap();
   G.fixtures = leagueFixtures(G.league);
@@ -6149,11 +6298,14 @@ function renderMain() {
   else if (G.tab === "cloud") body = renderCloud();
   else if (G.tab === "transfers") body = renderTransfers();
   else if (G.tab === "finance") body = renderFinance();
-  const euroFix = dueEuro();
-  const cupFix = euroFix ? null : dueCup();
-  const preFix = (euroFix || cupFix) ? null : duePreseason();
+  const poFix = dueLeaguePlayoff();
+  const euroFix = poFix ? null : dueEuro();
+  const cupFix = (poFix || euroFix) ? null : dueCup();
+  const preFix = (poFix || euroFix || cupFix) ? null : duePreseason();
   let playBtns;
-  if (preFix) {
+  if (poFix) {
+    playBtns = `<button class="action" onclick="goPlayoff()">🏟 ${esc(poFix.label)} vs ${esc(CLUBS[poFix.oppIdx].name)}${poFix.home ? " (H)" : " (A)"} →</button>`;
+  } else if (preFix) {
     playBtns = `
       <button class="action" onclick="goPreMatch()">${esc(preFix.label)}: vs ${esc(preFix.opp.name)} ${preFix.home ? "(H)" : "(A)"} →</button>`;
   } else if (euroFix) {
@@ -6258,6 +6410,7 @@ function renderMain() {
     ${body}
     <div class="panel row">
       ${playBtns}
+      <button class="ghost" onclick="toggleLang()" title="Match commentary language / 旁述語言">🗣 Commentary: ${LANG === "zh" ? "中文" : "English"}</button>
       <button class="ghost" onclick="exportSave()" title="Download your career as a file — back it up or move it to another device">💾 Save to file</button>
       <button class="ghost" onclick="document.getElementById('save-file-input').click()" title="Restore a career from a saved file">📂 Load from file</button>
       <input type="file" id="save-file-input" accept=".json,application/json" style="display:none" onchange="importSave(this)">
@@ -6769,11 +6922,24 @@ function goPreMatch() {
 }
 
 function renderPreMatch() {
-  const euroFix = dueEuro();
-  const cupFix = euroFix ? null : dueCup();
-  const preFix = (euroFix || cupFix) ? null : duePreseason();
+  const poFix = dueLeaguePlayoff();
+  const euroFix = poFix ? null : dueEuro();
+  const cupFix = (poFix || euroFix) ? null : dueCup();
+  const preFix = (poFix || euroFix || cupFix) ? null : duePreseason();
   let fixtureHtml, scoutHtml, liveBtn, quickBtn;
-  if (preFix) {
+  if (poFix) {
+    const oppIdx = poFix.oppIdx;
+    const myC = clubCrest(G.myClub, 24) + esc(CLUBS[G.myClub].name);
+    const opC = clubCrest(oppIdx, 24) + esc(CLUBS[oppIdx].name);
+    fixtureHtml = `<h2>🏟 ${esc(poFix.label)}</h2>
+      <div class="score-line">${poFix.home ? myC : opC}<span class="vs">vs</span>${poFix.home ? opC : myC}</div>
+      <p class="note" style="text-align:center">${poFix.isFinal ? "Wembley. One match, the winner goes up." : poFix.home ? "A one-off semi-final at home — win to reach Wembley." : "A one-off semi-final away at the higher seed — win to reach Wembley."}</p>`;
+    const t = tableStats(); const oppRow = t.find(r => r.i === oppIdx); const poT = aiTactics(oppIdx);
+    scoutHtml = `<h3>Scouting report — ${esc(CLUBS[oppIdx].name)}${CLUBS[oppIdx].nick ? ` (${esc(CLUBS[oppIdx].nick)})` : ""}</h3>
+      <p>League position: <b>#${oppRow ? t.indexOf(oppRow) + 1 : "?"}</b> · <span class="stars-bar">${starBar(CLUBS[oppIdx].base + 3)}</span> strength ${CLUBS[oppIdx].base}<br>
+      They play a <b>${poT.form} ${poT.style}</b> — ${styleTip(poT.style)}</p>`;
+    liveBtn = "startPlayoffLive()"; quickBtn = "playPlayoffQuick()";
+  } else if (preFix) {
     const o = preFix.opp;
     const oppBase = o.kind === "league" ? CLUBS[o.idx].base : o.base;
     const myC = clubCrest(G.myClub, 24) + esc(CLUBS[G.myClub].name);
@@ -6949,10 +7115,12 @@ function renderMatchResult() {
           <button class="ghost" onclick="presser('skip','${pk}')">🚪 No comment</button>
         </div></div>`;
     })()) +
-    (nextLine ? `<p style="text-align:center;margin-top:14px">📅 <b>Next up:</b> ${nextLine}</p>` : seasonOver ? `<p style="text-align:center;margin-top:14px">🏁 That was the final round — the season review awaits.</p>` : "") +
+    (G.lastMatchEuro === "playoff" && G.playoff && G.playoff.stage === "final"
+      ? `<p style="text-align:center;margin-top:14px">📅 <b>Next up:</b> 🏟 ${TIERS[G.playoff.tier].name} Play-off Final vs ${esc(CLUBS[G.playoff.otherWinner].name)} at Wembley</p>`
+      : nextLine ? `<p style="text-align:center;margin-top:14px">📅 <b>Next up:</b> ${nextLine}</p>` : seasonOver ? `<p style="text-align:center;margin-top:14px">🏁 That was the final round — the season review awaits.</p>` : "") +
     `<div class="row" style="margin-top:10px">
-      <button class="action" onclick="G.screen='main';G.tab='${G.lastMatchEuro === "euro" ? "europe" : G.lastMatchEuro === "cup" ? "cups" : "table"}';save();render()">Continue → ${G.lastMatchEuro === "euro" ? "Europe" : G.lastMatchEuro === "cup" ? "Cups" : "League table"}</button>
-      <button class="ghost" onclick="G.screen='main';G.tab='squad';save();render()">Squad & next match</button>
+      <button class="action" onclick="continueAfterMatch()">Continue → ${G.lastMatchEuro === "playoff" ? (G.playoff && G.playoff.stage === "done" ? "Season review" : "the Final at Wembley") : G.lastMatchEuro === "euro" ? "Europe" : G.lastMatchEuro === "cup" ? "Cups" : "League table"}</button>
+      ${G.lastMatchEuro === "playoff" ? "" : `<button class="ghost" onclick="G.screen='main';G.tab='squad';save();render()">Squad & next match</button>`}
     </div></div>`;
 }
 
