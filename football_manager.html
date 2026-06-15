@@ -887,6 +887,20 @@ function kitColors(hIdx, aIdx) {
 /* Season numbers map to real campaign years: season 1 = 2025/26, season 2 = 2026/27… */
 function seasonYears(n) { const y = 2024 + n; return y + "/" + String((y + 1) % 100).padStart(2, "0"); }
 function withYears(str) { return String(str).replace(/^Season (\d+)/, (m, n) => seasonYears(+n)); }
+/* which club you were managing in a given season — read from career history,
+   with the current season falling back to your current club (no save migration
+   needed, and it travels correctly across job moves) */
+function seasonClubName(n) {
+  if (n === G.season && G.squads && CLUBS[G.myClub]) return CLUBS[G.myClub].name; // live season: your current club
+  const rows = (G.career || []).filter(r => r.s === n);
+  if (rows.length) return rows[rows.length - 1].club; // the club you finished that season with
+  return null;
+}
+function honClubSuffix(s) {
+  const m = /^Season (\d+)/.exec(s); if (!m) return "";
+  const club = seasonClubName(+m[1]);
+  return club ? ` <span class="note">(${esc(club)})</span>` : "";
+}
 
 /* ---------------- The fixture calendar: a real date for every match ----------------
    League rounds are weekend fixtures — Saturdays, with every fourth round on a
@@ -1001,12 +1015,15 @@ function renewContract(pid) {
   const agreed = negotiateWage(p.name, demand);
   if (agreed === null) return;
   if (wageBill() - (p.wage || 0) + agreed > wageCap()) { if (typeof alert === "function") alert("That offer would burst the wage cap."); return; }
+  const yrTxt = typeof prompt === "function" ? prompt(p.name + " — contract length in years? (1 to 5)", String(p.years && p.years > 1 ? p.years : 3)) : "3";
+  if (yrTxt === null) return; // you walked away at the length step
+  const yrs = Math.max(1, Math.min(5, Math.round(parseFloat(yrTxt) || 0) || 3));
   const clTxt = typeof prompt === "function" ? prompt("Set a release clause? (£M, 0 = none)", p.clause || 0) : "0";
   p.clause = (Math.round(parseFloat(clTxt) || 0) > 0) ? Math.round(parseFloat(clTxt)) : null;
   p.morale = Math.min(100, (p.morale || 75) + 10); p.wage = agreed;
-  p.years = 3;
+  p.years = yrs;
   G.deals = G.deals || [];
-  G.deals.unshift("✍ " + p.name + " signed a new 3-year deal at £" + demand + "M/yr");
+  G.deals.unshift("✍ " + p.name + " signed a new " + yrs + "-year deal at £" + agreed + "M/yr");
   save(); render();
 }
 
@@ -1096,6 +1113,18 @@ function effRating(p) {
   return r;
 }
 function available(p) { return p.injury === 0 && p.ban === 0 && !p.loan; }
+/* Energy gate (your squad only). Sit a player once he drops below REST_OUT%;
+   he stays rested until he recovers to REST_IN%, then he is fit for his slot
+   again. Two thresholds (REST_IN > REST_OUT) stop a borderline player flicking
+   in and out match to match. Tune these two numbers to taste. */
+const REST_OUT = 70, REST_IN = 82;
+function updateResting(squad) {
+  for (const p of squad) {
+    if (p.injury > 0 || p.ban > 0 || p.loan) { p.resting = false; continue; } // those are handled by available()
+    if (!p.resting && p.fitness < REST_OUT) p.resting = true;
+    else if (p.resting && p.fitness >= REST_IN) p.resting = false;
+  }
+}
 function moraleFace(m) { m = (m === undefined ? 75 : Math.round(m)); return m >= 85 ? "😀" : m >= 65 ? "🙂" : m >= 55 ? "😐" : "😠"; }
 function condCell(p) {
   const f = p.fitness, col = f >= 80 ? "var(--pitch)" : f >= 60 ? "var(--amber)" : "var(--red)";
@@ -1113,20 +1142,23 @@ function bestXI(squad, formationName) {
   // each slot takes the available player of its line who fits the role best
   const slots = formSlots(formationName);
   const used = new Set();
+  const mine = !!(G && G.squads && squad === G.squads[G.myClub]); // AI clubs ignore the energy gate
+  if (mine) updateResting(squad); // refresh the gate before picking
   const xi = slots.map((role, i) => {
     const line = slotLine(formationName, i);
-    let best = null, bv = -1;
+    let best = null, bv = -Infinity;
     for (const p of squad) {
       if (p.pos !== line || !available(p) || used.has(p.id)) continue;
-      const v = slotRating(p, role);
+      let v = slotRating(p, role);
+      if (mine && p.resting) v -= 1000; // demote, do not exclude: a rested man still fills his slot if no fit cover exists in his line
       if (v > bv) { bv = v; best = p; }
     }
     if (best) { used.add(best.id); return best.id; }
     return null;
   });
-  // injury crisis: out-of-position stand-ins go into the empty slot itself
+  // injury crisis: out-of-position stand-ins go into the empty slot itself; prefer the freshest, non-rested cover
   const reserves = squad.filter(p => available(p) && !used.has(p.id))
-                        .sort((a, b) => effRating(b) - effRating(a));
+                        .sort((a, b) => ((a.resting ? 1 : 0) - (b.resting ? 1 : 0)) || (effRating(b) - effRating(a)));
   for (let i = 0; i < xi.length; i++) if (xi[i] === null && reserves.length) xi[i] = reserves.shift().id;
   return xi.filter(id => id !== null);
 }
@@ -1155,7 +1187,7 @@ function newGame(clubIdx) {
     fixtures: leagueFixtures(league),
     results: [],   // per week: [{h,a,hg,ag}]
     formation: "4-4-2", mentality: "Balanced", style: "Balanced",
-    lineup: null, honours: [], euro: null,
+    lineup: null, honours: [], moty: [], mgr: { wage: managerWageFor(clubIdx), years: 3 }, euro: null,
     budget: 20 + (CLUBS[clubIdx].base - 70) * 8,
     deals: [], dealsKey: null, tfFilter: "All",
     screen: "main", tab: "squad", lastMatch: null,
@@ -1397,6 +1429,7 @@ function commitWeek(weekResults, myResult, snapshot) {
   G.lastMatchEuro = false;
   G.lastMatchLabel = null;
   G.motmNews = null;
+  G.motyNews = null;
   if (!windowOpen()) G.offersIn = []; // bids expire when the window shuts
   // the board reacts to league results
   if (G.board && myResult) {
@@ -1451,6 +1484,26 @@ function commitWeek(weekResults, myResult, snapshot) {
     if (tierIndex() === 0) {
       G.relegated = G.pyr.down[0];
       G.promoted = G.pyr.up[1];
+    }
+    // Manager of the Season: your league title, a major trophy, or a clear overachievement vs squad stature
+    {
+      const myPos = tbl.findIndex(r => r.i === G.myClub) + 1;
+      const sHon = (G.honours || []).filter(h => h.startsWith("Season " + G.season + ":")).map(h => (h.split(": ")[1] || ""));
+      const wonLeague = sHon.some(h => /champions$/.test(h));
+      const wonMajor = sHon.some(h => /winners$/.test(h) && !/Community Shield|Super Cup/.test(h));
+      const byBase = [...G.league].sort((a, b) => CLUBS[b].base - CLUBS[a].base);
+      const expPos = byBase.indexOf(G.myClub) + 1;
+      const margin = Math.max(3, Math.round(G.league.length * 0.2));
+      const overachieved = myPos > 0 && (expPos - myPos) >= margin && myPos <= Math.ceil(G.league.length / 2);
+      if ((wonLeague || wonMajor || overachieved) && !(G.moty || []).some(m => m.startsWith("Season " + G.season + " "))) {
+        const why = wonLeague ? "won the " + T.name + " title"
+                  : wonMajor ? "lifted major silverware"
+                  : "overachieved - finished #" + myPos + " (expected #" + expPos + ")";
+        G.moty = G.moty || [];
+        G.moty.push("Season " + G.season + " · " + CLUBS[G.myClub].name + " — " + why);
+        G.motyNews = "🏆 Manager of the Season! You " + why + " with " + CLUBS[G.myClub].name + ".";
+        boardBump(6);
+      }
     }
   } else {
     G.screen = "matchResult";
@@ -2148,6 +2201,13 @@ function checkSack() {
 function takeJob(clubIdx) {
   if (!G.offers || !G.offers.includes(clubIdx)) return;
   const oldClub = G.myClub;
+  // record the spell that just ended so the Hall of Fame shows both clubs for this season
+  {
+    const pos = tableStats().findIndex(r => r.i === oldClub) + 1;
+    G.career = G.career || [];
+    G.career.push({ s: G.season, club: CLUBS[oldClub].name, pos: pos || G.league.length,
+      sacked: true, notes: "Sacked - #" + (pos || "?") + " when dismissed" });
+  }
   G.myClub = clubIdx;
   // in the cup brackets, you now ARE the new club: swap the entrant identities
   for (const key of ["lc", "fa"]) {
@@ -2164,6 +2224,7 @@ function takeJob(clubIdx) {
   G.sponsor = null; G.sponsorOffers = null; G.sponsorNews = null; // the deal stayed with your old club
   setWageCap();
   G.board = { conf: 60, exp: expectedPos(clubIdx), grace: G.week + 6, chosen: true };
+  G.mgr = { wage: managerWageFor(clubIdx), years: 2 }; // a short proving deal at a club that just sacked its boss
   G.formation = "4-4-2"; G.mentality = "Balanced";
   G.lineup = bestXI(G.squads[clubIdx], G.formation);
   delete G.offers;
@@ -2172,13 +2233,41 @@ function takeJob(clubIdx) {
   save(); render();
 }
 
+function managerWageFor(clubIdx) {
+  const base = CLUBS[clubIdx] ? CLUBS[clubIdx].base : 70;
+  return Math.max(0.5, Math.round((0.6 + (base - 65) * 0.18) * 10) / 10); // £M/yr, scales with club stature
+}
+function ensureMgr() {
+  if (G && !G.mgr && CLUBS[G.myClub]) G.mgr = { wage: managerWageFor(G.myClub), years: 3 };
+}
 function mgrRep() {
   const base = (CLUBS[G.myClub] ? CLUBS[G.myClub].base : 70);
   return Math.round(base + Math.min(14, ((G.honours || []).length) * 2));
 }
+function jobRejects(clubIdx) {
+  const gap = CLUBS[clubIdx].base - mgrRep(); // +ve means the club is a stretch above your reputation
+  let p = gap >= 5 ? 0.6 : gap >= 3 ? 0.4 : gap >= 1 ? 0.2 : 0.05;
+  const releg = (G.career || []).slice(-3).filter(c => /Relegat/i.test(c.notes || "")).length;
+  const sacks = (G.career || []).filter(c => c.sacked).length;
+  p += releg * 0.12 + Math.min(0.2, sacks * 0.08);
+  if ((G.honours || []).length >= 3) p -= 0.15;
+  return rnd() < Math.max(0, Math.min(0.85, p));
+}
 function applyJob(clubIdx) {
   if (!CLUBS[clubIdx]) return;
-  if (typeof confirm === "function" && !confirm("Leave " + CLUBS[G.myClub].name + " to take over " + CLUBS[clubIdx].name + " for " + seasonYears(G.season + 1) + "? Your transfer budget, sponsor and any European place stay behind.")) return;
+  if (typeof confirm === "function" && !confirm("Apply to take over " + CLUBS[clubIdx].name + " for " + seasonYears(G.season + 1) + "? You leave " + CLUBS[G.myClub].name + "; your transfer budget, sponsor and any European place stay behind.")) return;
+  if (jobRejects(clubIdx)) {
+    if (typeof alert === "function") alert(CLUBS[clubIdx].name + " have gone in another direction. \"We thank you for your interest, but your record does not yet convince the board.\" Build your reputation and try again.");
+    return;
+  }
+  const wage = managerWageFor(clubIdx);
+  let yrs = 3;
+  if (typeof prompt === "function") {
+    const t = prompt(CLUBS[clubIdx].name + " accept your application and offer £" + wage + "M/yr. How many years do you want to sign for? (1 to 5)", "3");
+    if (t === null) return; // walked away from the table
+    yrs = Math.max(1, Math.min(5, Math.round(parseFloat(t) || 0) || 3));
+  }
+  G._mgrYears = yrs;
   nextSeason(clubIdx);
 }
 function jobCentreHtml() {
@@ -2195,7 +2284,7 @@ function jobCentreHtml() {
     const tag = gap >= 4 ? " · a real step up" : gap >= 1 ? " · a step up" : gap <= -8 ? " · a smaller club" : " · a sideways move";
     return `<div class="club-card" onclick="applyJob(${i})"><div class="cname">${esc(CLUBS[i].name)}</div><div class="cinfo">${esc(TIERS[ti].name)} · squad strength ${CLUBS[i].base}${tag}</div></div>`;
   }).join("");
-  return `<div class="panel" style="border-color:var(--amber)"><h2>💼 Job Centre — managerial vacancies</h2><p class="note">Fancy a fresh challenge for ${seasonYears(G.season + 1)}? Apply to take over another club. Bigger clubs open up as your reputation grows through trophies and overachieving. Your transfer budget, sponsor and any European place stay behind.</p><div class="club-grid">${cards}</div></div>`;
+  return `<div class="panel" style="border-color:var(--amber)"><h2>💼 Job Centre — managerial vacancies</h2><p class="note">Fancy a fresh challenge for ${seasonYears(G.season + 1)}? Apply to take over another club. Bigger clubs open up as your reputation grows through trophies and overachieving, and lower-division clubs will still take a chance on you if your reputation dips. A club may turn you down if your record is not strong enough. Your transfer budget, sponsor and any European place stay behind.</p><div class="club-grid">${cards}</div></div>`;
 }
 
 function renderSacked() {
@@ -3148,18 +3237,22 @@ function commitPreseason(fix, r, pens, snap) {
 }
 
 function renderHall() {
-  const hon = G.honours || [], motm = G.motm || [], car = G.career || [];
+  const hon = G.honours || [], motm = G.motm || [], moty = G.moty || [], car = G.career || [];
   const bestPos = car.length ? Math.min(...car.map(c => c.pos)) : null;
   return `<div class="panel"><h2>🏛 Hall of Fame</h2>
     <p class="note">Seasons managed: <b>${G.season}</b> · Trophies: <b>${hon.length}</b> ·
-       Manager of the Month awards: <b>${motm.length}</b>${bestPos ? ` · Best league finish: <b>#${bestPos}</b>` : ""}</p>
+       Manager of the Season: <b>${moty.length}</b> · Manager of the Month: <b>${motm.length}</b>${bestPos ? ` · Best league finish: <b>#${bestPos}</b>` : ""}</p>
     <h3>Trophy cabinet</h3>
     ${hon.length
-      ? `<p>${hon.map(h => "🏆 " + esc(withYears(h))).join("<br>")}</p>`
+      ? `<p>${hon.map(h => "🏆 " + esc(withYears(h)) + honClubSuffix(h)).join("<br>")}</p>`
       : `<p class="note">Empty. The shelf is dusted and waiting.</p>`}
+    <h3>🏆 Manager of the Season</h3>
+    ${moty.length
+      ? `<p class="note">${moty.map(m => "🏆 " + esc(withYears(m))).join("<br>")}</p>`
+      : `<p class="note">None yet — win your league, lift a major trophy, or wildly overachieve.</p>`}
     <h3>🏅 Manager of the Month</h3>
     ${motm.length
-      ? `<p class="note">${motm.map(m => esc(withYears(m))).join("<br>")}</p>`
+      ? `<p class="note">${motm.map(m => esc(withYears(m)) + honClubSuffix(m)).join("<br>")}</p>`
       : `<p class="note">None yet — string four big results together.</p>`}
     ${(() => {
       const R = G.records;
@@ -4781,9 +4874,34 @@ function nextSeason(newClub) {
   } else if (movedClub) {
     G.sponsor = null; G.sponsorOffers = null; G.sponsorNews = null;
   }
+  // the manager's own contract: a fresh deal on a move, otherwise it ages a year and may need renewing
+  if (movedClub) {
+    G.mgr = { wage: managerWageFor(G.myClub), years: (typeof G._mgrYears === "number" ? G._mgrYears : 3) };
+  } else {
+    ensureMgr();
+    G.mgr.years = (G.mgr.years || 1) - 1;
+    if (G.mgr.years <= 0) {
+      const offerWage = managerWageFor(G.myClub);
+      const met = myFinalPos <= (G.board ? G.board.exp : G.league.length) || (G.honours || []).some(h => h.startsWith("Season " + G.season + ":"));
+      if (met) {
+        let yrs = 3;
+        if (typeof prompt === "function") {
+          const t = prompt("Your contract at " + CLUBS[G.myClub].name + " has expired. They offer a renewal at £" + offerWage + "M/yr. Sign for how many years? (1 to 5, 0 to run down a final year)", "3");
+          if (t !== null) yrs = Math.max(0, Math.min(5, Math.round(parseFloat(t) || 0)));
+        }
+        if (yrs >= 1) { G.mgr = { wage: offerWage, years: yrs }; G.mgrNews = "✍ You signed a new " + yrs + "-year deal at " + CLUBS[G.myClub].name + " (£" + offerWage + "M/yr)."; }
+        else { G.mgr = { wage: offerWage, years: 1 }; G.mgrNews = "You declined the renewal at " + CLUBS[G.myClub].name + " - a final season before you must move on."; }
+      } else {
+        G.mgr = { wage: offerWage, years: 1 };
+        G.mgrNews = "After a season below expectations, " + CLUBS[G.myClub].name + " grant only a one-year extension (£" + offerWage + "M/yr). Deliver, or move on.";
+      }
+    }
+  }
+  delete G._mgrYears;
+  const mgrWage = (G.mgr && G.mgr.wage) || 0;
   const promoBudget = (wasPromoted && !takingJob) ? 30 : 0;
   const oldBudgetForLedger = G.budget || 0;
-  G.budget = Math.round((movedClub ? 0 : (G.budget || 0) * 0.5) + 20 + (CLUBS[G.myClub].base - 70) * 8 + (movedClub ? 0 : leaguePrize + euroPrize + sponsorIncome) + missionsWon * 8 - (staffTier("coach") + staffTier("physio") + staffTier("scout")) * 2) + promoBudget;
+  G.budget = Math.round((movedClub ? 0 : (G.budget || 0) * 0.5) + 20 + (CLUBS[G.myClub].base - 70) * 8 + (movedClub ? 0 : leaguePrize + euroPrize + sponsorIncome) + missionsWon * 8 - (staffTier("coach") + staffTier("physio") + staffTier("scout")) * 2 - mgrWage) + promoBudget;
   {
     const stipend = Math.round((20 + (CLUBS[G.myClub].base - 70) * 8) * 10) / 10;
     const staffUpkeep = (staffTier("coach") + staffTier("physio") + staffTier("scout")) * 2;
@@ -4795,6 +4913,7 @@ function nextSeason(newClub) {
     if (promoBudget) fitems.push(["Promotion windfall", promoBudget, "prize"]);
     fitems.push(["Club stature stipend (Season " + (G.season + 1) + ")", stipend, "stipend"]);
     if (staffUpkeep) fitems.push(["Backroom staff upkeep", -staffUpkeep, "staff"]);
+    if (mgrWage) fitems.push(["Manager salary (" + CLUBS[G.myClub].name + ")", -mgrWage, "manager"]);
     const known = fitems.reduce((acc, it) => acc + it[1], 0);
     const running = Math.round((G.budget - oldBudgetForLedger - known) * 10) / 10;
     const fseq = [["Club running costs (unspent budget absorbed)", running, "running"]].concat(fitems);
@@ -5570,7 +5689,7 @@ function render() {
   const app = $("#app");
   closeProfile();
   if (APP_MODE === "wc") {
-    $("#club-badge").textContent = WCS && WCS.squads ? "World Cup 2026 · " + WC_TEAMS[WCS.myTeam][0] : "World Cup 2026";
+    $("#club-badge").textContent = WCS && WCS.squads ? "World Cup " + ((WCS && WCS.year) || 2026) + " · " + WC_TEAMS[WCS.myTeam][0] : "World Cup " + ((WCS && WCS.year) || 2026);
     $("#week-badge").textContent = WCS && WCS.squads && WCS.stage !== "done" ? wcDateLabel() : "";
     stopAnim();
     app.innerHTML = renderWC();
@@ -5851,10 +5970,11 @@ function finMoneyM(n) {
   return (v < 0 ? "-" : "") + "£" + Math.abs(v) + "M";
 }
 function finCatName(c) {
-  return ({ opening: "Opening balance", gate: "Matchday gate", transfer_in: "Player sales", transfer_out: "Player purchases", sponsor: "Sponsorship", prize: "Prize money", funds: "Board grants", staff: "Backroom staff", event: "Boardroom events", running: "Running costs", stipend: "Stature stipend" })[c] || "Other";
+  return ({ opening: "Opening balance", gate: "Matchday gate", transfer_in: "Player sales", transfer_out: "Player purchases", sponsor: "Sponsorship", prize: "Prize money", funds: "Board grants", staff: "Backroom staff", manager: "Manager salary", event: "Boardroom events", running: "Running costs", stipend: "Stature stipend" })[c] || "Other";
 }
 function renderFinance() {
   if (!G.ledger || !G.ledger.length) ledgerOpen();
+  ensureMgr();
   const L = G.ledger, bal = G.budget;
   const cats = {}; let totIn = 0, totOut = 0;
   for (const e of L) {
@@ -5890,6 +6010,7 @@ function renderFinance() {
     <h2>💷 Finance</h2>
     <p>Transfer budget (cash available): <b style="color:${bal < 0 ? "var(--red)" : "var(--pitch)"};font-size:1.3em">${finMoneyM(bal)}</b>
       &nbsp;·&nbsp; Wage bill: <b style="color:${wageBill() > wageCap() ? "var(--red)" : "inherit"}">£${wageBill()}M</b> / £${wageCap()}M cap</p>
+    <p class="note">Your contract: <b>£${G.mgr.wage}M/yr</b> · <b>${G.mgr.years}</b> season${G.mgr.years === 1 ? "" : "s"} remaining${G.mgr.years <= 1 ? ` <span style="color:var(--amber)">— renewal due</span>` : ""}. Your salary is paid from the budget at each season's close.</p>
     ${chart}
     <p class="note">Cash balance across your career. Each season close keeps half of any unspent budget; the rest is absorbed as running costs.</p>
     <div style="display:flex;gap:24px;flex-wrap:wrap;margin:10px 0 4px">
@@ -6219,9 +6340,11 @@ function savePlayerEdit(ci, pid) {
 }
 
 function renderSquad() {
+  updateResting(G.squads[G.myClub]); // keep the RESTED tag in step with current fitness
   const squad = sortRows(G.squads[G.myClub], "squad", SQUAD_COLS, p => p);
   const inXI = new Set(validateLineup());
   const summerItems = (G.week === 0 ? (G.youthNews || []) : []).concat(G.week === 0 && G.sponsorNews ? [G.sponsorNews] : [])
+    .concat(G.week === 0 && G.mgrNews ? [G.mgrNews] : [])
     .concat(G.week === 0 ? (G.euroRivalNews || []) : []);
   const news = summerItems.length
     ? `<div class="panel" style="border-color:var(--pitch)"><h3 style="margin-top:0">This summer at the club</h3>
@@ -6241,7 +6364,7 @@ function renderSquad() {
       <td class="num">${condCell(p)}</td><td class="num m-hide">${p.form > 0 ? "+" + p.form : p.form}</td>
       <td class="num">${p.goals}</td>
       <td class="num">£${p.wage || 0}M·${p.years || 0}y${(p.years || 0) <= 1 ? ` <button class="ghost" style="padding:2px 7px;font-size:11px" onclick="renewContract(${p.id})" title="He wants £${renewDemand(p)}M/yr">Renew</button>` : ""}</td>
-      <td>${p.loan ? `<span class="tag">LOAN @${esc(p.loan)}</span>` : ""}${p.injury ? `<span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}${(p.years || 0) <= 1 ? ` <span class="tag" style="color:var(--amber)">EXPIRING</span>` : ""}</td>
+      <td>${p.loan ? `<span class="tag">LOAN @${esc(p.loan)}</span>` : ""}${p.injury ? `<span class="tag inj">INJ ${p.injury}wk</span>` : ""}${p.ban ? ` <span class="tag sus">BAN ${p.ban}</span>` : ""}${(p.resting && available(p) && !inXI.has(p.id)) ? ` <span class="tag" style="color:var(--amber)" title="Energy below ${REST_OUT}% — rested until back to ${REST_IN}%">RESTED</span>` : ""}${(p.years || 0) <= 1 ? ` <span class="tag" style="color:var(--amber)">EXPIRING</span>` : ""}</td>
     </tr>`).join("") + `</tbody></table>
     <p class="note">Highlighted rows are your starting XI. ★ = scouted potential for players 23 and under.
     ⚠ EXPIRING players leave on a free at season's end unless renewed — but renewing costs what they're worth NOW.</p></div>`;
@@ -6266,7 +6389,7 @@ function renderTactics() {
       `</select></label>
       <button class="ghost" onclick="G.lineup=bestXI(G.squads[G.myClub],G.formation);save();render()">Auto-pick best XI now</button>
     </div>
-    <p class="note"><label><input type="checkbox" ${G.autoXI === false ? "" : "checked"} onchange="G.autoXI=this.checked;if(this.checked)G.lineup=bestXI(G.squads[G.myClub],G.formation);save();render()"> <b>Auto-pick best XI before every match</b></label> - ${G.autoXI === false ? "OFF: your chosen XI is kept; only injured or suspended men are replaced." : "ON: your strongest available XI by form, position and fitness is selected automatically each matchday. Switch off to pick by hand."}</p>
+    <p class="note"><label><input type="checkbox" ${G.autoXI === false ? "" : "checked"} onchange="G.autoXI=this.checked;if(this.checked)G.lineup=bestXI(G.squads[G.myClub],G.formation);save();render()"> <b>Auto-pick best XI before every match</b></label> - ${G.autoXI === false ? "OFF: your chosen XI is kept; only injured or suspended men are replaced." : "ON: your strongest available XI by form, position and fitness is picked each matchday; anyone who drops below ${REST_OUT}% is rested and comes back once recovered to ${REST_IN}%. Switch off to pick by hand."}</p>
     <p class="note">${esc(STYLES[G.style || "Balanced"].desc)}</p>
     <h3>Starting XI</h3><div class="lineup-grid">`;
   const slotRoles = formSlots(G.formation);
@@ -6290,7 +6413,7 @@ function renderTactics() {
       <select onchange="swapSlot(${i}, parseInt(this.value))">` + standIn +
       options.map(p => {
         const v = Math.round(slotRating(p, role));
-        return `<option value="${p.id}"${p.id === current ? " selected" : ""}>${esc(p.name)} (${p.role || p.pos} · ${v}${p.fitness < 70 ? " · " + p.fitness + "%" : ""})${G.lineup.includes(p.id) && p.id !== current ? " — starting" : ""}</option>`;
+        return `<option value="${p.id}"${p.id === current ? " selected" : ""}>${esc(p.name)} (${p.role || p.pos} · ${v}${p.fitness < 70 ? " · " + p.fitness + "%" : ""})${p.resting ? " 💤" : ""}${G.lineup.includes(p.id) && p.id !== current ? " — starting" : ""}</option>`;
       }).join("") +
       out.map(p => `<option disabled>${esc(p.name)} — ${p.loan ? "on loan at " + esc(p.loan) : p.injury ? "🚑 injured (" + p.injury + " wk)" : "⛔ suspended (" + p.ban + ")"}</option>`).join("") +
       `</select></div>`;
@@ -6821,6 +6944,7 @@ function seasonCardCanvas() {
   if (assister && assister.assists) line("Most assists:  " + assister.name + " — " + assister.assists);
   const motmCount = (G.motm || []).filter(m => m.startsWith("Season " + G.season + " ")).length;
   if (motmCount) line("Manager of the Month awards:  " + motmCount);
+  if ((G.moty || []).some(m => m.startsWith("Season " + G.season + " "))) line("🏆 Manager of the Season", true, "#E8B33C");
   // trophies banner
   const trophies = (G.honours || []).filter(h => h.startsWith("Season " + G.season + ":")).map(h => h.split(": ")[1]);
   if (trophies.length) {
@@ -6933,16 +7057,21 @@ function renderSeasonEnd() {
                iAmDown ? " — relegated. A dark day at the club." : ".";
   const nextLeague = G.league.map(i => relegated.includes(i) ? promoted[relegated.indexOf(i)] : i);
   // 🦁 the national job: excel at club level and the FA comes calling — a DUAL role
-  const natEligible = !G.natJob && (myPos <= 4 || (G.honours || []).some(h => h.startsWith("Season " + G.season + ":")));
+  const natEligible = !G.natJob && mgrRep() >= 82 && (myPos <= 4 || (G.honours || []).some(h => h.startsWith("Season " + G.season + ":")));
   const natHtml = G.natJob !== undefined && G.natJob !== null
     ? `<div class="panel" style="border-color:var(--pitch)"><h2>🦁 ${esc(WC_TEAMS[G.natJob][0])} manager (dual role)</h2>
-       <p>The nation calls between club seasons. Take your squad to the World Cup — glory there lands in YOUR Hall of Fame.</p>
-       <div class="row"><button class="action" onclick="wcEnter(); if (!WCS || !WCS.squads || WCS.myTeam !== G.natJob) wcNew(G.natJob);">🌎 Lead ${esc(WC_TEAMS[G.natJob][1])} at the World Cup →</button>
-       <button class="ghost" onclick="G.natJob=null;save();render()">Resign the national post</button></div></div>`
-    : natEligible ? `<div class="panel" style="border-color:var(--amber)"><h2>🦁 The FA comes calling</h2>
-       <p>Your club work has been noticed. England want you as national manager — <b>alongside</b> your club job.</p>
-       <div class="row"><button class="action" onclick="G.natJob=24;save();render()">Accept the England job (dual role)</button>
-       <span class="note">…or ignore the call and stay a club man.</span></div></div>` : "";
+       <p>${G.natNews ? esc(G.natNews) + " " : ""}The federation expect you to <b>${natTargetText(natTarget())}</b>. The post is yours until they lose patience.</p>
+       <div class="row"><button class="action" onclick="natEnterWC()">🌎 Lead ${esc(WC_TEAMS[G.natJob][1])} at the ${natYear()} World Cup →</button>
+       <button class="ghost" onclick="if(typeof confirm!=='function'||confirm('Resign the national post?')){G.natJob=null;G.natNews=null;save();render()}">Resign the national post</button></div></div>`
+    : natEligible ? ((cands) => cands.length ? `<div class="panel" style="border-color:var(--amber)"><h2>🦁 An international invitation</h2>
+       <p>Your club record has caught the eye of national federations - your nationality is no barrier (a German can lead England). One of these would hand you their team alongside your club job, and the post runs tournament to tournament until they sack you.</p>
+       <div class="club-grid">` +
+       cands.map(i => `<div class="club-card" onclick="acceptNatJob(${i})">
+         <div class="cname">${wcCrest(i, 22)}${esc(WC_TEAMS[i][0])}</div>
+         <div class="cinfo"><span class="stars-bar">${starBar(WC_TEAMS[i][2] + 3)}</span> strength ${WC_TEAMS[i][2]}</div>
+         <div class="cstars">They will expect you to ${natTargetText(natTargetForBase(WC_TEAMS[i][2]))}</div>
+       </div>`).join("") +
+       `</div><p class="note">…or decline and stay a club man.</p></div>` : "")(natCandidates()) : "";
   // headhunted: overachieve and a bigger club comes calling (decided once, then saved)
   if (G.approach === undefined) {
     let appr = null;
@@ -6995,7 +7124,7 @@ function renderSeasonEnd() {
           all.filter(x => x.p.pos === "FW").sort((x, y) => score(y) - score(x)).slice(0, 2));
         return `<div style="text-align:left;border-top:1px solid var(--line);margin-top:10px;padding-top:8px">
           <p><b>🏅 AWARDS NIGHT</b><br>
-          🏆 Player of the Season: <b>${tagP(pots)}</b> — ${pots.p.goals}g ${pots.p.assists || 0}a<br>
+          ${(G.moty || []).some(m => m.startsWith("Season " + G.season + " ")) ? `🏆 <b>Manager of the Season: YOU</b> — ${esc(CLUBS[G.myClub].name)}<br>` : ""}🏆 Player of the Season: <b>${tagP(pots)}</b> — ${pots.p.goals}g ${pots.p.assists || 0}a<br>
           🌟 Young Player (U21): <b>${tagP(yng)}</b><br>
           🧤 Golden Glove: <b>${glove ? esc(glove.name) + " (" + CLUBS[bestDef.i].short + ")" + (bestDef.i === G.myClub ? " ⭐YOURS" : "") : "—"}</b> — best defence (${bestDef.ga} conceded)<br>
           🅰 Playmaker of the Season: <b>${tagP(assistK)}</b> — ${assistK.p.assists || 0} assists<br>
@@ -7132,6 +7261,36 @@ function wcGenSquad(ti) {
   return squad;
 }
 
+function natYear() { return 2026 + 4 * ((G && G.natTenure) || 0); }
+function natTargetForBase(b) { return b >= 88 ? 4 : b >= 82 ? 3 : b >= 78 ? 2 : 1; } // 4=SF,3=QF,2=R16,1=knockouts
+function natTarget() { const b = (G && G.natJob != null && WC_TEAMS[G.natJob]) ? WC_TEAMS[G.natJob][2] : 80; return natTargetForBase(b); }
+function natTargetText(t) { return ({ 1: "reach the knockouts", 2: "reach the last 16", 3: "reach the quarter-finals", 4: "reach the semi-finals" })[t] || "qualify"; }
+function natStageText(s) { return ["the group stage", "the Round of 32", "the Round of 16", "the quarter-finals", "the semi-finals", "the final", "World Cup glory"][s] || "the group stage"; }
+function natStageReached() { // 0 group, 1 R32, 2 R16, 3 QF, 4 SF, 5 final, 6 champion
+  if (!WCS) return 0;
+  if (WCS.champion === WCS.myTeam) return 6;
+  let maxR = -1;
+  for (const rd of (WCS.ko && WCS.ko.log) || []) {
+    if (rd.round == null || rd.round < 0) continue;
+    if ((rd.matches || []).some(m => m.a === WCS.myTeam || m.b === WCS.myTeam)) maxR = Math.max(maxR, rd.round);
+  }
+  return maxR < 0 ? 0 : maxR + 1;
+}
+function natCandidates() {
+  const rep = mgrRep();
+  return WC_TEAMS.map((t, i) => i)
+    .filter(i => WC_TEAMS[i][2] <= rep + 2 && WC_TEAMS[i][2] >= rep - 16) // nations within reach of your standing, top nations only for top reputations
+    .sort((a, b) => WC_TEAMS[b][2] - WC_TEAMS[a][2])
+    .slice(0, 3);
+}
+function acceptNatJob(ti) { G.natJob = ti; G.natTenure = G.natTenure || 0; G.natStrikes = 0; G.natNews = null; save(); render(); }
+function natEnterWC() {
+  if (!G || G.natJob == null) return;
+  wcEnter();
+  if (!WCS || !WCS.squads || WCS.myTeam !== G.natJob || WCS.stage === "done" || WCS.year !== natYear()) wcNew(G.natJob);
+  WCS.nat = true; WCS.year = natYear();
+  saveWC(); render();
+}
 function wcEnter() {
   APP_MODE = "wc";
   if (!loadWC()) WCS = { stage: "pick" };
@@ -7294,9 +7453,33 @@ function wcPlayNext(preMatch) {
     if (survivors.length === 1) {
       WCS.champion = survivors[0];
       WCS.stage = "done";
-      // a World Cup win goes into your CAREER Hall of Fame, if a career exists
-      if (WCS.champion === WCS.myTeam && G && G.honours && !WCS.honoured) {
-        G.honours.push("Season " + G.season + ": 🌎 WORLD CUP 2026 winners with " + WC_TEAMS[WCS.myTeam][0]);
+      // national-team campaign: dynamic-year honour + the federation's verdict, evaluated once
+      if (WCS.nat && G && G.honours && !WCS.evaluated) {
+        const nat = G.natJob;
+        const reached = natStageReached();
+        const target = natTarget();
+        if (WCS.champion === WCS.myTeam && !WCS.honoured) {
+          G.honours.push("Season " + G.season + ": 🌎 World Cup " + (WCS.year || 2026) + " winners with " + WC_TEAMS[nat][0]);
+          WCS.honoured = true;
+        }
+        let verdict;
+        if (reached >= target) {
+          G.natStrikes = 0; G.natTenure = (G.natTenure || 0) + 1;
+          verdict = "🦁 The " + WC_TEAMS[nat][0] + " FA are satisfied — you reached " + natStageText(reached) + ". The post is yours; next, the " + natYear() + " World Cup.";
+        } else {
+          G.natStrikes = (G.natStrikes || 0) + 1;
+          if ((target - reached) >= 2 || G.natStrikes >= 2) {
+            verdict = "🦁 The " + WC_TEAMS[nat][0] + " FA have dismissed you after going out at " + natStageText(reached) + " (they wanted you to " + natTargetText(target) + "). Your national post is over.";
+            G.natJob = null; G.natStrikes = 0;
+          } else {
+            G.natTenure = (G.natTenure || 0) + 1;
+            verdict = "🦁 The " + WC_TEAMS[nat][0] + " FA expected you to " + natTargetText(target) + " but you exited at " + natStageText(reached) + ". A final warning; deliver at the " + natYear() + " World Cup.";
+          }
+        }
+        WCS.natVerdict = verdict; WCS.evaluated = true; G.natNews = verdict;
+        save();
+      } else if (!WCS.nat && WCS.champion === WCS.myTeam && G && G.honours && !WCS.honoured) {
+        G.honours.push("Season " + G.season + ": 🌎 World Cup " + (WCS.year || 2026) + " winners with " + WC_TEAMS[WCS.myTeam][0]);
         WCS.honoured = true;
         save();
       }
@@ -7508,13 +7691,14 @@ function renderWC() {
       <ul class="events" id="wcl-feed">${wclFeedHtml()}</ul>
     </div>`;
   }
-  let html = `<div class="panel"><h2>🌎 World Cup 2026 — ${wcCrest(my, 24)}${esc(myName)}</h2>`;
+  let html = `<div class="panel"><h2>🌎 World Cup ${(WCS.year || 2026)} — ${wcCrest(my, 24)}${esc(myName)}</h2>`;
   if (WCS.stage === "done") {
     const champs = WCS.champion === my;
     html += `<div class="banner"><h2>${champs ? "🏆 WORLD CHAMPIONS! 🏆" : "The tournament is over"}</h2>
       <p>${champs ? esc(myName) + " have won the World Cup! Immortality." :
         esc(WC_TEAMS[WCS.champion][0]) + " lift the trophy at MetLife." +
-        (WCS.honoured ? "" : " Your run is over — but there is always 2030.")}</p>
+        (WCS.honoured ? "" : " Your run is over — but there is always the next one.")}</p>
+      ${WCS.nat && WCS.natVerdict ? `<p class="note">${esc(WCS.natVerdict)}</p>` : ""}
       ${champs && WCS.honoured ? `<p class="note">🏛 Added to your career Hall of Fame.</p>` : ""}</div>`;
   } else {
     const opp = wcMyNextOpp();
