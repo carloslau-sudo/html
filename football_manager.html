@@ -1157,10 +1157,18 @@ function bestXI(squad, formationName) {
     if (best) { used.add(best.id); return best.id; }
     return null;
   });
-  // injury crisis: out-of-position stand-ins go into the empty slot itself; prefer the freshest, non-rested cover
+  // injury crisis: out-of-position stand-ins fill an empty slot — an outfield gap is covered by the freshest
+  // spare outfielder; a keeper NEVER covers an outfield slot. If no outfielder is left, the slot stays open
+  // (the side plays a man short) and the engine docks team strength ~7% per missing man.
   const reserves = squad.filter(p => available(p) && !used.has(p.id))
                         .sort((a, b) => (fatiguePenalty(a) - fatiguePenalty(b)) || (effRating(b) - effRating(a)));
-  for (let i = 0; i < xi.length; i++) if (xi[i] === null && reserves.length) xi[i] = reserves.shift().id;
+  for (let i = 0; i < xi.length; i++) {
+    if (xi[i] !== null) continue;
+    const gkSlot = slotLine(formationName, i) === "GK";
+    let k = reserves.findIndex(p => gkSlot ? p.pos === "GK" : p.pos !== "GK");
+    if (k < 0 && gkSlot && reserves.length) k = 0; // an empty goal is worse than an outfielder in goal; but an outfield gap is left open (a man short) rather than put a keeper there
+    if (k >= 0) { xi[i] = reserves[k].id; reserves.splice(k, 1); }
+  }
   return xi.filter(id => id !== null);
 }
 
@@ -3030,27 +3038,29 @@ function initCups() {
 function fitCupsIntoRemainingSeason() {
   if (!G.cups || G.tier < 2) return;
   const endW = G.fixtures.length - 1, startW = G.week + 1;
-  if (endW - startW < 3) return; // too little of the season left to slot a cup run
+  if (endW - startW < 2) return; // too little of the season left to slot a tie
   const used = new Set();
   let offset = 0;
   for (const key of ["lc", "fa", "et"]) {
-    const c = G.cups[key];
+    let c = G.cups[key];
     if (!c || !(c.rounds || []).length) continue;
-    if ((c.results || []).length) continue;                       // under way this season — preserve
-    if (c.alive === true && c.rounds[0].week >= G.week) continue; // Round 1 still ahead — it plays normally
-    const fresh = buildDomesticCup(key);
-    const n = fresh.rounds.length, room = endW - startW, stride = Math.max(1, Math.floor(room / n));
+    if (c.alive !== true && !(c.results || []).length) c = G.cups[key] = buildDomesticCup(key); // shelved unplayed → fresh from Round 1
+    if (c.alive !== true) continue;                 // won, or knocked out — nothing left to play
+    const from = c.r || 0;                          // first round not yet played; earlier rounds keep their history
+    if (from >= c.rounds.length) continue;
+    if (c.rounds[from].week >= G.week) continue;    // its next tie is already ahead — it plays normally, leave it alone
+    const remain = c.rounds.length - from;
+    const room = endW - startW, stride = Math.max(1, Math.floor(room / remain));
     let ok = true; const weeks = [];
-    for (let ri = 0; ri < n; ri++) {
-      let wk = startW + offset + ri * stride;
+    for (let i = 0; i < remain; i++) {
+      let wk = startW + offset + i * stride;
       while (used.has(wk) && wk <= endW) wk++;
       if (wk > endW) { ok = false; break; }
       weeks.push(wk);
     }
-    if (!ok) { fresh.alive = "out"; fresh.remaining = []; G.cups[key] = fresh; continue; } // no room left this season
-    weeks.forEach((wk, ri) => { fresh.rounds[ri].week = wk; delete fresh.rounds[ri].week2; used.add(wk); });
-    fresh.r = 0; fresh.opp = null; fresh.alive = true;
-    G.cups[key] = fresh; offset += 1; // stagger the next cup to avoid clashes
+    if (!ok) continue; // not enough room left — it carries to next season
+    weeks.forEach((wk, i) => { c.rounds[from + i].week = wk; delete c.rounds[from + i].week2; used.add(wk); });
+    offset += 1; // stagger the next cup to avoid week clashes
   }
 }
 
