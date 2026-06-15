@@ -2229,7 +2229,7 @@ function takeJob(clubIdx) {
     const pos = tableStats().findIndex(r => r.i === oldClub) + 1;
     G.career = G.career || [];
     G.career.push({ s: G.season, club: CLUBS[oldClub].name, pos: pos || G.league.length,
-      sacked: true, notes: "Sacked - #" + (pos || "?") + " when dismissed" });
+      t: tierIndex(), sacked: true, notes: "Sacked - #" + (pos || "?") + " when dismissed" });
   }
   G.myClub = clubIdx;
   // in the cup brackets, you now ARE the new club: swap the entrant identities
@@ -3492,8 +3492,9 @@ function renderHall() {
     })()}
     <h3>Career history</h3>
     ${car.length
-      ? `<table><thead><tr><th>Season</th><th>Club</th><th class="num">Finish</th><th>Silverware</th></tr></thead><tbody>` +
+      ? `<table><thead><tr><th>Season</th><th>Club</th><th>Division</th><th class="num">Finish</th><th>Silverware</th></tr></thead><tbody>` +
         [...car].reverse().map(c => `<tr><td class="num">${seasonYears(c.s)}</td><td>${esc(c.club)}</td>
+          <td>${c.t != null && TIERS[c.t] ? esc(TIERS[c.t].name) : "—"}</td>
           <td class="num">#${c.pos}</td><td class="note">${esc(c.notes || "—") || "—"}</td></tr>`).join("") +
         `</tbody></table>`
       : `<p class="note">Your first season is still being written.</p>`}
@@ -5178,7 +5179,7 @@ function nextSeason(newClub) {
   }
   // career history for the hall of fame
   G.career = G.career || [];
-  G.career.push({ s: G.season, club: CLUBS[G.myClub].name, pos: myFinalPos,
+  G.career.push({ s: G.season, club: CLUBS[G.myClub].name, pos: myFinalPos, t: oldTier,
     notes: (G.honours || []).filter(h => h.startsWith("Season " + G.season + ":")).map(h => h.split(": ")[1]).join(", ") });
 
   // commit the new pyramid and the manager's division
