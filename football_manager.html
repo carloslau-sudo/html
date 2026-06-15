@@ -6507,7 +6507,8 @@ function renderMain() {
       <button class="ghost" onclick="wcEnter()" title="A separate tournament — your career is untouched">🌎 World Cup 2026</button>
       <button class="ghost" onclick="resetGame()">New game</button>
     </div>
-    <p class="note" style="text-align:center" id="cloud-note">${(ghCfg() && ghCfg().auto) ? "☁ Auto-sync to GitHub is ON — every result is backed up." : "The game autosaves in this browser after every action. Use 💾 Save to file for backups, or turn on ☁ auto-sync in the Cloud tab."}</p>`;
+    <p class="note" style="text-align:center" id="cloud-note">${(ghCfg() && ghCfg().auto) ? "☁ Auto-sync to GitHub is ON — every result is backed up." : "The game autosaves in this browser after every action. Use 💾 Save to file for backups, or turn on ☁ auto-sync in the Cloud tab."}</p>
+    <p class="note" style="text-align:center;opacity:0.5;font-size:10px">build 2026-06-15 · trophy-draw-fix</p>`;
 }
 
 function euroLeagueTableHtml(compact) {
