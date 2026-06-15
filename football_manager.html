@@ -3004,21 +3004,54 @@ function joinCupMidSeason(c) {
   c.r = r; c.opp = null; c.alive = true;
   return true;
 }
+function buildLC() {
+  const lower = G.tier >= 2; // League One and League Two enter at Round 1
+  return { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
+    entry: lower ? 2 : 0, remaining: buildCupField(32),
+    rounds: lower
+      ? [ { week: 1, label: "Round 1" }, { week: 2, label: "Round 2" }, { week: 4, label: "Round 3" }, { week: 8, label: "Round 4" }, { week: 13, label: "Quarter-final" }, { week: 19, week2: 21, label: "Semi-final" }, { week: 26, label: "Final" } ]
+      : [ { week: 4, label: "Round 3" }, { week: 8, label: "Round 4" }, { week: 13, label: "Quarter-final" }, { week: 19, week2: 21, label: "Semi-final" }, { week: 26, label: "Final" } ] };
+}
+function buildFA() {
+  const lower = G.tier >= 2;
+  return { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
+    entry: lower ? 2 : 0, remaining: buildCupField(64),
+    rounds: lower
+      ? [ { week: 11, label: "Round 1" }, { week: 14, label: "Round 2" }, { week: 16, label: "Round 3" }, { week: 20, label: "Round 4" }, { week: 25, label: "Round 5" }, { week: 29, label: "Quarter-final" }, { week: 31, label: "Semi-final" }, { week: 35, label: "Final" } ]
+      : [ { week: 16, label: "Round 3" }, { week: 20, label: "Round 4" }, { week: 25, label: "Round 5" }, { week: 29, label: "Quarter-final" }, { week: 31, label: "Semi-final" }, { week: 35, label: "Final" } ] };
+}
+function buildDomesticCup(key) { return key === "fa" ? buildFA() : key === "et" ? buildTrophyCup() : buildLC(); }
 function initCups() {
-  const lower = G.tier >= 2; // League One, League Two and the National League enter at Round 1
-  G.cups = {
-    lc: { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
-      entry: lower ? 2 : 0, remaining: buildCupField(32),
-      rounds: lower
-        ? [ { week: 1, label: "Round 1" }, { week: 2, label: "Round 2" }, { week: 4, label: "Round 3" }, { week: 8, label: "Round 4" }, { week: 13, label: "Quarter-final" }, { week: 19, week2: 21, label: "Semi-final" }, { week: 26, label: "Final" } ]
-        : [ { week: 4, label: "Round 3" }, { week: 8, label: "Round 4" }, { week: 13, label: "Quarter-final" }, { week: 19, week2: 21, label: "Semi-final" }, { week: 26, label: "Final" } ] },
-    fa: { r: 0, alive: true, results: [], opp: null, history: [], winner: null,
-      entry: lower ? 2 : 0, remaining: buildCupField(64),
-      rounds: lower
-        ? [ { week: 11, label: "Round 1" }, { week: 14, label: "Round 2" }, { week: 16, label: "Round 3" }, { week: 20, label: "Round 4" }, { week: 25, label: "Round 5" }, { week: 29, label: "Quarter-final" }, { week: 31, label: "Semi-final" }, { week: 35, label: "Final" } ]
-        : [ { week: 16, label: "Round 3" }, { week: 20, label: "Round 4" }, { week: 25, label: "Round 5" }, { week: 29, label: "Quarter-final" }, { week: 31, label: "Semi-final" }, { week: 35, label: "Final" } ] },
-    et: buildTrophyCup(),
-  };
+  G.cups = { lc: buildLC(), fa: buildFA(), et: buildTrophyCup() };
+}
+/* Lower divisions, in-progress save: any cup not yet played this season is slotted into the weeks
+   that remain so it auto-plays from Round 1 in the normal fixture flow (rather than being shelved or
+   needing a separate button). Cups already under way this season are left untouched. */
+function fitCupsIntoRemainingSeason() {
+  if (!G.cups || G.tier < 2) return;
+  const endW = G.fixtures.length - 1, startW = G.week + 1;
+  if (endW - startW < 3) return; // too little of the season left to slot a cup run
+  const used = new Set();
+  let offset = 0;
+  for (const key of ["lc", "fa", "et"]) {
+    const c = G.cups[key];
+    if (!c || !(c.rounds || []).length) continue;
+    if ((c.results || []).length) continue;                       // under way this season — preserve
+    if (c.alive === true && c.rounds[0].week >= G.week) continue; // Round 1 still ahead — it plays normally
+    const fresh = buildDomesticCup(key);
+    const n = fresh.rounds.length, room = endW - startW, stride = Math.max(1, Math.floor(room / n));
+    let ok = true; const weeks = [];
+    for (let ri = 0; ri < n; ri++) {
+      let wk = startW + offset + ri * stride;
+      while (used.has(wk) && wk <= endW) wk++;
+      if (wk > endW) { ok = false; break; }
+      weeks.push(wk);
+    }
+    if (!ok) { fresh.alive = "out"; fresh.remaining = []; G.cups[key] = fresh; continue; } // no room left this season
+    weeks.forEach((wk, ri) => { fresh.rounds[ri].week = wk; delete fresh.rounds[ri].week2; used.add(wk); });
+    fresh.r = 0; fresh.opp = null; fresh.alive = true;
+    G.cups[key] = fresh; offset += 1; // stagger the next cup to avoid clashes
+  }
 }
 
 function drawMyCupOpp(c, r) {
@@ -3085,13 +3118,17 @@ function dueCup() {
   return null;
 }
 
-function goTrophy() {
+function playCupNow(key) {
   if (!G.cups || G.live) return;
-  let c = G.cups.et;
-  if (!c || !(c.rounds || []).length) return; // the Trophy is not contested at this level
-  if (c.alive === "out" && (!c.results || !c.results.length)) { G.cups.et = buildTrophyCup(); c = G.cups.et; } // revive a Trophy missed this season, from Round 1
-  if (c.alive !== true) return; // already won, or genuinely knocked out
-  G.forceCup = "et"; G.screen = "prematch"; save(); render();
+  let c = G.cups[key];
+  if (!c) c = G.cups[key] = buildDomesticCup(key);
+  // start a fresh run from Round 1 when this season's competition is unplayed and either shelved or still on the
+  // old pre-Round-1 schedule (no `entry` field); never discard a run already in progress
+  if (!(c.results || []).length && (c.alive !== true || (key !== "et" && c.entry === undefined))) {
+    c = G.cups[key] = buildDomesticCup(key);
+  }
+  if (c.alive !== true || !(c.rounds || []).length) return; // already won, or genuinely knocked out
+  G.forceCup = key; G.screen = "prematch"; save(); render();
 }
 function setCupOpponent(opp) {
   CLUBS[EURO_SLOT].name = opp.name;
@@ -3454,9 +3491,6 @@ function renderCups() {
         (c.opp ? ` vs <b>${esc(c.opp.name)}</b> ${c.opp.home ? "(H)" : "(A)"}${c.opp.kind === "minnow" ? " — lower-league opposition" : ""}` : " (draw to be made)") +
         ` · ${(c.remaining || []).length} clubs left in the hat`;
     html += `<h3>${CUP_NAME[key]}</h3><p>${status}</p>`;
-    if (key === "et" && (c.alive === true || (c.alive === "out" && !(c.results || []).length))) {
-      html += `<div class="row" style="margin:0 0 10px"><button class="action" onclick="goTrophy()">▶ Play your Trophy tie now</button></div>`;
-    }
     // your ties this season, explicit and always visible
     if ((c.results || []).length) {
       html += `<table><tbody>` + c.results.map(r =>
@@ -5532,19 +5566,16 @@ function load() {
     }
     if (!G.cups || !G.cups.lc || !G.cups.lc.remaining) { // any division joins fresh brackets; older and lower-league saves included
       initCups();
-      for (const key of ["lc", "fa"]) {
+      for (const key of ["lc", "fa", "et"]) {
         const c = G.cups[key];
-        // if the opening round has already passed, you missed this season's cup and enter fresh next season — no free byes to a final
         if (c && c.rounds[0] && c.rounds[0].week < G.week) { c.alive = "out"; c.remaining = []; }
       }
-      if (G.cups.et && G.cups.et.alive === true && !joinCupMidSeason(G.cups.et)) { G.cups.et.alive = "out"; G.cups.et.remaining = []; }
-    } else if ((G.tier === 2 || G.tier === 3) &&
-               (!G.cups.et || !(G.cups.et.rounds || []).length ||
-                (G.cups.et.alive === "out" && (!G.cups.et.results || !G.cups.et.results.length)))) {
-      // add the Trophy — or revive one a previous build shelved as "missed this season" — and let you pick it up at the next round
+    } else if ((G.tier === 2 || G.tier === 3) && (!G.cups.et || !(G.cups.et.rounds || []).length)) {
       G.cups.et = buildTrophyCup();
-      if (G.cups.et.alive === true && !joinCupMidSeason(G.cups.et)) { G.cups.et.alive = "out"; G.cups.et.remaining = []; }
+      if (G.cups.et.rounds[0] && G.cups.et.rounds[0].week < G.week) { G.cups.et.alive = "out"; G.cups.et.remaining = []; }
     }
+    // lower divisions: pull any unplayed cup back into the weeks that remain so it auto-plays from Round 1 in the schedule
+    fitCupsIntoRemainingSeason();
     if (!G.board) G.board = { conf: 65, exp: expectedPos(G.myClub), grace: G.week + 6, chosen: true };
     if (!G.style || !STYLES[G.style]) G.style = "Balanced";
     if (!FORMATIONS[G.formation]) G.formation = "4-4-2";
@@ -6730,6 +6761,25 @@ function swapSlot(slotIdx, playerId) {
 }
 
 let fixturesExpanded = false; // view preference for this session only
+function cupTiesForWeek(w) {
+  const out = [];
+  if (!G.cups) return out;
+  for (const key of ["lc", "fa", "et"]) {
+    const c = G.cups[key];
+    if (!c || !(c.rounds || []).length) continue;
+    c.rounds.forEach((rd, ri) => {
+      if (rd.week !== w) return;
+      const res = (c.results || []).find(x => x.label === rd.label);
+      let status;
+      if (res) status = (res.home ? "vs " : "at ") + esc(res.opp) + " " + res.myG + "–" + res.opG + (res.note && /pen/i.test(res.note) ? " (pens)" : "");
+      else if (c.alive !== true) return; // out of this cup — no upcoming ties
+      else if (ri === c.r && c.opp) status = (c.opp.home ? "vs " : "at ") + esc(c.opp.name);
+      else status = "draw to be made";
+      out.push(`<tr><td colspan="3" class="note" style="padding-left:6px">🏆 ${esc(CUP_NAME[key])} · ${rd.label} — ${status}</td></tr>`);
+    });
+  }
+  return out;
+}
 function renderFixtures() {
   const weekRows = w => {
     const played = w < G.results.length;
@@ -6740,6 +6790,7 @@ function renderFixtures() {
       rows += `<tr${mine ? ' class="me"' : ""}><td>${esc(CLUBS[h].name)}</td>
         <td class="num">${r ? r.hg + " – " + r.ag : "vs"}</td><td>${esc(CLUBS[a].name)}</td></tr>`;
     });
+    cupTiesForWeek(w).forEach(row => rows += row);
     return rows;
   };
   let html = `<div class="panel"><h2>Fixtures & Results</h2>`;
