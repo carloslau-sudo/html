@@ -3060,6 +3060,13 @@ function simCupRound(entrants) {
 
 function dueCup() {
   if (!G.cups) return null;
+  if (G.forceCup && G.cups[G.forceCup] && G.cups[G.forceCup].alive === true) { // on-demand: play this cup's next tie now, off the calendar
+    const c = G.cups[G.forceCup], rd = c.rounds[c.r];
+    if (rd) {
+      if (!c.opp) { c.opp = drawMyCupOpp(c, c.r); c.firstLegHome = c.opp.home; save(); }
+      return { cupKey: G.forceCup, label: CUP_NAME[G.forceCup] + " · " + rd.label, opp: c.opp, home: c.opp.home, isFinal: c.r === c.rounds.length - 1, leg: 0 };
+    }
+  }
   for (const key of ["lc", "fa", "et"]) {
     const c = G.cups[key];
     if (!c || c.alive !== true) continue;
@@ -3078,6 +3085,14 @@ function dueCup() {
   return null;
 }
 
+function goTrophy() {
+  if (!G.cups || G.live) return;
+  let c = G.cups.et;
+  if (!c || !(c.rounds || []).length) return; // the Trophy is not contested at this level
+  if (c.alive === "out" && (!c.results || !c.results.length)) { G.cups.et = buildTrophyCup(); c = G.cups.et; } // revive a Trophy missed this season, from Round 1
+  if (c.alive !== true) return; // already won, or genuinely knocked out
+  G.forceCup = "et"; G.screen = "prematch"; save(); render();
+}
 function setCupOpponent(opp) {
   CLUBS[EURO_SLOT].name = opp.name;
   CLUBS[EURO_SLOT].short = opp.short;
@@ -3098,6 +3113,7 @@ function commitCup(fix, r, pens) {
   addDramaEvents(r);
   r.dateMs = matchDateMs(fix.cupKey, G.week);
   const c = G.cups[fix.cupKey];
+  if (G.forceCup) G.forceCup = null; // an on-demand tie is one-shot
   const myG = fix.home ? r.hg : r.ag, opG = fix.home ? r.ag : r.hg;
   const roundLabel = c.rounds[c.r].label;
   const twoLeg = fix.leg === 1 || fix.leg === 2;
@@ -3438,6 +3454,9 @@ function renderCups() {
         (c.opp ? ` vs <b>${esc(c.opp.name)}</b> ${c.opp.home ? "(H)" : "(A)"}${c.opp.kind === "minnow" ? " — lower-league opposition" : ""}` : " (draw to be made)") +
         ` · ${(c.remaining || []).length} clubs left in the hat`;
     html += `<h3>${CUP_NAME[key]}</h3><p>${status}</p>`;
+    if (key === "et" && (c.alive === true || (c.alive === "out" && !(c.results || []).length))) {
+      html += `<div class="row" style="margin:0 0 10px"><button class="action" onclick="goTrophy()">▶ Play your Trophy tie now</button></div>`;
+    }
     // your ties this season, explicit and always visible
     if ((c.results || []).length) {
       html += `<table><tbody>` + c.results.map(r =>
@@ -5369,7 +5388,7 @@ function nextSeason(newClub) {
     }
   }
   topUpFreeAgents(14); // guarantee a free-agent market every summer — vital for cash-strapped clubs
-  delete G.pyr; delete G.choff; delete G.playoff; delete G.relegated; delete G.promoted; delete G.plLeague;
+  delete G.pyr; delete G.choff; delete G.playoff; delete G.forceCup; delete G.relegated; delete G.promoted; delete G.plLeague;
   G.season++; G.week = 0; G.results = []; G.offersIn = []; G.dealsKey = null;
   setWageCap();
   G.fixtures = leagueFixtures(G.league);
@@ -5502,6 +5521,7 @@ function load() {
     delete data.nextId;
     G = data;
     reconcileRoles();
+    G.forceCup = null;
     if (!G.preseason) { G.preseason = []; if (G.week === 0) buildPreseason(); }
     const guest = G.guestClub || (G.euro && G.euro.opp);
     if (guest) { // restore the visiting-opposition slot (European or cup minnow)
@@ -7035,7 +7055,7 @@ function renderPreMatch() {
     <div class="panel row">
       <button class="action" onclick="${liveBtn}">▶ Kick off — watch LIVE</button>
       <button class="ghost" onclick="${quickBtn}" title="Instant result, no live coverage">Quick sim</button>
-      <button class="ghost" onclick="G.screen='main';save();render()">← Back</button>
+      <button class="ghost" onclick="G.forceCup=null;G.screen='main';save();render()">← Back</button>
     </div>`;
 }
 
