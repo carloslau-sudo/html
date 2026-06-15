@@ -1205,6 +1205,7 @@ function newGame(clubIdx) {
   }
   setWageCap();
   ledgerOpen();
+  G.freeAgents = []; topUpFreeAgents(14);
   G.board = { conf: 65, exp: expectedPos(clubIdx), grace: 6, chosen: false };
   save();
   render();
@@ -2655,8 +2656,48 @@ function buyForeign(key) {
   save(); render();
 }
 
+function genFreeAgent() {
+  const pos = ["GK", "DF", "DF", "MF", "MF", "FW", "FW"][Math.floor(rnd() * 7)];
+  const veteran = rnd() < 0.7;
+  const age = veteran ? 28 + Math.floor(rnd() * 8) : 18 + Math.floor(rnd() * 4); // mostly released veterans, some young unsigned
+  const rating = 56 + Math.floor(rnd() * 20); // 56-75 — useful across every division
+  const nm = LOWER_INIT[Math.floor(rnd() * LOWER_INIT.length)] + ". " + LOWER_SURN[Math.floor(rnd() * LOWER_SURN.length)];
+  const p = makePlayer(nm, pos, rating, age, LINE_ROLES[pos][0]);
+  p.pot = Math.min(94, rating + (age <= 21 ? 8 + Math.floor(rnd() * 8) : 1)); // veterans have no ceiling left
+  p.years = 0; // unattached
+  return p;
+}
+function topUpFreeAgents(min) {
+  G.freeAgents = G.freeAgents || [];
+  let g = 0;
+  while (G.freeAgents.length < (min || 14) && g++ < 60) G.freeAgents.push(genFreeAgent());
+  if (G.freeAgents.length > 30) G.freeAgents = G.freeAgents.slice(0, 30);
+}
+function signFreeAgent(id) {
+  if (!windowOpen()) return;
+  const idx = (G.freeAgents || []).findIndex(p => p.id === id);
+  if (idx < 0) return;
+  const p = G.freeAgents[idx];
+  if (G.squads[G.myClub].length >= 25) { if (typeof alert === "function") alert("Your squad is full (25). Sell or release someone first."); return; }
+  const wage = p.wage || wageFor(p.rating, p.age);
+  if (wageBill() + wage > wageCap()) { if (typeof alert === "function") alert("That wage would burst your cap (£" + wageCap() + "M). Trim the wage bill first."); return; }
+  let yrs = 2;
+  if (typeof prompt === "function") {
+    const t = prompt("Sign " + p.name + " on a free transfer at £" + wage + "M/yr. Contract length? (1 to 4)", "2");
+    if (t === null) return;
+    yrs = Math.max(1, Math.min(4, Math.round(parseFloat(t) || 0) || 2));
+  }
+  p.years = yrs; p.wage = wage; p.fitness = 100; p.form = 0; p.morale = 75;
+  p.goals = 0; p.assists = 0; p.apps = 0; p.yellows = 0; p.injury = 0; p.ban = 0;
+  G.freeAgents.splice(idx, 1);
+  G.squads[G.myClub].push(p);
+  G.deals = G.deals || [];
+  G.deals.unshift("🆓 " + p.name + " signed on a FREE transfer (£" + wage + "M/yr, " + yrs + "y)");
+  save(); render();
+}
 function renderTransfers() {
   const open = windowOpen();
+  if (G.freeAgents === undefined) { G.freeAgents = []; if (open) topUpFreeAgents(14); }
   let html = `<div class="panel"><h2>💰 Transfer Market</h2>
     <p><b>Budget: £${G.budget}M</b> · Wages: <b style="color:${wageBill() > wageCap() ? "var(--red)" : "inherit"}">£${wageBill()}M/£${wageCap()}M</b> · Squad: ${G.squads[G.myClub].length}/25
     · Window: ${open ? `<span style="color:var(--pitch)">OPEN — ${G.week === 0 ? "summer window (closes at the first matchday)" : "January window (closes after week 23)"}</span>`
@@ -2734,11 +2775,14 @@ function renderTransfers() {
   // ---- loan in players ----
   if (windowOpen()) {
     const loanedIn = G.squads[G.myClub].filter(x => x.loanFrom !== undefined).length;
-    const targets = loanTargets().slice(0, 40);
+    const showAllL = G.tfShowAll === true;
+    let targets = loanTargets();
+    if (!showAllL) targets = targets.filter(({ p }) => wageBill() + (p.wage || wageFor(p.rating, p.age)) <= wageCap());
+    targets = targets.slice(0, 40);
     html += `<h3>🤝 Loan in players</h3>
-      <p class="note">Borrow a young player for the season: no fee, you pay his wage, he counts toward your 25-man squad, and he returns to his club next summer. Max 3 at once (${loanedIn}/3 used).</p>`;
+      <p class="note">Borrow a young player for the season: no fee, you pay his wage, he counts toward your 25-man squad, and he returns to his club next summer. Max 3 at once (${loanedIn}/3 used). ${showAllL ? "" : "Only loans your wage budget can carry are listed."}</p>`;
     if (!targets.length) {
-      html += `<p class="note">No suitable loan targets in the market right now.</p>`;
+      html += `<p class="note">No loan targets your wage budget can carry right now${showAllL ? "" : " — trim wages, or enable \"Show every player\" in the buy section below"}.</p>`;
     } else {
       html += `<table><thead><tr><th>Pos</th><th>Name</th><th>From</th><th class="num">Age</th><th class="num">Rating</th><th class="num">Wage</th><th></th></tr></thead><tbody>` +
         targets.map(({ p, club }) => {
@@ -2748,6 +2792,27 @@ function renderTransfers() {
           return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${plink(club, p)}</td><td>${CLUBS[club].short}</td>
             <td class="num">${p.age}</td><td class="num">${staffTier("scout") >= 2 ? p.rating : (Math.floor(p.rating / 4) * 4) + "-" + (Math.floor(p.rating / 4) * 4 + 3)}</td><td class="num">£${wage}M/yr</td>
             <td>${can ? `<button class="ghost" onclick="loanIn(${club},${p.id})">Loan in</button>` : `<span class="note" style="font-size:11px">${why}</span>`}</td></tr>`;
+        }).join("") + `</tbody></table>`;
+    }
+  }
+  // ---- free agents (no fee) ----
+  if (windowOpen() && G.challenge !== "youth") {
+    const faFilter = G.tfFilter || "All";
+    const fas = (G.freeAgents || []).filter(p => faFilter === "All" || p.pos === faFilter).sort((a, b) => b.rating - a.rating);
+    html += `<h3>🆓 Free agents — no transfer fee</h3>
+      <p class="note">Out-of-contract players you can sign for <b>nothing</b> — you pay only their wage. The way to strengthen on a tight budget.</p>`;
+    if (!fas.length) {
+      html += `<p class="note">No free agents matching this position right now.</p>`;
+    } else {
+      html += `<table><thead><tr><th>Pos</th><th>Name</th><th class="num">Age</th><th class="num">Rating</th><th class="num">Wage</th><th></th></tr></thead><tbody>` +
+        fas.slice(0, 30).map(p => {
+          const wage = p.wage || wageFor(p.rating, p.age);
+          const slot = G.squads[G.myClub].length < 25;
+          const wok = wageBill() + wage <= wageCap();
+          const why = !slot ? "squad full" : !wok ? "wages too high" : "";
+          return `<tr><td class="pos-${p.pos}" title="${p.pos}">${p.role || p.pos}</td><td>${esc(p.name)}</td>
+            <td class="num">${p.age}</td><td class="num">${staffTier("scout") >= 2 ? p.rating : (Math.floor(p.rating / 4) * 4) + "-" + (Math.floor(p.rating / 4) * 4 + 3)}</td><td class="num">£${wage}M/yr</td>
+            <td>${(slot && wok) ? `<button class="ghost" onclick="signFreeAgent(${p.id})">Sign free</button>` : `<span class="note" style="font-size:11px">${why}</span>`}</td></tr>`;
         }).join("") + `</tbody></table>`;
     }
   }
@@ -2779,23 +2844,22 @@ function renderTransfers() {
         && wageBill() + wageFor(r.p.rating, r.p.age) <= wageCap()) affordable++;
   }
   const headroom = +(wageCap() - wageBill()).toFixed(1);
+  const showAll = G.tfShowAll === true;
   html += myFull
     ? `<p style="color:var(--red)"><b>⛔ Your squad is full (25/25)</b> — sell or loan out before you can sign anyone.</p>`
-    : affordable === 0
-    ? `<p style="color:var(--red)"><b>⛔ No one on the market fits right now</b> — budget £${G.budget}M, wage headroom £${headroom}M/yr. Sell a player or trim the wage bill to make room.</p>`
-    : `<p class="note">✅ <b>${affordable}</b> of ${market.length} players on the market are within your budget and wage room${G.tfAfford ? "" : " — tick the box below or sort by Ask to find them"}.</p>
-       <p class="note"><label><input type="checkbox" ${G.tfAfford ? "checked" : ""} onchange="G.tfAfford=this.checked;save();render()"> Show only players you can sign</label></p>`;
+    : (affordable === 0 && !showAll)
+    ? `<p style="color:var(--red)"><b>⛔ Nothing on the transfer market is within reach</b> — budget £${G.budget}M, wage headroom £${headroom}M/yr. Sign a free agent above (no fee), sell a player, or trim wages.</p>
+       <p class="note"><label><input type="checkbox" onchange="G.tfShowAll=this.checked;save();render()"> Show every player anyway, including ones you can't afford</label></p>`
+    : `<p class="note">Showing ${showAll ? "all <b>" + market.length + "</b> players on the market" : "the <b>" + affordable + "</b> player" + (affordable === 1 ? "" : "s") + " within your £" + G.budget + "M budget and £" + headroom + "M/yr wage room"}.</p>
+       <p class="note"><label><input type="checkbox" ${showAll ? "checked" : ""} onchange="G.tfShowAll=this.checked;save();render()"> Show every player (loans and transfers), including those beyond your budget</label></p>`;
   let pool = market;
   if (G.tfSearch) pool = pool.filter(r => r.p.name.toLowerCase().includes(G.tfSearch.toLowerCase()));
-  if (G.tfAfford && !myFull) {
-    pool = market.filter(r => canLeave(r.club, r.p) && askPrice(r.club, r.p) <= G.budget
-      && wageBill() + wageFor(r.p.rating, r.p.age) <= wageCap());
-  }
+  else if (!showAll && !myFull) pool = market.filter(r => canLeave(r.club, r.p) && askPrice(r.club, r.p) <= G.budget
+    && wageBill() + wageFor(r.p.rating, r.p.age) <= wageCap());
   const sortedMarket = sortRows(pool, "market", MARKET_COLS, r => r.p);
-  if (!sortedMarket.length && market.length) {
-    html += `<p style="color:var(--amber)"><b>⚠ Your filters are hiding all ${market.length} players</b>
-      (search: "${esc(G.tfSearch || "")}" · position: ${esc(filter)} · affordable-only: ${G.tfAfford ? "ON" : "off"})
-      <button class="ghost" onclick="G.tfSearch='';G.tfAfford=false;G.tfFilter='All';save();render()">Clear all filters</button></p>`;
+  if (!sortedMarket.length && market.length && (G.tfSearch || filter !== "All")) {
+    html += `<p style="color:var(--amber)"><b>⚠ Your search or position filter is hiding all ${market.length} players</b>
+      <button class="ghost" onclick="G.tfSearch='';G.tfFilter='All';save();render()">Clear search & position</button></p>`;
   }
   html += `<h3>Buy players</h3>
     <div class="row"><label>Position
@@ -4990,6 +5054,7 @@ function nextSeason(newClub) {
   }
   // player development, retirements, and academy intakes — the league renews itself
   G.youthNews = [];
+  G.freeAgents = []; // rebuilt below from AI releases plus generated agents
   for (let ci = 0; ci < EURO_SLOT; ci++) {
     const squad = G.squads[ci];
     const mine = ci === G.myClub;
@@ -5035,6 +5100,11 @@ function nextSeason(newClub) {
       if (mine) {
         G.squads[ci] = G.squads[ci].filter(x => x.id !== p.id);
         G.youthNews.push("📄 " + p.name + " left on a FREE transfer — his contract expired un-renewed.");
+      } else if (p.age >= 30 && rnd() < 0.4) {
+        // an older fringe player is released to free agency rather than quietly renewed
+        p.years = 0; p.wage = wageFor(p.rating, p.age);
+        G.squads[ci] = G.squads[ci].filter(x => x.id !== p.id);
+        (G.freeAgents = G.freeAgents || []).push(p);
       } else {
         p.years = 2 + Math.floor(rnd() * 3);
         p.wage = wageFor(p.rating, p.age);
@@ -5097,6 +5167,7 @@ function nextSeason(newClub) {
       }
     }
   }
+  topUpFreeAgents(14); // guarantee a free-agent market every summer — vital for cash-strapped clubs
   delete G.pyr; delete G.choff; delete G.relegated; delete G.promoted; delete G.plLeague;
   G.season++; G.week = 0; G.results = []; G.offersIn = []; G.dealsKey = null;
   setWageCap();
