@@ -62,7 +62,8 @@ table { width: 100%; border-collapse: collapse; font-size: 14px; }
 th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--line); }
 th { color: var(--ink-soft); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }
 td.num, th.num { text-align: right; font-family: var(--mono); }
-tr.me td { background: rgba(46, 174, 106, 0.12); }
+tr.me td { background: rgba(46, 174, 106, 0.22); font-weight: 600; }
+tr.me td:first-child { box-shadow: inset 3px 0 0 var(--pitch); }
 tr.champ td:first-child { border-left: 3px solid var(--amber); }
 tr.ucl td:first-child { border-left: 3px solid #3D7DC8; }
 tr.uel td:first-child { border-left: 3px solid #E8833C; }
@@ -6509,7 +6510,7 @@ function renderMain() {
       <button class="ghost" onclick="resetGame()">New game</button>
     </div>
     <p class="note" style="text-align:center" id="cloud-note">${(ghCfg() && ghCfg().auto) ? "☁ Auto-sync to GitHub is ON — every result is backed up." : "The game autosaves in this browser after every action. Use 💾 Save to file for backups, or turn on ☁ auto-sync in the Cloud tab."}</p>
-    <p class="note" style="text-align:center;opacity:0.5;font-size:10px">build 2026-06-15 · prematch-crest-fix</p>`;
+    <p class="note" style="text-align:center;opacity:0.5;font-size:10px">build 2026-06-15 · table-highlight</p>`;
 }
 
 function euroLeagueTableHtml(compact) {
