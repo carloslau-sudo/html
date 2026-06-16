@@ -1141,6 +1141,38 @@ function slotLine(formationName, slotIdx) { // which broad line owns slot i
   if (slotIdx <= f.DF + f.MF) return "MF";
   return "FW";
 }
+/* Maximum-weight assignment for one line of the team: match each slot (a role
+   such as LB/CB/RB) to a distinct player so the TOTAL fit is the best possible,
+   instead of filling slots one by one in order (which can park a right-back at
+   centre-back while his natural slot goes to a worse-fitting man). A line is only
+   1–5 slots and the pool a handful, so an exact search over the smaller side is
+   instant. Returns, per slot, the chosen player's index in `players` (or -1). */
+function bestAssign(roles, players, weight) {
+  const R = roles.length, P = players.length;
+  const out = new Array(R).fill(-1);
+  if (!P || !R) return out;
+  const W = roles.map(role => players.map(p => weight(p, role)));
+  let best = -Infinity, bestArr = null;
+  if (R <= P) { // assign each slot a distinct player
+    const usedP = new Array(P).fill(false), cur = new Array(R).fill(-1);
+    const rec = (r, s) => {
+      if (r === R) { if (s > best) { best = s; bestArr = cur.slice(); } return; }
+      for (let p = 0; p < P; p++) { if (usedP[p]) continue; usedP[p] = true; cur[r] = p; rec(r + 1, s + W[r][p]); usedP[p] = false; }
+    };
+    rec(0, 0);
+    return bestArr || out;
+  }
+  // fewer players than slots (a squad crisis): give each player his best slot
+  const usedR = new Array(R).fill(false), cur = new Array(P).fill(-1);
+  const rec = (p, s) => {
+    if (p === P) { if (s > best) { best = s; bestArr = cur.slice(); } return; }
+    for (let r = 0; r < R; r++) { if (usedR[r]) continue; usedR[r] = true; cur[p] = r; rec(p + 1, s + W[r][p]); usedR[r] = false; }
+  };
+  rec(0, 0);
+  (bestArr || []).forEach((r, p) => { if (r >= 0) out[r] = p; });
+  return out;
+}
+
 function bestXI(squad, formationName) {
   // Legacy-save guard: slot matching keys off the broad line (GK/DF/MF/FW). If an
   // older/edited save stored a detailed role (e.g. "ST") in pos, derive the line so
@@ -1148,23 +1180,28 @@ function bestXI(squad, formationName) {
   for (const p of squad) {
     if (p.pos !== "GK" && p.pos !== "DF" && p.pos !== "MF" && p.pos !== "FW") p.pos = bucketForRole(p.role || p.pos);
   }
-  // each slot takes the available player of its line who fits the role best
+  // Each slot takes a player of its own line; WITHIN a line, players are matched to
+  // slots by global best fit (maximum-weight assignment), not greedily slot by slot,
+  // so your natural right-back is not stranded at centre-back. Weight = role-adjusted
+  // rating, minus a fatigue dock for your own club so a tired man is rotated only when
+  // a fresher team-mate is genuinely the better pick.
   const slots = formSlots(formationName);
   const used = new Set();
   const mine = !!(G && G.squads && squad === G.squads[G.myClub]); // AI clubs ignore the energy gate
   if (mine) updateResting(squad); // refresh the gate before picking
-  const xi = slots.map((role, i) => {
-    const line = slotLine(formationName, i);
-    let best = null, bv = -Infinity;
-    for (const p of squad) {
-      if (p.pos !== line || !available(p) || used.has(p.id)) continue;
-      let v = slotRating(p, role);
-      if (mine) v -= fatiguePenalty(p); // tired legs are docked proportionally; your best fit player keeps his place
-      if (v > bv) { bv = v; best = p; }
-    }
-    if (best) { used.add(best.id); return best.id; }
-    return null;
-  });
+  const weight = (p, role) => slotRating(p, role) - (mine ? fatiguePenalty(p) : 0);
+  const xi = new Array(slots.length).fill(null);
+  const byLine = { GK: [], DF: [], MF: [], FW: [] };
+  slots.forEach((role, i) => byLine[slotLine(formationName, i)].push(i));
+  for (const line of ["GK", "DF", "MF", "FW"]) {
+    const slotIdx = byLine[line];
+    if (!slotIdx.length) continue;
+    const pool = squad.filter(p => p.pos === line && available(p))
+                      .sort((a, b) => effRating(b) - effRating(a))
+                      .slice(0, slotIdx.length + 4); // safe superset — role penalties cap at ~20%
+    const pick = bestAssign(slotIdx.map(i => slots[i]), pool, weight); // pick[k] = pool index for that slot, or -1
+    slotIdx.forEach((si, k) => { const pi = pick[k]; if (pi >= 0) { xi[si] = pool[pi].id; used.add(pool[pi].id); } });
+  }
   // injury crisis: out-of-position stand-ins fill an empty slot — an outfield gap is covered by the freshest
   // spare outfielder; a keeper NEVER covers an outfield slot. If no outfielder is left, the slot stays open
   // (the side plays a man short) and the engine docks team strength ~7% per missing man.
@@ -7430,6 +7467,7 @@ function renderSeasonEnd() {
       <div class="row"><button class="action" onclick="nextSeason()">${promoted ? "⬆ Up to " + upName + " →" : iAmDown ? "Down to " + downName + " - fight back →" : "Continue to " + seasonYears(G.season + 1) + " →"}</button>
       <button class="ghost" onclick="showSeasonCard()" title="A poster of your season - share it">🖼 Season card</button>
       <button class="ghost" onclick="resetGame()">New game (different club)</button></div></div>
+      ${natPanelHtml(false)}
       ${jobCentreHtml()}
       <div id="card-box"></div>` + renderTable();
   }
@@ -7453,33 +7491,7 @@ function renderSeasonEnd() {
   const nextLeague = G.league.map(i => relegated.includes(i) ? promoted[relegated.indexOf(i)] : i);
   // 🦁 the national job: excel at club level and the FA comes calling — a DUAL role
   const natEligible = !G.natJob && mgrRep() >= 82 && (myPos <= 4 || (G.honours || []).some(h => h.startsWith("Season " + G.season + ":")));
-  const wcSummer = isWorldCupSummer(); // a World Cup is contested only every four years (2026, 2030, 2034 …)
-  const resignBtn = `<button class="ghost" onclick="if(typeof confirm!=='function'||confirm('Resign the national post?')){G.natJob=null;G.natNews=null;save();render()}">Resign the national post</button>`;
-  let natHtml = "";
-  if (G.natJob !== undefined && G.natJob !== null) {
-    natHtml = wcSummer
-      ? `<div class="panel" style="border-color:var(--pitch)"><h2>🦁 ${esc(WC_TEAMS[G.natJob][0])} manager (dual role)</h2>
-       <p>${G.natNews ? esc(G.natNews) + " " : ""}The ${worldCupYear()} World Cup is here — the federation expect you to <b>${natTargetText(natTarget())}</b>. The post is yours until they lose patience.</p>
-       <div class="row"><button class="action" onclick="natEnterWC()">🌎 Lead ${esc(WC_TEAMS[G.natJob][1])} at the ${worldCupYear()} World Cup →</button>
-       ${resignBtn}</div></div>`
-      : `<div class="panel" style="border-color:var(--pitch)"><h2>🦁 ${esc(WC_TEAMS[G.natJob][0])} manager (dual role)</h2>
-       <p>${G.natNews ? esc(G.natNews) + " " : ""}No tournament this summer — the next World Cup is in <b>${nextWorldCupYear()}</b>. Keep excelling at club level and the post stays yours.</p>
-       <div class="row">${resignBtn}</div></div>`;
-  } else if (wcSummer && natEligible) {
-    const cands = natCandidates();
-    if (cands.length) natHtml = `<div class="panel" style="border-color:var(--amber)"><h2>🦁 An international invitation — the ${worldCupYear()} World Cup</h2>
-       <p>Your club record has caught the eye of national federations - your nationality is no barrier (a German can lead England). One of these would hand you their team for this summer's World Cup alongside your club job, and the post runs tournament to tournament until they sack you.</p>
-       <div class="club-grid">` +
-       cands.map(i => `<div class="club-card" onclick="acceptNatJob(${i})">
-         <div class="cname">${wcCrest(i, 22)}${esc(WC_TEAMS[i][0])}</div>
-         <div class="cinfo"><span class="stars-bar">${starBar(WC_TEAMS[i][2] + 3)}</span> strength ${WC_TEAMS[i][2]}</div>
-         <div class="cstars">They will expect you to ${natTargetText(natTargetForBase(WC_TEAMS[i][2]))}</div>
-       </div>`).join("") +
-       `</div><p class="note">…or decline and stay a club man.</p></div>`;
-  }
-  if (!natHtml && wcSummer && (G.natJob === undefined || G.natJob === null)) {
-    natHtml = `<div class="panel"><p class="note">🌍 The ${worldCupYear()} World Cup takes place this summer. Build your reputation with strong club seasons and a national federation may invite you to lead them at a future tournament.</p></div>`;
-  }
+  const natHtml = natPanelHtml(natEligible);
   // headhunted: overachieve and a bigger club comes calling (decided once, then saved)
   if (G.approach === undefined) {
     let appr = null;
@@ -7678,6 +7690,49 @@ function isWorldCupSummer() { return !!(G && ((G.season || 0) % 4 === 1)); }
 function worldCupYear() { return 2025 + ((G && G.season) || 1); } // the World Cup held THIS summer (valid on a World-Cup season-end)
 function nextWorldCupYear() { let y = 2026; const cur = 2025 + ((G && G.season) || 1); while (y <= cur) y += 4; return y; }
 function natYear() { return worldCupYear(); }
+/* The national-team / World Cup season-end panel. Shared so it appears at EVERY
+   division's season-end — a national manager whose club is relegated must still
+   be able to lead his country at the World Cup. New invitations are gated by the
+   caller (top-flight only); a held post and the summer notice show everywhere. */
+function natPanelHtml(eligible) {
+  if (!G) return "";
+  const wcSummer = isWorldCupSummer();
+  // this summer's World Cup has already been played and graded — don't offer to re-enter it
+  const wcDone = !!(WCS && WCS.nat && WCS.year === worldCupYear() && WCS.stage === "done");
+  const resignBtn = `<button class="ghost" onclick="if(typeof confirm!=='function'||confirm('Resign the national post?')){G.natJob=null;G.natNews=null;save();render()}">Resign the national post</button>`;
+  let natHtml = "";
+  if (G.natJob !== undefined && G.natJob !== null) {
+    natHtml = !wcSummer
+      ? `<div class="panel" style="border-color:var(--pitch)"><h2>🦁 ${esc(WC_TEAMS[G.natJob][0])} manager (dual role)</h2>
+       <p>${G.natNews ? esc(G.natNews) + " " : ""}No tournament this summer — the next World Cup is in <b>${nextWorldCupYear()}</b>. Keep excelling at club level and the post stays yours.</p>
+       <div class="row">${resignBtn}</div></div>`
+      : wcDone
+      ? `<div class="panel" style="border-color:var(--pitch)"><h2>🦁 ${esc(WC_TEAMS[G.natJob][0])} manager (dual role)</h2>
+       <p>${G.natNews ? esc(G.natNews) + " " : ""}The ${worldCupYear()} World Cup is over. The next one is in <b>${nextWorldCupYear()}</b> — continue your club season below.</p>
+       <div class="row">${resignBtn}</div></div>`
+      : `<div class="panel" style="border-color:var(--pitch)"><h2>🦁 ${esc(WC_TEAMS[G.natJob][0])} manager (dual role)</h2>
+       <p>${G.natNews ? esc(G.natNews) + " " : ""}The ${worldCupYear()} World Cup is here — the federation expect you to <b>${natTargetText(natTarget())}</b>. The post is yours until they lose patience.</p>
+       <div class="row"><button class="action" onclick="natEnterWC()">🌎 Lead ${esc(WC_TEAMS[G.natJob][1])} at the ${worldCupYear()} World Cup →</button>
+       ${resignBtn}</div></div>`;
+  } else if (wcSummer && eligible && !wcDone) {
+    const cands = natCandidates();
+    if (cands.length) natHtml = `<div class="panel" style="border-color:var(--amber)"><h2>🦁 An international invitation — the ${worldCupYear()} World Cup</h2>
+       <p>Your club record has caught the eye of national federations - your nationality is no barrier (a German can lead England). One of these would hand you their team for this summer's World Cup alongside your club job, and the post runs tournament to tournament until they sack you.</p>
+       <div class="club-grid">` +
+       cands.map(i => `<div class="club-card" onclick="acceptNatJob(${i})">
+         <div class="cname">${wcCrest(i, 22)}${esc(WC_TEAMS[i][0])}</div>
+         <div class="cinfo"><span class="stars-bar">${starBar(WC_TEAMS[i][2] + 3)}</span> strength ${WC_TEAMS[i][2]}</div>
+         <div class="cstars">They will expect you to ${natTargetText(natTargetForBase(WC_TEAMS[i][2]))}</div>
+       </div>`).join("") +
+       `</div><p class="note">…or decline and stay a club man.</p></div>`;
+  }
+  if (!natHtml && wcSummer && (G.natJob === undefined || G.natJob === null)) {
+    natHtml = wcDone
+      ? `<div class="panel"><p class="note">🌍 The ${worldCupYear()} World Cup has concluded. The next one is in ${nextWorldCupYear()}.</p></div>`
+      : `<div class="panel"><p class="note">🌍 The ${worldCupYear()} World Cup takes place this summer. Build your reputation with strong club seasons and a national federation may invite you to lead them at a future tournament.</p></div>`;
+  }
+  return natHtml;
+}
 function natTargetForBase(b) { return b >= 88 ? 4 : b >= 82 ? 3 : b >= 78 ? 2 : 1; } // 4=SF,3=QF,2=R16,1=knockouts
 function natTarget() { const b = (G && G.natJob != null && WC_TEAMS[G.natJob]) ? WC_TEAMS[G.natJob][2] : 80; return natTargetForBase(b); }
 function natTargetText(t) { return ({ 1: "reach the knockouts", 2: "reach the last 16", 3: "reach the quarter-finals", 4: "reach the semi-finals" })[t] || "qualify"; }
