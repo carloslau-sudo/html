@@ -1142,6 +1142,12 @@ function slotLine(formationName, slotIdx) { // which broad line owns slot i
   return "FW";
 }
 function bestXI(squad, formationName) {
+  // Legacy-save guard: slot matching keys off the broad line (GK/DF/MF/FW). If an
+  // older/edited save stored a detailed role (e.g. "ST") in pos, derive the line so
+  // the auto-XI can still field your strongest available team. No-op for valid data.
+  for (const p of squad) {
+    if (p.pos !== "GK" && p.pos !== "DF" && p.pos !== "MF" && p.pos !== "FW") p.pos = bucketForRole(p.role || p.pos);
+  }
   // each slot takes the available player of its line who fits the role best
   const slots = formSlots(formationName);
   const used = new Set();
@@ -7447,20 +7453,33 @@ function renderSeasonEnd() {
   const nextLeague = G.league.map(i => relegated.includes(i) ? promoted[relegated.indexOf(i)] : i);
   // 🦁 the national job: excel at club level and the FA comes calling — a DUAL role
   const natEligible = !G.natJob && mgrRep() >= 82 && (myPos <= 4 || (G.honours || []).some(h => h.startsWith("Season " + G.season + ":")));
-  const natHtml = G.natJob !== undefined && G.natJob !== null
-    ? `<div class="panel" style="border-color:var(--pitch)"><h2>🦁 ${esc(WC_TEAMS[G.natJob][0])} manager (dual role)</h2>
-       <p>${G.natNews ? esc(G.natNews) + " " : ""}The federation expect you to <b>${natTargetText(natTarget())}</b>. The post is yours until they lose patience.</p>
-       <div class="row"><button class="action" onclick="natEnterWC()">🌎 Lead ${esc(WC_TEAMS[G.natJob][1])} at the ${natYear()} World Cup →</button>
-       <button class="ghost" onclick="if(typeof confirm!=='function'||confirm('Resign the national post?')){G.natJob=null;G.natNews=null;save();render()}">Resign the national post</button></div></div>`
-    : natEligible ? ((cands) => cands.length ? `<div class="panel" style="border-color:var(--amber)"><h2>🦁 An international invitation</h2>
-       <p>Your club record has caught the eye of national federations - your nationality is no barrier (a German can lead England). One of these would hand you their team alongside your club job, and the post runs tournament to tournament until they sack you.</p>
+  const wcSummer = isWorldCupSummer(); // a World Cup is contested only every four years (2026, 2030, 2034 …)
+  const resignBtn = `<button class="ghost" onclick="if(typeof confirm!=='function'||confirm('Resign the national post?')){G.natJob=null;G.natNews=null;save();render()}">Resign the national post</button>`;
+  let natHtml = "";
+  if (G.natJob !== undefined && G.natJob !== null) {
+    natHtml = wcSummer
+      ? `<div class="panel" style="border-color:var(--pitch)"><h2>🦁 ${esc(WC_TEAMS[G.natJob][0])} manager (dual role)</h2>
+       <p>${G.natNews ? esc(G.natNews) + " " : ""}The ${worldCupYear()} World Cup is here — the federation expect you to <b>${natTargetText(natTarget())}</b>. The post is yours until they lose patience.</p>
+       <div class="row"><button class="action" onclick="natEnterWC()">🌎 Lead ${esc(WC_TEAMS[G.natJob][1])} at the ${worldCupYear()} World Cup →</button>
+       ${resignBtn}</div></div>`
+      : `<div class="panel" style="border-color:var(--pitch)"><h2>🦁 ${esc(WC_TEAMS[G.natJob][0])} manager (dual role)</h2>
+       <p>${G.natNews ? esc(G.natNews) + " " : ""}No tournament this summer — the next World Cup is in <b>${nextWorldCupYear()}</b>. Keep excelling at club level and the post stays yours.</p>
+       <div class="row">${resignBtn}</div></div>`;
+  } else if (wcSummer && natEligible) {
+    const cands = natCandidates();
+    if (cands.length) natHtml = `<div class="panel" style="border-color:var(--amber)"><h2>🦁 An international invitation — the ${worldCupYear()} World Cup</h2>
+       <p>Your club record has caught the eye of national federations - your nationality is no barrier (a German can lead England). One of these would hand you their team for this summer's World Cup alongside your club job, and the post runs tournament to tournament until they sack you.</p>
        <div class="club-grid">` +
        cands.map(i => `<div class="club-card" onclick="acceptNatJob(${i})">
          <div class="cname">${wcCrest(i, 22)}${esc(WC_TEAMS[i][0])}</div>
          <div class="cinfo"><span class="stars-bar">${starBar(WC_TEAMS[i][2] + 3)}</span> strength ${WC_TEAMS[i][2]}</div>
          <div class="cstars">They will expect you to ${natTargetText(natTargetForBase(WC_TEAMS[i][2]))}</div>
        </div>`).join("") +
-       `</div><p class="note">…or decline and stay a club man.</p></div>` : "")(natCandidates()) : "";
+       `</div><p class="note">…or decline and stay a club man.</p></div>`;
+  }
+  if (!natHtml && wcSummer && (G.natJob === undefined || G.natJob === null)) {
+    natHtml = `<div class="panel"><p class="note">🌍 The ${worldCupYear()} World Cup takes place this summer. Build your reputation with strong club seasons and a national federation may invite you to lead them at a future tournament.</p></div>`;
+  }
   // headhunted: overachieve and a bigger club comes calling (decided once, then saved)
   if (G.approach === undefined) {
     let appr = null;
@@ -7650,7 +7669,15 @@ function wcGenSquad(ti) {
   return squad;
 }
 
-function natYear() { return 2026 + 4 * ((G && G.natTenure) || 0); }
+/* The World Cup is a real-world summer tournament held every four years —
+   2026, 2030, 2034 … In career terms each one lands at the END of seasons
+   1, 5, 9 … (season 1 is 2025/26, whose summer is 2026, so a World Cup summer
+   is any season where season % 4 === 1). The tournament year is therefore tied
+   to the career calendar, NOT to how many tournaments you have managed. */
+function isWorldCupSummer() { return !!(G && ((G.season || 0) % 4 === 1)); }
+function worldCupYear() { return 2025 + ((G && G.season) || 1); } // the World Cup held THIS summer (valid on a World-Cup season-end)
+function nextWorldCupYear() { let y = 2026; const cur = 2025 + ((G && G.season) || 1); while (y <= cur) y += 4; return y; }
+function natYear() { return worldCupYear(); }
 function natTargetForBase(b) { return b >= 88 ? 4 : b >= 82 ? 3 : b >= 78 ? 2 : 1; } // 4=SF,3=QF,2=R16,1=knockouts
 function natTarget() { const b = (G && G.natJob != null && WC_TEAMS[G.natJob]) ? WC_TEAMS[G.natJob][2] : 80; return natTargetForBase(b); }
 function natTargetText(t) { return ({ 1: "reach the knockouts", 2: "reach the last 16", 3: "reach the quarter-finals", 4: "reach the semi-finals" })[t] || "qualify"; }
@@ -7854,7 +7881,7 @@ function wcPlayNext(preMatch) {
         let verdict;
         if (reached >= target) {
           G.natStrikes = 0; G.natTenure = (G.natTenure || 0) + 1;
-          verdict = "🦁 The " + WC_TEAMS[nat][0] + " FA are satisfied — you reached " + natStageText(reached) + ". The post is yours; next, the " + natYear() + " World Cup.";
+          verdict = "🦁 The " + WC_TEAMS[nat][0] + " FA are satisfied — you reached " + natStageText(reached) + ". The post is yours; next, the " + nextWorldCupYear() + " World Cup.";
         } else {
           G.natStrikes = (G.natStrikes || 0) + 1;
           if ((target - reached) >= 2 || G.natStrikes >= 2) {
@@ -7862,7 +7889,7 @@ function wcPlayNext(preMatch) {
             G.natJob = null; G.natStrikes = 0;
           } else {
             G.natTenure = (G.natTenure || 0) + 1;
-            verdict = "🦁 The " + WC_TEAMS[nat][0] + " FA expected you to " + natTargetText(target) + " but you exited at " + natStageText(reached) + ". A final warning; deliver at the " + natYear() + " World Cup.";
+            verdict = "🦁 The " + WC_TEAMS[nat][0] + " FA expected you to " + natTargetText(target) + " but you exited at " + natStageText(reached) + ". A final warning; deliver at the " + nextWorldCupYear() + " World Cup.";
           }
         }
         WCS.natVerdict = verdict; WCS.evaluated = true; G.natNews = verdict;
@@ -8023,8 +8050,9 @@ function wcMyNextOpp() {
   }
   return null;
 }
+function wcDateYear(s) { return (WCS && WCS.year && WCS.year !== 2026) ? String(s).replace("2026", String(WCS.year)) : s; }
 function wcDateLabel() {
-  return WCS.stage === "group" ? WC_DATES[WCS.md] : WC_DATES[3 + (WCS.ko ? WCS.ko.round : 0)];
+  return wcDateYear(WCS.stage === "group" ? WC_DATES[WCS.md] : WC_DATES[3 + (WCS.ko ? WCS.ko.round : 0)]);
 }
 
 function wcFeedHtml(m) {
@@ -8127,7 +8155,7 @@ function renderWC() {
   }
   if ((WCS.results || []).length) {
     html += `<details class="fold"><summary>📋 All group-stage results (${WCS.results.length * 24} matches)</summary>` +
-      WCS.results.map((mdRes, md) => `<h3>Matchday ${md + 1} · ${WC_DATES[md]}</h3><p class="note">` +
+      WCS.results.map((mdRes, md) => `<h3>Matchday ${md + 1} · ${wcDateYear(WC_DATES[md])}</h3><p class="note">` +
         WC_GROUPS.split("").map((L, g) => {
           const ms = mdRes.filter(m => WC_TEAMS[m.a][4] === g);
           return `<b>Group ${L}:</b> ` + ms.map(m =>
